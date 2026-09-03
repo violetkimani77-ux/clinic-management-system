@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { db } from "@/src/lib/db";
+import { db } from "@/lib/db";
 import type { PermissionCode } from "./permissions";
 import type { AuthContext } from "./authorization";
 
@@ -22,12 +22,7 @@ export async function createSession(userId: string, clinicId: string) {
   const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
 
   await db.authSession.create({
-    data: {
-      tokenHash: hashToken(token),
-      userId,
-      clinicId,
-      expiresAt,
-    },
+    data: { tokenHash: hashToken(token), userId, clinicId, expiresAt },
   });
 
   return { token, expiresAt };
@@ -40,10 +35,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   const session = await db.authSession.findUnique({
     where: { tokenHash: hashToken(token) },
-    include: {
-      user: { select: { id: true, status: true } },
-      clinic: { select: { id: true } },
-    },
+    include: { user: { select: { id: true, status: true } } },
   });
 
   if (!session || session.expiresAt <= new Date() || session.user.status !== "ACTIVE") {
@@ -72,11 +64,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     data: { lastUsedAt: new Date() },
   });
 
-  return {
-    userId: session.userId,
-    clinicId: session.clinicId,
-    permissions,
-  };
+  return { userId: session.userId, clinicId: session.clinicId, permissions };
 }
 
 export async function clearSession(): Promise<void> {
