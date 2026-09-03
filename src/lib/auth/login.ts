@@ -19,7 +19,7 @@ export async function authenticateStaff(email: string, password: string) {
     include: {
       memberships: {
         where: { role: { code: { in: ["ADMIN", "PHARMACY", "ACCOUNTS"] } } },
-        include: { clinic: true },
+        include: { role: true },
       },
     },
   });
@@ -36,6 +36,6 @@ export async function authenticateStaff(email: string, password: string) {
     ...session,
     clinicId: membership.clinicId,
     userId: user.id,
-    roleCode: membership.roleId,
+    roleCode: membership.role.code,
   };
 }
