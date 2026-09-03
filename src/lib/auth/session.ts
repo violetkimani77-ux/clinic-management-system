@@ -64,7 +64,12 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     data: { lastUsedAt: new Date() },
   });
 
-  return { userId: session.userId, clinicId: session.clinicId, permissions };
+  return {
+    userId: session.userId,
+    clinicId: session.clinicId,
+    roleCode: membership.role.code,
+    permissions,
+  };
 }
 
 export async function clearSession(): Promise<void> {
