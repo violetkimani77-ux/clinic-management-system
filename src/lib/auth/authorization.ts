@@ -3,6 +3,7 @@ import type { PermissionCode } from "./permissions";
 export type AuthContext = {
   userId: string;
   clinicId: string;
+  roleCode: string;
   permissions: ReadonlySet<PermissionCode>;
 };
 
