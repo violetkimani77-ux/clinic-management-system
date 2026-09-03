@@ -9,14 +9,23 @@ import type { AuthContext } from "./authorization";
 export const SESSION_COOKIE = "cms_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
+/** Hashes session tokens so the database never stores the bearer token itself. */
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+/** Creates a cryptographically random opaque token for a new server session. */
 export function createSessionToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
+/**
+ * Persists a session for a specific user and clinic.
+ *
+ * The returned token must be placed in a secure HttpOnly cookie by the login
+ * flow. Keeping persistence separate from cookie handling makes the session
+ * service easier to test and keeps authentication concerns explicit.
+ */
 export async function createSession(userId: string, clinicId: string) {
   const token = createSessionToken();
   const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
@@ -28,6 +37,12 @@ export async function createSession(userId: string, clinicId: string) {
   return { token, expiresAt };
 }
 
+/**
+ * Resolves the current request to a server-side authorization context.
+ *
+ * A session is valid only when its token exists, has not expired, its user is
+ * active, and the user still has a membership in the session's clinic.
+ */
 export async function getAuthContext(): Promise<AuthContext | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -38,16 +53,31 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     include: { user: { select: { id: true, status: true } } },
   });
 
-  if (!session || session.expiresAt <= new Date() || session.user.status !== "ACTIVE") {
+  if (
+    !session ||
+    session.expiresAt <= new Date() ||
+    session.user.status !== "ACTIVE"
+  ) {
     return null;
   }
 
+  // Membership is checked on every context resolution so removing a user's
+  // clinic access takes effect without waiting for the session to expire.
   const membership = await db.membership.findUnique({
-    where: { clinicId_userId: { clinicId: session.clinicId, userId: session.userId } },
+    where: {
+      clinicId_userId: {
+        clinicId: session.clinicId,
+        userId: session.userId,
+      },
+    },
     include: {
       role: {
         include: {
-          permissions: { include: { permission: { select: { code: true } } } },
+          permissions: {
+            include: {
+              permission: { select: { code: true } },
+            },
+          },
         },
       },
     },
@@ -56,7 +86,9 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   if (!membership) return null;
 
   const permissions = new Set(
-    membership.role.permissions.map((item) => item.permission.code as PermissionCode),
+    membership.role.permissions.map(
+      (item) => item.permission.code as PermissionCode,
+    ),
   );
 
   await db.authSession.update({
@@ -72,12 +104,20 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   };
 }
 
+/**
+ * Revokes the current session and removes its browser cookie.
+ *
+ * Deleting the server-side session makes the bearer token unusable even if a
+ * stale browser still holds the cookie.
+ */
 export async function clearSession(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
 
   if (token) {
-    await db.authSession.deleteMany({ where: { tokenHash: hashToken(token) } });
+    await db.authSession.deleteMany({
+      where: { tokenHash: hashToken(token) },
+    });
   }
 
   cookieStore.delete(SESSION_COOKIE);
