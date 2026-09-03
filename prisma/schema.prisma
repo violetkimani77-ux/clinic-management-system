@@ -32,6 +32,7 @@ model Clinic {
   payments Payment[]
   expenses Expense[]
   auditLogs AuditLog[]
+  sessions AuthSession[]
 }
 
 model User {
@@ -44,6 +45,22 @@ model User {
   updatedAt DateTime @updatedAt
   memberships Membership[]
   auditLogs AuditLog[]
+  sessions AuthSession[]
+  dispensing Dispensing[]
+}
+
+model AuthSession {
+  id String @id @default(uuid())
+  tokenHash String @unique
+  userId String
+  clinicId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  lastUsedAt DateTime?
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  @@index([userId, expiresAt])
+  @@index([clinicId, expiresAt])
 }
 
 model Role {
