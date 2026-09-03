@@ -1,5 +1,11 @@
 import type { PermissionCode } from "./permissions";
 
+/**
+ * Server-side identity and authorization context for one clinic.
+ *
+ * The clinicId is established by the authenticated session and is the tenant
+ * boundary for clinic-owned data.
+ */
 export type AuthContext = {
   userId: string;
   clinicId: string;
@@ -7,6 +13,7 @@ export type AuthContext = {
   permissions: ReadonlySet<PermissionCode>;
 };
 
+/** Returns true when the authenticated user has the requested permission. */
 export function hasPermission(
   context: AuthContext,
   permission: PermissionCode,
@@ -14,6 +21,12 @@ export function hasPermission(
   return context.permissions.has(permission);
 }
 
+/**
+ * Enforces a server-side permission boundary.
+ *
+ * Navigation visibility is not authorization. Protected server actions, route
+ * handlers, and data access functions must enforce their own permissions.
+ */
 export function requirePermission(
   context: AuthContext,
   permission: PermissionCode,
@@ -23,6 +36,12 @@ export function requirePermission(
   }
 }
 
+/**
+ * Enforces the tenant boundary for clinic-owned data.
+ *
+ * A resource is accessible only when its clinic matches the clinic established
+ * by the authenticated session, preventing cross-clinic data access.
+ */
 export function assertTenant(
   context: AuthContext,
   clinicId: string,
