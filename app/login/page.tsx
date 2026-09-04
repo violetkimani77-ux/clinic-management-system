@@ -32,7 +32,7 @@ export default function LoginPage() {
           <LoginForm />
         </div>
       </section>
-      <p className="site-credit">Powered by IHL Tech</p>
+      <p className="site-credit">POWERED BY IHL TECH</p>
     </main>
   );
 }
