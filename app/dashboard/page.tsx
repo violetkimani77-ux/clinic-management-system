@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { WorkspaceShell } from "@/components/dashboard/workspace-shell";
 import { requireAuth } from "@/lib/auth/guards";
 import { getDashboardMetrics } from "@/lib/dashboard/metrics";
@@ -13,13 +14,33 @@ export default async function DashboardPage() {
   const metrics = await getDashboardMetrics(context);
 
   const attentionItems = [
-    `${metrics.lowStockMedicines.length} medicine${metrics.lowStockMedicines.length === 1 ? "" : "s"} below reorder level`,
-    `${metrics.expiringSoonBatchCount} batch${metrics.expiringSoonBatchCount === 1 ? "" : "es"} expiring within 30 days`,
-    `${metrics.expiredBatchCount} expired batch${metrics.expiredBatchCount === 1 ? "" : "es"}`,
-    `KES ${metrics.outstandingAmount.toLocaleString("en-KE", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })} outstanding`,
+    {
+      severity: "critical",
+      indicator: "🔴",
+      text: `${metrics.lowStockMedicines.length} medicine${metrics.lowStockMedicines.length === 1 ? "" : "s"} below reorder level`,
+      href: "/pharmacy",
+    },
+    {
+      severity: "warning",
+      indicator: "🟠",
+      text: `${metrics.expiringSoonBatchCount} batch${metrics.expiringSoonBatchCount === 1 ? "" : "es"} expiring within 30 days`,
+      href: "/pharmacy",
+    },
+    {
+      severity: "critical",
+      indicator: "🔴",
+      text: `${metrics.expiredBatchCount} expired batch${metrics.expiredBatchCount === 1 ? "" : "es"}`,
+      href: "/pharmacy",
+    },
+    {
+      severity: "warning",
+      indicator: "🟠",
+      text: `KES ${metrics.outstandingAmount.toLocaleString("en-KE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} outstanding`,
+      href: "/accounts",
+    },
   ];
 
   return (
@@ -74,22 +95,17 @@ export default async function DashboardPage() {
           Needs attention
         </h2>
         <ul className={styles.attentionList}>
-          <li className={styles.attentionItem}>
-            <span className={styles.attentionIndicator}>🔴</span>
-            <span>{attentionItems[0]}</span>
-          </li>
-          <li className={styles.attentionItem}>
-            <span className={styles.attentionIndicator}>🟠</span>
-            <span>{attentionItems[1]}</span>
-          </li>
-          <li className={styles.attentionItem}>
-            <span className={styles.attentionIndicator}>🔴</span>
-            <span>{attentionItems[2]}</span>
-          </li>
-          <li className={styles.attentionItem}>
-            <span className={styles.attentionIndicator}>🟠</span>
-            <span>{attentionItems[3]}</span>
-          </li>
+          {attentionItems.map((item) => (
+            <li key={item.text}>
+              <Link href={item.href} className={styles.attentionItem}>
+                <span className={styles.attentionIndicator} aria-hidden="true">
+                  {item.indicator}
+                </span>
+                <span>{item.text}</span>
+                <span className={styles.attentionAction}>View →</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
     </WorkspaceShell>
