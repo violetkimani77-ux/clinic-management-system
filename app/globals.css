@@ -147,11 +147,21 @@ a {
 
 .auth-form {
   display: grid;
-  gap: 9px;
+  gap: 18px;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+}
+
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .auth-form label {
-  margin-top: 8px;
   color: #263943;
   font-size: 13px;
   font-weight: 700;
@@ -159,15 +169,19 @@ a {
 
 .auth-form input {
   width: 100%;
-  min-height: 46px;
-  padding: 0 13px;
+  min-height: 48px;
+  padding: 0 14px;
   border: 1px solid #cbd6dc;
   border-radius: 10px;
   background: #ffffff;
   color: #17262e;
   font: inherit;
   outline: none;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.auth-form input::placeholder {
+  color: #9aa8ae;
 }
 
 .auth-form input:focus {
@@ -181,7 +195,7 @@ a {
 }
 
 .password-field input {
-  padding-right: 66px;
+  padding-right: 70px;
 }
 
 .password-toggle {
@@ -205,9 +219,9 @@ a {
   background: #eef5f8;
 }
 
-.auth-form > button[type="submit"] {
+.auth-submit {
   min-height: 48px;
-  margin-top: 17px;
+  margin-top: 2px;
   border: 0;
   border-radius: 10px;
   background: #173f56;
@@ -218,18 +232,18 @@ a {
   transition: transform 140ms ease, background 140ms ease;
 }
 
-.auth-form > button[type="submit"]:hover:not(:disabled) {
+.auth-submit:hover:not(:disabled) {
   background: #215a78;
   transform: translateY(-1px);
 }
 
-.auth-form > button[type="submit"]:disabled {
+.auth-submit:disabled {
   cursor: wait;
   opacity: 0.7;
 }
 
 .form-error {
-  margin: 9px 0 0;
+  margin: 0;
   padding: 11px 12px;
   border: 1px solid #efcaca;
   border-radius: 9px;
@@ -237,6 +251,14 @@ a {
   color: #9c2929;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.auth-form-note {
+  margin: -2px 0 0;
+  color: #7a898f;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 @media (max-width: 760px) {
