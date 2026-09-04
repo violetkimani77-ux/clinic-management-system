@@ -26,9 +26,10 @@ export async function getDashboardMetrics(context: AuthContext) {
   const expiringSoonEnd = new Date(dayEnd);
   expiringSoonEnd.setUTCDate(expiringSoonEnd.getUTCDate() + EXPIRING_SOON_DAYS);
 
-  const [activePatientCount, patientsRegisteredToday, visitsToday, completedVisitsToday, pendingVisitsToday, revenueToday, paymentsToday, outstandingInvoices, medicines, expiredBatchCount, expiringSoonBatchCount] = await Promise.all([
+  const [activePatientCount, patientsRegisteredToday, patientsToday, visitsToday, completedVisitsToday, pendingVisitsToday, revenueToday, paymentsToday, outstandingInvoices, medicines, expiredBatchCount, expiringSoonBatchCount] = await Promise.all([
     db.patient.count({ where: { clinicId: context.clinicId, archivedAt: null } }),
     db.patient.count({ where: { clinicId: context.clinicId, archivedAt: null, createdAt: { gte: dayStart, lt: dayEnd } } }),
+    db.visit.findMany({ where: { clinicId: context.clinicId, openedAt: { gte: dayStart, lt: dayEnd } }, distinct: ["patientId"], select: { patientId: true } }),
     db.visit.count({ where: { clinicId: context.clinicId, openedAt: { gte: dayStart, lt: dayEnd } } }),
     db.visit.count({ where: { clinicId: context.clinicId, status: "COMPLETED", openedAt: { gte: dayStart, lt: dayEnd } } }),
     db.visit.count({ where: { clinicId: context.clinicId, status: { in: ["OPEN", "IN_PROGRESS"] }, openedAt: { gte: dayStart, lt: dayEnd } } }),
@@ -55,6 +56,7 @@ export async function getDashboardMetrics(context: AuthContext) {
   return {
     activePatientCount,
     patientsRegisteredToday,
+    patientsToday: patientsToday.length,
     visitsToday,
     completedVisitsToday,
     pendingVisitsToday,
