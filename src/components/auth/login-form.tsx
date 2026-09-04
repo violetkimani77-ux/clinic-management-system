@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 /** Client-side form shell; authentication itself remains server-side. */
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setPending(true);
@@ -48,15 +49,36 @@ export function LoginForm() {
       />
 
       <label htmlFor="password">Password</label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        value={password}
-        onChange={(event) => setPassword(event.target.value)}
-        required
-      />
+      <div style={{ position: "relative" }}>
+        <input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+          style={{ paddingRight: "5.5rem", width: "100%" }}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((visible) => !visible)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          aria-pressed={showPassword}
+          style={{
+            position: "absolute",
+            right: "0.5rem",
+            top: "50%",
+            transform: "translateY(-50%)",
+            border: 0,
+            background: "transparent",
+            padding: "0.35rem 0.5rem",
+            cursor: "pointer",
+          }}
+        >
+          {showPassword ? "Hide" : "Show"}
+        </button>
+      </div>
 
       {error ? <p className="form-error" role="alert">{error}</p> : null}
 
