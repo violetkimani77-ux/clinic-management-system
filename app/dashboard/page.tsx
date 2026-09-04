@@ -1,6 +1,7 @@
 import { WorkspaceShell } from "@/components/dashboard/workspace-shell";
 import { requireAuth } from "@/lib/auth/guards";
 import { getDashboardMetrics } from "@/lib/dashboard/metrics";
+import styles from "@/components/dashboard/dashboard-overview.module.css";
 
 /**
  * Displays the authenticated admin workspace and live operational dashboard.
@@ -32,14 +33,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: 16,
-          marginTop: 32,
-        }}
-      >
+      <div className={styles.cards} aria-label="Clinic overview">
         {[
           ["Patients", String(metrics.activePatientCount)],
           ["Visits today", String(metrics.visitsToday)],
@@ -58,34 +52,18 @@ export default async function DashboardPage() {
             })}`,
           ],
         ].map(([label, value]) => (
-          <article
-            key={label}
-            style={{
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
-              padding: 20,
-            }}
-          >
-            <p style={{ margin: 0, color: "#6b7280", fontSize: 14 }}>{label}</p>
-            <strong style={{ display: "block", marginTop: 10, fontSize: 24 }}>
-              {value}
-            </strong>
+          <article key={label} className={styles.card}>
+            <p className={styles.cardLabel}>{label}</p>
+            <strong className={styles.cardValue}>{value}</strong>
           </article>
         ))}
       </div>
 
-      <section
-        style={{
-          marginTop: 24,
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 24,
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: 20 }}>Needs attention</h2>
-        <p style={{ margin: "10px 0 0", color: "#6b7280" }}>
+      <section className={styles.attention} aria-labelledby="needs-attention">
+        <h2 id="needs-attention" className={styles.attentionTitle}>
+          Needs attention
+        </h2>
+        <p className={styles.attentionText}>
           Alerts will appear here once pharmacy, inventory and accounts
           workflows are connected.
         </p>
