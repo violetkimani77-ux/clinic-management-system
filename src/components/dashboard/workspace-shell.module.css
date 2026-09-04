@@ -67,13 +67,12 @@
   width: 248px;
   flex: 0 0 248px;
   padding: 24px 18px;
-  border-right: 1px solid #e5e7eb;
-  background: #ffffff;
+  background: #173f56;
 }
 
 .navigation {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .navLink {
@@ -81,22 +80,22 @@
   padding: 11px 12px;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: #4b5563;
+  color: #ffffff;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 
 .navLink:hover {
-  background: #f8fafc;
-  border-color: #e5e7eb;
-  color: #111827;
+  background: #215a78;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
 }
 
 .navLinkActive {
-  background: #eef2f7;
-  border-color: #e2e8f0;
-  color: #111827;
+  background: #2d6d8e;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
 }
 
 .content {
@@ -152,8 +151,7 @@
     width: 100%;
     flex-basis: auto;
     padding: 14px 16px;
-    border-right: 0;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 0;
   }
 
   .navigation {
