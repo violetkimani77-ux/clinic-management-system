@@ -63,6 +63,8 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   // Membership is checked on every context resolution so removing a user's
   // clinic access takes effect without waiting for the session to expire.
+  // The explicit select also keeps Prisma's generated result shape narrow and
+  // preserves strict TypeScript inference for the permission mapping below.
   const membership = await db.membership.findUnique({
     where: {
       clinicId_userId: {
@@ -70,11 +72,12 @@ export async function getAuthContext(): Promise<AuthContext | null> {
         userId: session.userId,
       },
     },
-    include: {
+    select: {
       role: {
-        include: {
+        select: {
+          code: true,
           permissions: {
-            include: {
+            select: {
               permission: { select: { code: true } },
             },
           },
@@ -85,9 +88,9 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   if (!membership) return null;
 
-  const permissions = new Set(
-    membership.role.permissions.map(
-      (item) => item.permission.code as PermissionCode,
+  const permissions = new Set<PermissionCode>(
+    membership.role.permissions.map(({ permission }) =>
+      permission.code as PermissionCode,
     ),
   );
 
