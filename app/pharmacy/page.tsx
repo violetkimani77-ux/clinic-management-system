@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { WorkspaceShell } from "@/components/dashboard/workspace-shell";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 
+/** Displays the authenticated pharmacy workspace. */
 export default async function PharmacyPage() {
-  await requireClinicPermission(PERMISSIONS.PHARMACY_VIEW);
+  const context = await requireClinicPermission(PERMISSIONS.PHARMACY_VIEW);
 
   return (
-    <main style={{ minHeight: "100vh", padding: "40px 32px" }}>
+    <WorkspaceShell context={context} activeHref="/pharmacy">
       <nav aria-label="Page navigation" style={{ marginBottom: 28 }}>
-        <Link href="/dashboard">← Dashboard</Link>
+        <Link href="/dashboard">← Back to Dashboard</Link>
       </nav>
       <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
         Pharmacy workspace
@@ -17,6 +19,6 @@ export default async function PharmacyPage() {
       <p style={{ color: "#6b7280" }}>
         Prescriptions, dispensing and inventory workflows will be connected here.
       </p>
-    </main>
+    </WorkspaceShell>
   );
 }
