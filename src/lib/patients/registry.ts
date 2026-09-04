@@ -1,0 +1,128 @@
+import "server-only";
+
+import { randomInt } from "node:crypto";
+import { db } from "@/lib/db";
+import type { AuthContext } from "@/lib/auth/authorization";
+
+export type PatientSearchResult = {
+  id: string;
+  patientNo: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  dateOfBirth: Date | null;
+  archivedAt: Date | null;
+};
+
+/**
+ * Builds a human-readable patient number while retaining the clinic-scoped
+ * unique constraint as the final collision guard.
+ */
+function createPatientNumber(): string {
+  const date = new Date();
+  const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join("");
+  const suffix = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  return `P-${day}-${suffix}`;
+}
+
+/**
+ * Searches only the active clinic's patient records.
+ *
+ * Archived patients remain in the database for record integrity but are
+ * excluded from normal registry searches unless explicitly requested later.
+ */
+export async function searchPatients(
+  context: AuthContext,
+  query = "",
+): Promise<PatientSearchResult[]> {
+  const normalizedQuery = query.trim();
+
+  return db.patient.findMany({
+    where: {
+      clinicId: context.clinicId,
+      archivedAt: null,
+      ...(normalizedQuery
+        ? {
+            OR: [
+              { patientNo: { contains: normalizedQuery, mode: "insensitive" } },
+              { firstName: { contains: normalizedQuery, mode: "insensitive" } },
+              { lastName: { contains: normalizedQuery, mode: "insensitive" } },
+              { phone: { contains: normalizedQuery, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    take: 50,
+    select: {
+      id: true,
+      patientNo: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      dateOfBirth: true,
+      archivedAt: true,
+    },
+  });
+}
+
+export type CreatePatientInput = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: Date | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  notes?: string | null;
+};
+
+/**
+ * Creates a patient and its audit event atomically.
+ *
+ * The clinic is taken from the authenticated context rather than caller input
+ * so a client cannot choose another tenant when creating a patient.
+ */
+export async function createPatient(
+  context: AuthContext,
+  input: CreatePatientInput,
+) {
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+
+  if (!firstName || !lastName) {
+    throw new Error("PATIENT_NAME_REQUIRED");
+  }
+
+  const patientNo = createPatientNumber();
+
+  return db.$transaction(async (tx) => {
+    const patient = await tx.patient.create({
+      data: {
+        clinicId: context.clinicId,
+        patientNo,
+        firstName,
+        lastName,
+        dateOfBirth: input.dateOfBirth ?? null,
+        phone: input.phone?.trim() || null,
+        email: input.email?.trim().toLowerCase() || null,
+        address: input.address?.trim() || null,
+        notes: input.notes?.trim() || null,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        clinicId: context.clinicId,
+        userId: context.userId,
+        action: "PATIENT_CREATED",
+        entityType: "Patient",
+        entityId: patient.id,
+        metadata: { patientNo: patient.patientNo },
+      },
+    });
+
+    return patient;
+  });
+}
