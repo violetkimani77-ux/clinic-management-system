@@ -66,8 +66,11 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     include: { user: { select: { id: true, name: true, status: true } } },
   });
 
-  const idleDeadline = session
-    ? new Date(session.lastUsedAt.getTime() + SESSION_IDLE_TIMEOUT_SECONDS * 1000)
+  // Older sessions may have no lastUsedAt. Treat their creation time as the
+  // activity baseline so the idle policy is enforced consistently.
+  const lastActivityAt = session?.lastUsedAt ?? session?.createdAt ?? null;
+  const idleDeadline = lastActivityAt
+    ? new Date(lastActivityAt.getTime() + SESSION_IDLE_TIMEOUT_SECONDS * 1000)
     : null;
 
   if (
