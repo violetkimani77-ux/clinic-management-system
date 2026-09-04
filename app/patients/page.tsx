@@ -26,9 +26,7 @@ export default async function PatientsPage({
     <WorkspaceShell context={context} activeHref="/patients">
       <div className={styles.page}>
         <nav aria-label="Page navigation">
-          <Link href="/dashboard" className={styles.backLink}>
-            ← Back to Dashboard
-          </Link>
+          <Link href="/dashboard" className={styles.backLink}>← Back to Dashboard</Link>
         </nav>
 
         <header className={styles.hero}>
@@ -43,23 +41,14 @@ export default async function PatientsPage({
           <div className={styles.sectionHeader}>
             <div>
               <h2 id="patient-search" className={styles.sectionTitle}>Find a patient</h2>
-              <p className={styles.sectionDescription}>
-                Search by patient number, name or phone number.
-              </p>
+              <p className={styles.sectionDescription}>Search by patient number, name or phone number.</p>
             </div>
             {canCreate ? <span className={styles.permissionHint}>Registration enabled</span> : null}
           </div>
 
           <form method="get" className={styles.searchForm} role="search">
             <label htmlFor="patient-search-input" className={styles.srOnly}>Search patients</label>
-            <input
-              id="patient-search-input"
-              name="q"
-              defaultValue={query}
-              placeholder="Search patient number, name or phone"
-              autoComplete="off"
-              className={styles.input}
-            />
+            <input id="patient-search-input" name="q" defaultValue={query} placeholder="Search patient number, name or phone" autoComplete="off" className={styles.input} />
             <button type="submit" className={styles.primaryButton}>Search</button>
             {query ? <Link href="/patients" className={styles.secondaryButton}>Clear</Link> : null}
           </form>
@@ -70,38 +59,15 @@ export default async function PatientsPage({
               <p className={styles.formHint}>Only the patient registry is created here. Visits, prescriptions and billing remain separate workflows.</p>
               <form action={registerPatient} className={styles.patientForm}>
                 <div className={styles.formGrid}>
-                  <label className={styles.field}>
-                    <span>First name <span aria-hidden="true">*</span></span>
-                    <input name="firstName" required className={styles.input} />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Last name <span aria-hidden="true">*</span></span>
-                    <input name="lastName" required className={styles.input} />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Date of birth</span>
-                    <input name="dateOfBirth" type="date" className={styles.input} />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Phone</span>
-                    <input name="phone" type="tel" inputMode="tel" autoComplete="tel" className={styles.input} />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Email</span>
-                    <input name="email" type="email" autoComplete="email" className={styles.input} />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Address</span>
-                    <input name="address" autoComplete="street-address" className={styles.input} />
-                  </label>
-                  <label className={`${styles.field} ${styles.fieldWide}`}>
-                    <span>Notes</span>
-                    <textarea name="notes" rows={3} className={styles.textarea} />
-                  </label>
+                  <label className={styles.field}><span>First name <span aria-hidden="true">*</span></span><input name="firstName" required className={styles.input} /></label>
+                  <label className={styles.field}><span>Last name <span aria-hidden="true">*</span></span><input name="lastName" required className={styles.input} /></label>
+                  <label className={styles.field}><span>Date of birth</span><input name="dateOfBirth" type="date" className={styles.input} /></label>
+                  <label className={styles.field}><span>Phone</span><input name="phone" type="tel" inputMode="tel" autoComplete="tel" className={styles.input} /></label>
+                  <label className={styles.field}><span>Email</span><input name="email" type="email" autoComplete="email" className={styles.input} /></label>
+                  <label className={styles.field}><span>Address</span><input name="address" autoComplete="street-address" className={styles.input} /></label>
+                  <label className={`${styles.field} ${styles.fieldWide}`}><span>Notes</span><textarea name="notes" rows={3} className={styles.textarea} /></label>
                 </div>
-                <div className={styles.formActions}>
-                  <button type="submit" className={styles.primaryButton}>Register patient</button>
-                </div>
+                <div className={styles.formActions}><button type="submit" className={styles.primaryButton}>Register patient</button></div>
               </form>
             </details>
           ) : null}
@@ -110,52 +76,33 @@ export default async function PatientsPage({
         <section className={styles.section} aria-labelledby="patient-results">
           <div className={styles.sectionHeader}>
             <div>
-              <h2 id="patient-results" className={styles.sectionTitle}>
-                {query ? `Search results for “${query}”` : "Active patients"}
-              </h2>
-              <p className={styles.sectionDescription}>
-                {patients.length} {patients.length === 1 ? "record" : "records"} shown{patients.length === 50 ? " (maximum 50)" : ""}.
-              </p>
+              <h2 id="patient-results" className={styles.sectionTitle}>{query ? `Search results for “${query}”` : "Active patients"}</h2>
+              <p className={styles.sectionDescription}>{patients.length} {patients.length === 1 ? "record" : "records"} shown{patients.length === 50 ? " (maximum 50)" : ""}.</p>
             </div>
           </div>
 
           {patients.length === 0 ? (
             <div className={styles.emptyState}>
               <strong>{query ? "No patients found." : "No active patients yet."}</strong>
-              <p>
-                {query
-                  ? "Try another patient number, name or phone number."
-                  : canCreate
-                    ? "Register the first patient to begin building the clinic registry."
-                    : "No active patient records are available to this workspace."}
-              </p>
+              <p>{query ? "Try another patient number, name or phone number." : canCreate ? "Register the first patient to begin building the clinic registry." : "No active patient records are available to this workspace."}</p>
             </div>
           ) : (
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <caption className={styles.srOnly}>Active patient registry</caption>
-                <thead>
-                  <tr>
-                    {['Patient No.', 'Name', 'Phone', 'Date of birth', 'Action'].map((heading) => (
-                      <th key={heading} scope="col">{heading}</th>
-                    ))}
-                  </tr>
-                </thead>
+                <thead><tr><th scope="col">Patient No.</th><th scope="col">Name</th><th scope="col">Phone</th><th scope="col">Date of birth</th><th scope="col">Actions</th></tr></thead>
                 <tbody>
                   {patients.map((patient) => (
                     <tr key={patient.id}>
                       <td className={styles.patientNumber}>{patient.patientNo}</td>
-                      <td>
-                        <Link href={`/patients/${patient.id}`} className={styles.patientLink}>
-                          {patient.firstName} {patient.lastName}
-                        </Link>
-                      </td>
+                      <td><Link href={`/patients/${patient.id}`} className={styles.patientLink}>{patient.firstName} {patient.lastName}</Link></td>
                       <td>{patient.phone ?? "—"}</td>
                       <td>{patient.dateOfBirth ? patient.dateOfBirth.toISOString().slice(0, 10) : "—"}</td>
                       <td>
-                        <Link href={`/patients/${patient.id}`} className={styles.tableAction}>
-                          {canUpdate ? "Edit" : "View"} <span aria-hidden="true">→</span>
-                        </Link>
+                        <div className={styles.formActions}>
+                          <Link href={`/patients/${patient.id}`} className={styles.tableAction}>View <span aria-hidden="true">→</span></Link>
+                          {canUpdate ? <Link href={`/patients/${patient.id}/edit`} className={styles.tableAction}>Edit <span aria-hidden="true">→</span></Link> : null}
+                        </div>
                       </td>
                     </tr>
                   ))}
