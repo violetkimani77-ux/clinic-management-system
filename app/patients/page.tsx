@@ -16,6 +16,7 @@ export default async function PatientsPage({
   const query = params.q?.trim() ?? "";
   const patients = await searchPatients(context, query);
   const canCreate = context.permissions.has(PERMISSIONS.PATIENTS_CREATE);
+  const canUpdate = context.permissions.has(PERMISSIONS.PATIENTS_UPDATE);
 
   return (
     <WorkspaceShell context={context} activeHref="/patients">
@@ -135,7 +136,9 @@ export default async function PatientsPage({
                         : "—"}
                     </td>
                     <td style={{ padding: 14 }}>
-                      <Link href={`/patients/${patient.id}`}>View / edit</Link>
+                      <Link href={`/patients/${patient.id}`}>
+                        {canUpdate ? "Edit" : "View"}
+                      </Link>
                     </td>
                   </tr>
                 ))}
