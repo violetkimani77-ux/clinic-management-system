@@ -85,6 +85,8 @@ model Clinic {
   expenses Expense[]
   auditLogs AuditLog[]
   sessions AuthSession[]
+  stockMovements StockMovement[]
+  dispensings Dispensing[]
 }
 
 model User {
