@@ -25,7 +25,7 @@ export default async function PatientProfilePage({
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: "48px 24px" }}>
       <nav aria-label="Page navigation" style={{ marginBottom: 28 }}>
-        <Link href="/patients">← Patients</Link>
+        <Link href="/dashboard">← Back to Dashboard</Link>
       </nav>
       <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
         Patient profile
