@@ -48,17 +48,38 @@
 }
 
 .attentionItem {
-  display: flex;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   color: #374151;
   font-size: 14px;
+  text-decoration: none;
+}
+
+.attentionItem:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.attentionItem:focus-visible {
+  outline: 2px solid #111827;
+  outline-offset: 2px;
 }
 
 .attentionIndicator {
   width: 20px;
-  flex: 0 0 20px;
   text-align: center;
+}
+
+.attentionAction {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 @media (max-width: 900px) {
@@ -76,5 +97,13 @@
   .card,
   .attention {
     padding: 18px;
+  }
+
+  .attentionItem {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .attentionAction {
+    grid-column: 2;
   }
 }
