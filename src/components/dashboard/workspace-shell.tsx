@@ -17,6 +17,7 @@ const navigation: NavigationItem[] = [
   { label: "Pharmacy", href: "/pharmacy", permission: PERMISSIONS.PHARMACY_VIEW },
   { label: "Accounts", href: "/accounts", permission: PERMISSIONS.ACCOUNTS_VIEW },
   { label: "Reports", href: "/reports", permission: PERMISSIONS.REPORTS_VIEW },
+  { label: "Help", href: "/help" },
 ];
 
 /**
@@ -72,7 +73,7 @@ export function WorkspaceShell({
         <section className={styles.content}>{children}</section>
       </div>
 
-      <footer className={styles.footer}>Powered by IHL Tech</footer>
+      <footer className={styles.footer}>POWERED BY IHL TECH</footer>
     </main>
   );
 }
