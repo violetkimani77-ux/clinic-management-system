@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { requireAuth } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 
@@ -30,6 +31,9 @@ export default async function DashboardPage() {
             </Link>
           ))}
         </nav>
+        <div style={{ marginTop: 28 }}>
+          <LogoutButton />
+        </div>
       </aside>
 
       <section style={{ flex: 1, padding: "40px 32px", maxWidth: 1200 }}>
