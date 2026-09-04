@@ -10,7 +10,7 @@ export default function LoginPage() {
     <main className="auth-page">
       <section className="auth-shell" aria-labelledby="login-title">
         <div className="auth-intro">
-          <div className="auth-mark" aria-hidden="true">CMS</div>
+          <div className="auth-mark">CMS Portal</div>
           <p className="auth-kicker">Clinic operations</p>
           <h1 id="login-title">Clinic Management System</h1>
           <p className="auth-lead">
@@ -32,6 +32,7 @@ export default function LoginPage() {
           <LoginForm />
         </div>
       </section>
+      <p className="site-credit">Powered by IHL Tech</p>
     </main>
   );
 }
