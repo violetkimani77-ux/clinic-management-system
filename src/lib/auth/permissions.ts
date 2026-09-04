@@ -5,6 +5,8 @@ export const PERMISSIONS = {
   VISITS_VIEW: "visits.view",
   VISITS_CREATE: "visits.create",
   VISITS_UPDATE: "visits.update",
+  PRESCRIPTIONS_CREATE: "prescriptions.create",
+  PRESCRIPTIONS_SEND: "prescriptions.send",
   PHARMACY_VIEW: "pharmacy.view",
   PHARMACY_DISPENSE: "pharmacy.dispense",
   PHARMACY_STOCK_ADJUST: "pharmacy.stock_adjust",
