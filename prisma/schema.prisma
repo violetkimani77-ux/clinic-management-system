@@ -7,14 +7,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserStatus { INVITED ACTIVE SUSPENDED DISABLED }
-enum RoleCode { ADMIN PHARMACY ACCOUNTS }
-enum VisitStatus { OPEN IN_PROGRESS COMPLETED CANCELLED }
-enum PrescriptionStatus { CREATED SENT_TO_PHARMACY PROCESSING PARTIALLY_DISPENSED DISPENSED CANCELLED }
-enum InvoiceStatus { DRAFT ISSUED PARTIALLY_PAID PAID VOID }
-enum PaymentMethod { CASH MPESA CARD BANK OTHER }
-enum PaymentStatus { PENDING VERIFIED FAILED REVERSED }
-enum StockMovementType { PURCHASE DISPENSE ADJUSTMENT RETURN EXPIRY DISPOSAL }
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum RoleCode {
+  ADMIN
+  PHARMACY
+  ACCOUNTS
+}
+
+enum VisitStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PrescriptionStatus {
+  CREATED
+  SENT_TO_PHARMACY
+  PROCESSING
+  PARTIALLY_DISPENSED
+  DISPENSED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  VOID
+}
+
+enum PaymentMethod {
+  CASH
+  MPESA
+  CARD
+  BANK
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  REVERSED
+}
+
+enum StockMovementType {
+  PURCHASE
+  DISPENSE
+  ADJUSTMENT
+  RETURN
+  EXPIRY
+  DISPOSAL
+}
 
 model Clinic {
   id String @id @default(uuid())
