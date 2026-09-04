@@ -14,7 +14,7 @@ export default async function PatientsPage({ searchParams }: { searchParams: Pro
 
   return (
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px" }}>
-      <nav aria-label="Page navigation" style={{ marginBottom: 28 }}><Link href="/dashboard">← Dashboard</Link></nav>
+      <nav aria-label="Page navigation" style={{ marginBottom: 28 }}><Link href="/dashboard">← Back to Dashboard</Link></nav>
       <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Patient registry</p>
       <h1 style={{ margin: "8px 0" }}>Patients</h1>
       <p style={{ color: "#6b7280" }}>Shared patient records for authorized clinic staff.</p>
