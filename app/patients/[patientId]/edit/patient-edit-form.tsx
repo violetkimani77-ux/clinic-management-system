@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { updatePatientRecord, type PatientEditState } from "../../actions";
+import { updatePatientRecord, type PatientEditState } from "../../../actions";
 import styles from "@/components/dashboard/workspace-page.module.css";
 
 type PatientEditFormProps = {
