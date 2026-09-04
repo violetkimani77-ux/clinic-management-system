@@ -4,10 +4,12 @@ import type { PermissionCode } from "./permissions";
  * Server-side identity and authorization context for one clinic.
  *
  * The clinicId is established by the authenticated session and is the tenant
- * boundary for clinic-owned data.
+ * boundary for clinic-owned data. The user name is display metadata only; it
+ * must never be used as an authorization decision.
  */
 export type AuthContext = {
   userId: string;
+  userName: string;
   clinicId: string;
   roleCode: string;
   permissions: ReadonlySet<PermissionCode>;
