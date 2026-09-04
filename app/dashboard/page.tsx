@@ -14,74 +14,28 @@ export default async function DashboardPage() {
   const metrics = await getDashboardMetrics(context);
 
   const attentionItems = [
-    {
-      severity: "critical",
-      indicator: "🔴",
-      text: `${metrics.lowStockMedicines.length} medicine${metrics.lowStockMedicines.length === 1 ? "" : "s"} below reorder level`,
-      href: "/pharmacy",
-    },
-    {
-      severity: "warning",
-      indicator: "🟠",
-      text: `${metrics.expiringSoonBatchCount} batch${metrics.expiringSoonBatchCount === 1 ? "" : "es"} expiring within 30 days`,
-      href: "/pharmacy",
-    },
-    {
-      severity: "critical",
-      indicator: "🔴",
-      text: `${metrics.expiredBatchCount} expired batch${metrics.expiredBatchCount === 1 ? "" : "es"}`,
-      href: "/pharmacy",
-    },
-    {
-      severity: "warning",
-      indicator: "🟠",
-      text: `KES ${metrics.outstandingAmount.toLocaleString("en-KE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })} outstanding`,
-      href: "/accounts",
-    },
+    { indicator: "🔴", text: `${metrics.lowStockMedicines.length} medicine${metrics.lowStockMedicines.length === 1 ? "" : "s"} below reorder level`, href: "/pharmacy" },
+    { indicator: "🟠", text: `${metrics.expiringSoonBatchCount} batch${metrics.expiringSoonBatchCount === 1 ? "" : "es"} expiring within 30 days`, href: "/pharmacy" },
+    { indicator: "🔴", text: `${metrics.expiredBatchCount} expired batch${metrics.expiredBatchCount === 1 ? "" : "es"}`, href: "/pharmacy" },
+    { indicator: "🟠", text: `KES ${metrics.outstandingAmount.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} outstanding`, href: "/accounts" },
   ];
 
   return (
     <WorkspaceShell context={context} activeHref="/dashboard">
       <div>
-        <p
-          style={{
-            margin: 0,
-            color: "#6b7280",
-            fontSize: 13,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
+        <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
           {context.roleCode} workspace
         </p>
         <h1 style={{ margin: "8px 0", fontSize: 32 }}>Dashboard</h1>
-        <p style={{ margin: 0, color: "#6b7280" }}>
-          Clinic activity and operational items that need attention.
-        </p>
+        <p style={{ margin: 0, color: "#6b7280" }}>Clinic activity and operational items that need attention.</p>
       </div>
 
-      <div className={styles.cards} aria-label="Clinic overview">
+      <div className={styles.cards} aria-label="Today">
         {[
-          ["Patients", String(metrics.activePatientCount)],
+          ["Patients today", String(metrics.patientsToday)],
           ["Visits today", String(metrics.visitsToday)],
-          [
-            "Revenue today",
-            `KES ${Number(metrics.revenueToday).toLocaleString("en-KE", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`,
-          ],
-          [
-            "Outstanding",
-            `KES ${metrics.outstandingAmount.toLocaleString("en-KE", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`,
-          ],
+          ["Collected today", `KES ${metrics.revenueToday.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+          ["Outstanding", `KES ${metrics.outstandingAmount.toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
         ].map(([label, value]) => (
           <article key={label} className={styles.card}>
             <p className={styles.cardLabel}>{label}</p>
@@ -91,22 +45,35 @@ export default async function DashboardPage() {
       </div>
 
       <section className={styles.attention} aria-labelledby="needs-attention">
-        <h2 id="needs-attention" className={styles.attentionTitle}>
-          Needs attention
-        </h2>
+        <h2 id="needs-attention" className={styles.attentionTitle}>Needs attention</h2>
         <ul className={styles.attentionList}>
           {attentionItems.map((item) => (
             <li key={item.text}>
               <Link href={item.href} className={styles.attentionItem}>
-                <span className={styles.attentionIndicator} aria-hidden="true">
-                  {item.indicator}
-                </span>
+                <span className={styles.attentionIndicator} aria-hidden="true">{item.indicator}</span>
                 <span>{item.text}</span>
                 <span className={styles.attentionAction}>View →</span>
               </Link>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className={styles.attention} aria-labelledby="clinic-at-a-glance">
+        <h2 id="clinic-at-a-glance" className={styles.attentionTitle}>Clinic at a glance</h2>
+        <div className={styles.cards}>
+          {[
+            ["Active patients", String(metrics.activePatientCount)],
+            ["Registered today", String(metrics.patientsRegisteredToday)],
+            ["Completed visits", String(metrics.completedVisitsToday)],
+            ["Pending visits", String(metrics.pendingVisitsToday)],
+          ].map(([label, value]) => (
+            <article key={label} className={styles.card}>
+              <p className={styles.cardLabel}>{label}</p>
+              <strong className={styles.cardValue}>{value}</strong>
+            </article>
+          ))}
+        </div>
       </section>
     </WorkspaceShell>
   );
