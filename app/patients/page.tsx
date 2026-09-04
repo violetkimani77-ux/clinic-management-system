@@ -4,11 +4,8 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { searchPatients } from "@/lib/patients/registry";
 import { registerPatient } from "./actions";
 
-export default async function PatientsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
+/** Displays the searchable shared patient registry for authorized staff. */
+export default async function PatientsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const context = await requireClinicPermission(PERMISSIONS.PATIENTS_VIEW);
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
@@ -17,12 +14,8 @@ export default async function PatientsPage({
 
   return (
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px" }}>
-      <nav aria-label="Page navigation" style={{ marginBottom: 28 }}>
-        <Link href="/dashboard">← Dashboard</Link>
-      </nav>
-      <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-        Patient registry
-      </p>
+      <nav aria-label="Page navigation" style={{ marginBottom: 28 }}><Link href="/dashboard">← Dashboard</Link></nav>
+      <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Patient registry</p>
       <h1 style={{ margin: "8px 0" }}>Patients</h1>
       <p style={{ color: "#6b7280" }}>Shared patient records for authorized clinic staff.</p>
 
@@ -49,13 +42,19 @@ export default async function PatientsPage({
 
       <section style={{ marginTop: 24, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
         <div style={{ padding: 18, borderBottom: "1px solid #e5e7eb", fontWeight: 700 }}>{query ? `Search results for “${query}”` : "Active patients"}</div>
-        {patients.length === 0 ? (
-          <p style={{ padding: 20, color: "#6b7280" }}>No patients found.</p>
-        ) : (
+        {patients.length === 0 ? <p style={{ padding: 20, color: "#6b7280" }}>No patients found.</p> : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr><th style={{ textAlign: "left", padding: 14 }}>Patient No.</th><th style={{ textAlign: "left", padding: 14 }}>Name</th><th style={{ textAlign: "left", padding: 14 }}>Phone</th><th style={{ textAlign: "left", padding: 14 }}>Date of birth</th></tr></thead>
-              <tbody>{patients.map((patient) => <tr key={patient.id}><td style={{ padding: 14 }}>{patient.patientNo}</td><td style={{ padding: 14 }}>{patient.firstName} {patient.lastName}</td><td style={{ padding: 14 }}>{patient.phone ?? "—"}</td><td style={{ padding: 14 }}>{patient.dateOfBirth ? patient.dateOfBirth.toISOString().slice(0, 10) : "—"}</td></tr>)}</tbody>
+              <thead><tr><th style={{ textAlign: "left", padding: 14 }}>Patient No.</th><th style={{ textAlign: "left", padding: 14 }}>Name</th><th style={{ textAlign: "left", padding: 14 }}>Phone</th><th style={{ textAlign: "left", padding: 14 }}>Date of birth</th><th style={{ textAlign: "left", padding: 14 }}>Action</th></tr></thead>
+              <tbody>{patients.map((patient) => (
+                <tr key={patient.id}>
+                  <td style={{ padding: 14 }}>{patient.patientNo}</td>
+                  <td style={{ padding: 14 }}><Link href={`/patients/${patient.id}`}>{patient.firstName} {patient.lastName}</Link></td>
+                  <td style={{ padding: 14 }}>{patient.phone ?? "—"}</td>
+                  <td style={{ padding: 14 }}>{patient.dateOfBirth ? patient.dateOfBirth.toISOString().slice(0, 10) : "—"}</td>
+                  <td style={{ padding: 14 }}><Link href={`/patients/${patient.id}`}>View / edit</Link></td>
+                </tr>
+              ))}</tbody>
             </table>
           </div>
         )}
