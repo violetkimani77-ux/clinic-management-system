@@ -71,6 +71,8 @@ export function WorkspaceShell({
 
         <section className={styles.content}>{children}</section>
       </div>
+
+      <footer className={styles.footer}>Powered by IHL Tech</footer>
     </main>
   );
 }
