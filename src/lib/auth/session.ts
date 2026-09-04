@@ -9,6 +9,12 @@ import type { AuthContext } from "./authorization";
 export const SESSION_COOKIE = "cms_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
+type MembershipPermission = {
+  permission: {
+    code: string;
+  };
+};
+
 /** Hashes session tokens so the database never stores the bearer token itself. */
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -63,8 +69,8 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   // Membership is checked on every context resolution so removing a user's
   // clinic access takes effect without waiting for the session to expire.
-  // The explicit select also keeps Prisma's generated result shape narrow and
-  // preserves strict TypeScript inference for the permission mapping below.
+  // The explicit select keeps the permission query narrow; the relation type
+  // below also prevents Prisma inference gaps from becoming implicit any.
   const membership = await db.membership.findUnique({
     where: {
       clinicId_userId: {
@@ -89,8 +95,8 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   if (!membership) return null;
 
   const permissions = new Set<PermissionCode>(
-    membership.role.permissions.map(({ permission }) =>
-      permission.code as PermissionCode,
+    membership.role.permissions.map(
+      (item: MembershipPermission) => item.permission.code as PermissionCode,
     ),
   );
 
