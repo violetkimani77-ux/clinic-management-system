@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { WorkspaceShell } from "@/components/dashboard/workspace-shell";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getPatientProfile } from "@/lib/patients/registry";
@@ -23,7 +24,7 @@ export default async function PatientProfilePage({
   const canUpdate = context.permissions.has(PERMISSIONS.PATIENTS_UPDATE);
 
   return (
-    <main style={{ maxWidth: 900, margin: "0 auto", padding: "48px 24px" }}>
+    <WorkspaceShell context={context} activeHref="/patients">
       <nav aria-label="Page navigation" style={{ marginBottom: 28 }}>
         <Link href="/dashboard">← Back to Dashboard</Link>
       </nav>
@@ -53,6 +54,6 @@ export default async function PatientProfilePage({
           <p><strong>Address:</strong> {patient.address ?? "—"}</p>
         </section>
       )}
-    </main>
+    </WorkspaceShell>
   );
 }
