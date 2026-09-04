@@ -1,0 +1,171 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topBar {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.topBrand {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.topBrand:hover {
+  color: #374151;
+}
+
+.staffProfile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.staffIdentity {
+  display: contents;
+}
+
+.staffName {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.staffRole {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.staffProfile button {
+  margin: 0;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 248px;
+  flex: 0 0 248px;
+  padding: 24px 18px;
+  background: #173f56;
+}
+
+.navigation {
+  display: grid;
+  gap: 6px;
+}
+
+.navLink {
+  display: block;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.navLink:hover {
+  background: #215a78;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.navLinkActive {
+  background: #2d6d8e;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  max-width: 1280px;
+  width: 100%;
+  padding: 36px 40px 48px;
+}
+
+@media (max-width: 900px) {
+  .topBar {
+    padding: 12px 24px;
+  }
+
+  .sidebar {
+    width: 220px;
+    flex-basis: 220px;
+  }
+
+  .content {
+    padding: 28px 24px 40px;
+  }
+}
+
+@media (max-width: 760px) {
+  .topBar {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+
+  .topBrand {
+    font-size: 14px;
+  }
+
+  .staffProfile {
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .staffIdentity {
+    display: contents;
+  }
+
+  .body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-basis: auto;
+    padding: 14px 16px;
+    border-bottom: 0;
+  }
+
+  .navigation {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .navLink {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 24px 16px 32px;
+  }
+}
