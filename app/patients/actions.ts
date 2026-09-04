@@ -30,7 +30,10 @@ export async function registerPatient(formData: FormData) {
     notes: String(formData.get("notes") ?? "") || null,
   });
 
+  // The dashboard reads this same patient registry for "Registered today".
+  // Revalidate it here so registration and dashboard counts stay synchronized.
   revalidatePath("/patients");
+  revalidatePath("/dashboard");
 }
 
 /**
