@@ -7,11 +7,11 @@ import { assertTenant, requirePermission } from "./authorization";
 
 /**
  * Requires an authenticated user for a server-rendered page or server-side
- * operation. Unauthenticated requests are sent to the login entry point.
+ * operation. Unauthenticated requests are sent to the staff login page.
  */
 export async function requireAuth() {
   const context = await getAuthContext();
-  if (!context) redirect("/");
+  if (!context) redirect("/login");
   return context;
 }
 
