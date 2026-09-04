@@ -56,7 +56,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   const session = await db.authSession.findUnique({
     where: { tokenHash: hashToken(token) },
-    include: { user: { select: { id: true, status: true } } },
+    include: { user: { select: { id: true, name: true, status: true } } },
   });
 
   if (
@@ -107,6 +107,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   return {
     userId: session.userId,
+    userName: session.user.name,
     clinicId: session.clinicId,
     roleCode: membership.role.code,
     permissions,
