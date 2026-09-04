@@ -189,60 +189,60 @@ export async function getPharmacyOverview(
 /**
  * Dispenses every item on a prescription using FEFO (first expiry, first out).
  *
- * The transaction first locks the prescription's clinic ownership and validates
- * that enough unexpired stock exists for every medicine. It then deducts stock,
- * records batch-level movements, creates the dispensing record, and advances the
- * prescription to DISPENSED as one atomic operation.
+ * Serializable isolation is intentional here: two pharmacy staff members must
+ * not both validate the same stock and then overspend it concurrently. If the
+ * database detects a serialization conflict, the whole transaction fails and
+ * no partial dispensing or stock movement is committed.
  */
 export async function dispensePrescription(
   context: AuthContext,
   prescriptionId: string,
 ) {
-  return db.$transaction(async (tx) => {
-    const prescription = await tx.prescription.findFirst({
-      where: {
-        id: prescriptionId,
-        clinicId: context.clinicId,
-      },
-      select: {
-        id: true,
-        patientId: true,
-        status: true,
-        items: {
-          select: {
-            id: true,
-            medicineId: true,
-            quantity: true,
+  return db.$transaction(
+    async (tx) => {
+      const prescription = await tx.prescription.findFirst({
+        where: {
+          id: prescriptionId,
+          clinicId: context.clinicId,
+        },
+        select: {
+          id: true,
+          patientId: true,
+          status: true,
+          items: {
+            select: {
+              id: true,
+              medicineId: true,
+              quantity: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!prescription) throw new Error("PRESCRIPTION_NOT_FOUND");
+      if (!prescription) throw new Error("PRESCRIPTION_NOT_FOUND");
 
-    if (
-      prescription.status !== PrescriptionStatus.SENT_TO_PHARMACY &&
-      prescription.status !== PrescriptionStatus.PROCESSING
-    ) {
-      throw new Error("PRESCRIPTION_NOT_READY");
-    }
+      if (
+        prescription.status !== PrescriptionStatus.SENT_TO_PHARMACY &&
+        prescription.status !== PrescriptionStatus.PROCESSING
+      ) {
+        throw new Error("PRESCRIPTION_NOT_READY");
+      }
 
-    if (prescription.items.length === 0) {
-      throw new Error("PRESCRIPTION_HAS_NO_ITEMS");
-    }
+      if (prescription.items.length === 0) {
+        throw new Error("PRESCRIPTION_HAS_NO_ITEMS");
+      }
 
-    const dispensing = await tx.dispensing.create({
-      data: {
-        clinicId: context.clinicId,
-        prescriptionId: prescription.id,
-        dispensedById: context.userId,
-      },
-      select: { id: true },
-    });
+      const dispensing = await tx.dispensing.create({
+        data: {
+          clinicId: context.clinicId,
+          prescriptionId: prescription.id,
+          dispensedById: context.userId,
+        },
+        select: { id: true },
+      });
 
-    const now = new Date();
+      const now = new Date();
 
-    try {
       for (const item of prescription.items) {
         const batches = await tx.stockBatch.findMany({
           where: {
@@ -292,31 +292,28 @@ export async function dispensePrescription(
           remaining -= allocated;
         }
       }
-    } catch (error) {
-      // Throwing from the transaction rolls back the dispensing record and all
-      // stock changes, preventing a partial pharmacy transaction.
-      throw error;
-    }
 
-    const updated = await tx.prescription.update({
-      where: { id: prescription.id },
-      data: { status: PrescriptionStatus.DISPENSED },
-      select: { id: true, status: true },
-    });
+      const updated = await tx.prescription.update({
+        where: { id: prescription.id },
+        data: { status: PrescriptionStatus.DISPENSED },
+        select: { id: true, status: true },
+      });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "PRESCRIPTION_DISPENSED",
-        entityType: "Prescription",
-        entityId: prescription.id,
-        metadata: { dispensingId: dispensing.id },
-      },
-    });
+      await tx.auditLog.create({
+        data: {
+          clinicId: context.clinicId,
+          userId: context.userId,
+          action: "PRESCRIPTION_DISPENSED",
+          entityType: "Prescription",
+          entityId: prescription.id,
+          metadata: { dispensingId: dispensing.id },
+        },
+      });
 
-    return { ...updated, dispensingId: dispensing.id };
-  });
+      return { ...updated, dispensingId: dispensing.id };
+    },
+    { isolationLevel: "Serializable" },
+  );
 }
 
 function getKenyaDayStart() {
