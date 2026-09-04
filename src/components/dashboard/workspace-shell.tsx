@@ -13,6 +13,7 @@ type NavigationItem = {
 const navigation: NavigationItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Patients", href: "/patients", permission: PERMISSIONS.PATIENTS_VIEW },
+  { label: "Visits", href: "/visits", permission: PERMISSIONS.VISITS_VIEW },
   { label: "Pharmacy", href: "/pharmacy", permission: PERMISSIONS.PHARMACY_VIEW },
   { label: "Accounts", href: "/accounts", permission: PERMISSIONS.ACCOUNTS_VIEW },
   { label: "Reports", href: "/reports", permission: PERMISSIONS.REPORTS_VIEW },
