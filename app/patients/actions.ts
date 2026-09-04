@@ -13,10 +13,16 @@ import { createPatient } from "@/lib/patients/registry";
  */
 export async function registerPatient(formData: FormData) {
   const context = await requireClinicPermission(PERMISSIONS.PATIENTS_CREATE);
+  const dateOfBirthValue = String(formData.get("dateOfBirth") ?? "").trim();
+
+  if (dateOfBirthValue && Number.isNaN(Date.parse(`${dateOfBirthValue}T00:00:00.000Z`))) {
+    throw new Error("INVALID_DATE_OF_BIRTH");
+  }
 
   await createPatient(context, {
     firstName: String(formData.get("firstName") ?? ""),
     lastName: String(formData.get("lastName") ?? ""),
+    dateOfBirth: dateOfBirthValue ? new Date(`${dateOfBirthValue}T00:00:00.000Z`) : null,
     phone: String(formData.get("phone") ?? "") || null,
     email: String(formData.get("email") ?? "") || null,
     address: String(formData.get("address") ?? "") || null,
