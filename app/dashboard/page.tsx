@@ -11,6 +11,12 @@ const navigation = [
   { label: "Reports", href: "/reports", permission: PERMISSIONS.REPORTS_VIEW },
 ];
 
+/**
+ * Displays the authenticated staff workspace and operational dashboard.
+ *
+ * The user identity shown in the header comes from the server-side session
+ * context. Sign out remains available from the same compact user panel.
+ */
 export default async function DashboardPage() {
   const context = await requireAuth();
   const visibleNavigation = navigation.filter(
@@ -31,20 +37,43 @@ export default async function DashboardPage() {
             </Link>
           ))}
         </nav>
-        <div style={{ marginTop: 28 }}>
-          <LogoutButton />
-        </div>
       </aside>
 
-      <section style={{ flex: 1, padding: "40px 32px", maxWidth: 1200 }}>
-        <header>
-          <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-            {context.roleCode} workspace
-          </p>
-          <h1 style={{ margin: "8px 0", fontSize: 32 }}>Dashboard</h1>
-          <p style={{ margin: 0, color: "#6b7280" }}>
-            Clinic activity and operational items that need attention.
-          </p>
+      <section style={{ flex: 1, padding: "28px 32px", maxWidth: 1200 }}>
+        <header
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 24,
+          }}
+        >
+          <div>
+            <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
+              {context.roleCode} workspace
+            </p>
+            <h1 style={{ margin: "8px 0", fontSize: 32 }}>Dashboard</h1>
+            <p style={{ margin: 0, color: "#6b7280" }}>
+              Clinic activity and operational items that need attention.
+            </p>
+          </div>
+
+          <div
+            style={{
+              minWidth: 190,
+              border: "1px solid #e5e7eb",
+              borderRadius: 12,
+              padding: "12px 14px",
+              background: "#fff",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{context.userName}</p>
+            <p style={{ margin: "3px 0 10px", color: "#6b7280", fontSize: 12 }}>
+              {context.roleCode}
+            </p>
+            <LogoutButton />
+          </div>
         </header>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16, marginTop: 32 }}>
