@@ -50,6 +50,9 @@ export function WorkspaceShell({
           <nav aria-label="Main navigation" className={styles.navigation}>
             {visibleNavigation.map((item) => {
               const isActive = item.href === activeHref;
+              const label = item.href === "/dashboard" && !isActive
+                ? "← Back to Dashboard"
+                : item.label;
 
               return (
                 <Link
@@ -58,7 +61,7 @@ export function WorkspaceShell({
                   className={`${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  {item.label}
+                  {label}
                 </Link>
               );
             })}
