@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { searchPatients } from "@/lib/patients/registry";
@@ -16,6 +17,9 @@ export default async function PatientsPage({
 
   return (
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px" }}>
+      <nav aria-label="Page navigation" style={{ marginBottom: 28 }}>
+        <Link href="/dashboard">← Dashboard</Link>
+      </nav>
       <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
         Patient registry
       </p>
