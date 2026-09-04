@@ -267,9 +267,12 @@ a {
 .site-credit {
   margin: 14px 0 0;
   color: #7a898f;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   line-height: 1.4;
   text-align: center;
+  text-transform: uppercase;
 }
 
 @media (max-width: 760px) {
