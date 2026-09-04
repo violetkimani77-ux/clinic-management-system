@@ -2,14 +2,19 @@ import Link from "next/link";
 import { WorkspaceShell } from "@/components/dashboard/workspace-shell";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { getPharmacyOverview } from "@/lib/pharmacy/registry";
+import { dispensePrescriptionAction } from "./actions";
 import styles from "@/components/dashboard/workspace-page.module.css";
 
 /**
- * Provides the pharmacy workspace frame and a truthful empty-state UI until
- * prescription, dispensing, and inventory records are connected to the page.
+ * Provides the pharmacy workspace using live prescription, stock and expiry
+ * data. The page is intentionally a read/dispatch surface; inventory changes
+ * happen through the pharmacy domain transaction.
  */
 export default async function PharmacyPage() {
   const context = await requireClinicPermission(PERMISSIONS.PHARMACY_VIEW);
+  const overview = await getPharmacyOverview(context);
+  const canDispense = context.permissions.has(PERMISSIONS.PHARMACY_DISPENSE);
 
   return (
     <WorkspaceShell context={context} activeHref="/pharmacy">
@@ -30,10 +35,10 @@ export default async function PharmacyPage() {
 
         <section className={styles.cardGrid} aria-label="Pharmacy overview">
           {[
-            ["Prescriptions", "—", "Awaiting workflow data"],
-            ["Dispensed today", "—", "Awaiting workflow data"],
-            ["Low stock", "—", "Reorder alerts will appear here"],
-            ["Expiring soon", "—", "Expiry alerts will appear here"],
+            ["Prescriptions", overview.prescriptions.length.toString(), "Awaiting pharmacy processing"],
+            ["Dispensed today", overview.dispensedTodayCount.toString(), "Completed dispensing records"],
+            ["Low stock", overview.lowStockMedicines.length.toString(), "Medicines at or below reorder level"],
+            ["Expiring soon", overview.expiringSoonBatchCount.toString(), "Batches expiring within 30 days"],
           ].map(([label, value, hint]) => (
             <article key={label} className={styles.card}>
               <p className={styles.cardLabel}>{label}</p>
@@ -43,36 +48,84 @@ export default async function PharmacyPage() {
           ))}
         </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Pharmacy workflows</h2>
+        <section className={styles.section} aria-labelledby="prescriptions-title">
+          <h2 id="prescriptions-title" className={styles.sectionTitle}>Prescriptions awaiting pharmacy</h2>
           <p className={styles.sectionDescription}>
-            These are the core workflows we will connect to the shared clinic data next.
+            Prescriptions explicitly sent from clinical care appear here in queue order.
           </p>
+
+          {overview.prescriptions.length === 0 ? (
+            <div className={styles.emptyState}>
+              <strong>No prescriptions awaiting pharmacy.</strong>
+              <p>New prescriptions sent from visits will appear here.</p>
+            </div>
+          ) : (
+            <div className={styles.tableWrap}>
+              <table className={styles.table}>
+                <caption className={styles.srOnly}>Prescriptions awaiting pharmacy processing</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Patient</th>
+                    <th scope="col">Prescription</th>
+                    <th scope="col">Medicines</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overview.prescriptions.map((prescription) => (
+                    <tr key={prescription.id}>
+                      <td>
+                        <strong>{prescription.patientName}</strong>
+                        <div className={styles.cardHint}>{prescription.patientNo}</div>
+                      </td>
+                      <td>{prescription.createdAt.toLocaleDateString("en-KE")}</td>
+                      <td>
+                        {prescription.items.map((item) => (
+                          <div key={item.id}>
+                            {item.medicineName}{item.strength ? ` ${item.strength}` : ""} × {item.quantity}
+                          </div>
+                        ))}
+                      </td>
+                      <td>{prescription.status.replaceAll("_", " ")}</td>
+                      <td>
+                        {canDispense ? (
+                          <form action={dispensePrescriptionAction}>
+                            <input type="hidden" name="prescriptionId" value={prescription.id} />
+                            <button type="submit" className={styles.primaryButton}>Dispense</button>
+                          </form>
+                        ) : (
+                          <span className={styles.permissionHint}>View only</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className={styles.section} aria-labelledby="inventory-alerts-title">
+          <h2 id="inventory-alerts-title" className={styles.sectionTitle}>Inventory alerts</h2>
+          <p className={styles.sectionDescription}>Live stock and expiry indicators from the clinic inventory.</p>
           <div className={styles.workflowGrid}>
             <article className={styles.workflowCard}>
-              <strong>Prescriptions</strong>
-              <p>Review prescriptions sent from clinical care and prepare them for dispensing.</p>
+              <strong>Low stock</strong>
+              {overview.lowStockMedicines.length === 0 ? (
+                <p>No medicines are currently at or below reorder level.</p>
+              ) : (
+                <p>{overview.lowStockMedicines.map((medicine) => `${medicine.name} (${medicine.currentQuantity})`).join(", ")}</p>
+              )}
             </article>
             <article className={styles.workflowCard}>
-              <strong>Dispensing</strong>
-              <p>Dispense medicines using the appropriate stock batch and record the transaction.</p>
+              <strong>Expired batches</strong>
+              <p>{overview.expiredBatchCount} batch{overview.expiredBatchCount === 1 ? "" : "es"} currently expired.</p>
             </article>
             <article className={styles.workflowCard}>
-              <strong>Inventory</strong>
-              <p>Track medicine quantities, batches, expiry dates, suppliers and stock movements.</p>
+              <strong>Expiring within 30 days</strong>
+              <p>{overview.expiringSoonBatchCount} batch{overview.expiringSoonBatchCount === 1 ? "" : "es"} need expiry attention.</p>
             </article>
-            <article className={styles.workflowCard}>
-              <strong>Alerts</strong>
-              <p>Surface low-stock, expiring and expired batches without creating duplicate data.</p>
-            </article>
-          </div>
-
-          <div className={styles.emptyState}>
-            <strong>Pharmacy data is not connected yet.</strong>
-            <p>
-              The workspace is intentionally showing no invented numbers. Once the source records are
-              implemented, these cards will read directly from the pharmacy and inventory modules.
-            </p>
           </div>
         </section>
       </div>
