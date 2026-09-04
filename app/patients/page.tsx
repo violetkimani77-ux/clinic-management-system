@@ -99,9 +99,9 @@ export default async function PatientsPage({
                       <td>{patient.phone ?? "—"}</td>
                       <td>{patient.dateOfBirth ? patient.dateOfBirth.toISOString().slice(0, 10) : "—"}</td>
                       <td>
-                        <div className={styles.formActions}>
-                          <Link href={`/patients/${patient.id}`} className={styles.tableAction}>View <span aria-hidden="true">→</span></Link>
-                          {canUpdate ? <Link href={`/patients/${patient.id}/edit`} className={styles.tableAction}>Edit <span aria-hidden="true">→</span></Link> : null}
+                        <div className={styles.profileActions}>
+                          <Link href={`/patients/${patient.id}`} className={styles.secondaryButton}>View</Link>
+                          {canUpdate ? <Link href={`/patients/${patient.id}/edit`} className={styles.primaryButton}>Edit</Link> : null}
                         </div>
                       </td>
                     </tr>
