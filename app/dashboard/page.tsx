@@ -12,6 +12,16 @@ export default async function DashboardPage() {
   const context = await requireAuth();
   const metrics = await getDashboardMetrics(context);
 
+  const attentionItems = [
+    `${metrics.lowStockMedicines.length} medicine${metrics.lowStockMedicines.length === 1 ? "" : "s"} below reorder level`,
+    `${metrics.expiringSoonBatchCount} batch${metrics.expiringSoonBatchCount === 1 ? "" : "es"} expiring within 30 days`,
+    `${metrics.expiredBatchCount} expired batch${metrics.expiredBatchCount === 1 ? "" : "es"}`,
+    `KES ${metrics.outstandingAmount.toLocaleString("en-KE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} outstanding`,
+  ];
+
   return (
     <WorkspaceShell context={context} activeHref="/dashboard">
       <div>
@@ -63,10 +73,24 @@ export default async function DashboardPage() {
         <h2 id="needs-attention" className={styles.attentionTitle}>
           Needs attention
         </h2>
-        <p className={styles.attentionText}>
-          Alerts will appear here once pharmacy, inventory and accounts
-          workflows are connected.
-        </p>
+        <ul className={styles.attentionList}>
+          <li className={styles.attentionItem}>
+            <span className={styles.attentionIndicator}>🔴</span>
+            <span>{attentionItems[0]}</span>
+          </li>
+          <li className={styles.attentionItem}>
+            <span className={styles.attentionIndicator}>🟠</span>
+            <span>{attentionItems[1]}</span>
+          </li>
+          <li className={styles.attentionItem}>
+            <span className={styles.attentionIndicator}>🔴</span>
+            <span>{attentionItems[2]}</span>
+          </li>
+          <li className={styles.attentionItem}>
+            <span className={styles.attentionIndicator}>🟠</span>
+            <span>{attentionItems[3]}</span>
+          </li>
+        </ul>
       </section>
     </WorkspaceShell>
   );
