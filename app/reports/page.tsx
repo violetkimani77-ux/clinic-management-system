@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { WorkspaceShell } from "@/components/dashboard/workspace-shell";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 
+/** Displays the authenticated reporting workspace. */
 export default async function ReportsPage() {
-  await requireClinicPermission(PERMISSIONS.REPORTS_VIEW);
+  const context = await requireClinicPermission(PERMISSIONS.REPORTS_VIEW);
 
   return (
-    <main style={{ minHeight: "100vh", padding: "40px 32px" }}>
+    <WorkspaceShell context={context} activeHref="/reports">
       <nav aria-label="Page navigation" style={{ marginBottom: 28 }}>
-        <Link href="/dashboard">← Dashboard</Link>
+        <Link href="/dashboard">← Back to Dashboard</Link>
       </nav>
       <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
         Reporting
@@ -17,6 +19,6 @@ export default async function ReportsPage() {
       <p style={{ color: "#6b7280" }}>
         Operational and financial reports will be connected here as source workflows are implemented.
       </p>
-    </main>
+    </WorkspaceShell>
   );
 }
