@@ -4,6 +4,58 @@
   flex-direction: column;
 }
 
+.topBar {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.topBrand {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.topBrand:hover {
+  color: #374151;
+}
+
+.staffProfile {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  min-width: 0;
+}
+
+.staffIdentity {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.staffName {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.staffRole {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .body {
   display: flex;
   flex: 1;
@@ -18,31 +70,9 @@
   background: #ffffff;
 }
 
-.brandBlock {
-  padding: 0 8px 22px;
-  border-bottom: 1px solid #eef0f2;
-}
-
-.brand {
-  display: block;
-  color: #111827;
-  font-size: 15px;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-}
-
-.workspaceLabel {
-  display: block;
-  margin-top: 5px;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .navigation {
   display: grid;
   gap: 4px;
-  margin-top: 20px;
 }
 
 .navLink {
@@ -77,6 +107,10 @@
 }
 
 @media (max-width: 900px) {
+  .topBar {
+    padding: 12px 24px;
+  }
+
   .sidebar {
     width: 220px;
     flex-basis: 220px;
@@ -88,6 +122,27 @@
 }
 
 @media (max-width: 760px) {
+  .topBar {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+
+  .topBrand {
+    font-size: 14px;
+  }
+
+  .staffProfile {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .staffIdentity {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 2px;
+  }
+
   .body {
     flex-direction: column;
   }
@@ -100,14 +155,9 @@
     border-bottom: 1px solid #e5e7eb;
   }
 
-  .brandBlock {
-    padding-bottom: 14px;
-  }
-
   .navigation {
     display: flex;
     gap: 6px;
-    margin-top: 12px;
     overflow-x: auto;
     padding-bottom: 2px;
   }
