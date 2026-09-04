@@ -2,7 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 
-/** Client-side form shell; authentication itself remains server-side. */
+/**
+ * Provides the interactive staff sign-in form.
+ * Authentication remains server-side; this component only manages input,
+ * pending state, password visibility and user-facing login errors.
+ */
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,49 +44,59 @@ export function LoginForm() {
   }
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
-      <label htmlFor="email">Email</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        autoComplete="username"
-        list="staff-email-suggestions"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        required
-      />
-      <datalist id="staff-email-suggestions">
-        <option value="admin@demo-clinic.local" />
-      </datalist>
-
-      <label htmlFor="password">Password</label>
-      <div className="password-field">
+    <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <div className="auth-field">
+        <label htmlFor="email">Email address</label>
         <input
-          id="password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="username"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           required
+          placeholder="staff@clinic.example"
         />
-        <button
-          type="button"
-          className="password-toggle"
-          onClick={() => setShowPassword((visible) => !visible)}
-          aria-label={showPassword ? "Hide password" : "Show password"}
-          aria-pressed={showPassword}
-        >
-          {showPassword ? "Hide" : "Show"}
-        </button>
       </div>
 
-      {error ? <p className="form-error" role="alert">{error}</p> : null}
+      <div className="auth-field">
+        <div className="auth-label-row">
+          <label htmlFor="password">Password</label>
+        </div>
+        <div className="password-field">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            placeholder="Enter your password"
+          />
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setShowPassword((visible) => !visible)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
+      </div>
 
-      <button type="submit" disabled={pending}>
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      <button type="submit" className="auth-submit" disabled={pending}>
         {pending ? "Signing in…" : "Sign in"}
       </button>
+
+      <p className="auth-form-note">If you cannot access your account, contact your clinic administrator.</p>
     </form>
   );
 }
