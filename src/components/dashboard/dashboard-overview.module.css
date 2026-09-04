@@ -39,9 +39,26 @@
   font-size: 20px;
 }
 
-.attentionText {
-  margin: 10px 0 0;
-  color: #6b7280;
+.attentionList {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attentionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.attentionIndicator {
+  width: 20px;
+  flex: 0 0 20px;
+  text-align: center;
 }
 
 @media (max-width: 900px) {
