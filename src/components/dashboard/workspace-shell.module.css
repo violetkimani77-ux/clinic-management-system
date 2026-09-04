@@ -1,0 +1,103 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 248px;
+  flex: 0 0 248px;
+  padding: 24px 18px;
+  border-right: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.brandBlock {
+  padding: 0 8px 22px;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.brand {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.workspaceLabel {
+  display: block;
+  margin-top: 5px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.navigation {
+  display: grid;
+  gap: 4px;
+  margin-top: 20px;
+}
+
+.navLink {
+  display: block;
+  padding: 11px 12px;
+  border-radius: 8px;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.navLink:hover {
+  background: #f3f4f6;
+  color: #17191c;
+}
+
+.navLinkActive {
+  background: #eef2f7;
+  color: #17191c;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 32px;
+}
+
+@media (max-width: 760px) {
+  .body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-basis: auto;
+    padding: 14px 16px;
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .brandBlock {
+    padding-bottom: 14px;
+  }
+
+  .navigation {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .navLink {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 24px 16px;
+  }
+}
