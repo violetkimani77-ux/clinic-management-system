@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { requireAuth } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { getDashboardMetrics } from "@/lib/dashboard/metrics";
 
 const navigation = [
   { label: "Dashboard", href: "/dashboard" },
@@ -14,11 +15,12 @@ const navigation = [
 /**
  * Displays the authenticated staff workspace and operational dashboard.
  *
- * The user identity shown in the header comes from the server-side session
- * context. Sign out remains available as the third line of the user block.
+ * Dashboard metrics are loaded from the clinic's live database records on
+ * each request so operational counts do not become a second source of truth.
  */
 export default async function DashboardPage() {
   const context = await requireAuth();
+  const metrics = await getDashboardMetrics(context);
   const visibleNavigation = navigation.filter(
     (item) => !item.permission || context.permissions.has(item.permission),
   );
@@ -40,14 +42,7 @@ export default async function DashboardPage() {
       </aside>
 
       <section style={{ flex: 1, padding: "28px 32px", maxWidth: 1200 }}>
-        <header
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 24,
-          }}
-        >
+        <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24 }}>
           <div>
             <p style={{ margin: 0, color: "#6b7280", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
               {context.roleCode} workspace
@@ -67,7 +62,7 @@ export default async function DashboardPage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16, marginTop: 32 }}>
           {[
-            ["Patients today", "—"],
+            ["Patients", String(metrics.activePatientCount)],
             ["Visits today", "—"],
             ["Revenue today", "KES —"],
             ["Outstanding", "KES —"],
