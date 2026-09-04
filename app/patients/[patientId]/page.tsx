@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getPatientProfile } from "@/lib/patients/registry";
-import { updatePatient } from "../actions";
+import { updatePatientRecord } from "../actions";
 
 /**
  * Displays a single clinic-scoped patient record and its editable registry
@@ -34,7 +34,7 @@ export default async function PatientProfilePage({
       <p style={{ color: "#6b7280" }}>{patient.patientNo}</p>
 
       {canUpdate ? (
-        <form action={updatePatient} style={{ display: "grid", gap: 14, marginTop: 28, maxWidth: 620 }}>
+        <form action={updatePatientRecord} style={{ display: "grid", gap: 14, marginTop: 28, maxWidth: 620 }}>
           <input type="hidden" name="patientId" value={patient.id} />
           <label>First name<input name="firstName" defaultValue={patient.firstName} required /></label>
           <label>Last name<input name="lastName" defaultValue={patient.lastName} required /></label>
