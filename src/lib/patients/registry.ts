@@ -1,6 +1,7 @@
 import "server-only";
 
 import { randomInt } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuthContext } from "@/lib/auth/authorization";
 
@@ -97,7 +98,7 @@ export async function createPatient(
 
   const patientNo = createPatientNumber();
 
-  return db.$transaction(async (tx) => {
+  return db.$transaction(async (tx: Prisma.TransactionClient) => {
     const patient = await tx.patient.create({
       data: {
         clinicId: context.clinicId,
