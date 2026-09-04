@@ -7,7 +7,11 @@ import type { PermissionCode } from "./permissions";
 import type { AuthContext } from "./authorization";
 
 export const SESSION_COOKIE = "cms_session";
+
+// The absolute lifetime limits how long a stolen session can remain useful,
+// while the idle timeout protects unattended clinic workstations.
 const SESSION_TTL_SECONDS = 60 * 60 * 8;
+const SESSION_IDLE_TIMEOUT_SECONDS = 60 * 30;
 
 type MembershipPermission = {
   permission: {
@@ -46,24 +50,37 @@ export async function createSession(userId: string, clinicId: string) {
 /**
  * Resolves the current request to a server-side authorization context.
  *
- * A session is valid only when its token exists, has not expired, its user is
- * active, and the user still has a membership in the session's clinic.
+ * A session is valid only when its token exists, has not exceeded either the
+ * absolute lifetime or idle timeout, its user is active, and the user still
+ * has a membership in the session's clinic. Timeout enforcement stays on the
+ * server because browser timers can be bypassed or manipulated.
  */
 export async function getAuthContext(): Promise<AuthContext | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
+  const now = new Date();
   const session = await db.authSession.findUnique({
     where: { tokenHash: hashToken(token) },
     include: { user: { select: { id: true, name: true, status: true } } },
   });
 
+  const idleDeadline = session
+    ? new Date(session.lastUsedAt.getTime() + SESSION_IDLE_TIMEOUT_SECONDS * 1000)
+    : null;
+
   if (
     !session ||
-    session.expiresAt <= new Date() ||
+    session.expiresAt <= now ||
+    (idleDeadline !== null && idleDeadline <= now) ||
     session.user.status !== "ACTIVE"
   ) {
+    // Invalidate expired sessions server-side so a stale browser cookie cannot
+    // be reused after the timeout. The login cookie is replaced on re-login.
+    if (session) {
+      await db.authSession.deleteMany({ where: { id: session.id } });
+    }
     return null;
   }
 
@@ -102,7 +119,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
 
   await db.authSession.update({
     where: { id: session.id },
-    data: { lastUsedAt: new Date() },
+    data: { lastUsedAt: now },
   });
 
   return {
