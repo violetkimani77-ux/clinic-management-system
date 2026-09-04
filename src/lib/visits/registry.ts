@@ -32,7 +32,7 @@ function cleanOptionalText(value: string | null | undefined) {
 }
 
 /**
- * Returns visits for one clinic, optionally limited to a patient.
+ * Returns visits for one clinic, optionally limited to a patient or today.
  *
  * The clinic ID always comes from the authenticated membership context rather
  * than from browser input, preventing cross-tenant record access.
@@ -41,16 +41,12 @@ export async function listVisits(
   context: AuthContext,
   options?: { patientId?: string; todayOnly?: boolean },
 ): Promise<VisitListItem[]> {
+  const dayBounds = options?.todayOnly ? getKenyaDayBounds() : null;
   const where = {
     clinicId: context.clinicId,
     ...(options?.patientId ? { patientId: options.patientId } : {}),
-    ...(options?.todayOnly
-      ? {
-          openedAt: {
-            gte: startOfTodayKenya(),
-            lt: startOfTomorrowKenya(),
-          },
-        }
+    ...(dayBounds
+      ? { openedAt: { gte: dayBounds.dayStart, lt: dayBounds.dayEnd } }
       : {}),
   };
 
@@ -87,18 +83,13 @@ export async function listVisits(
   }));
 }
 
-/**
- * Fetches one visit only when it belongs to the authenticated clinic.
- */
+/** Fetches one visit only when it belongs to the authenticated clinic. */
 export async function getVisit(
   context: AuthContext,
   visitId: string,
 ): Promise<VisitProfile | null> {
   const visit = await db.visit.findFirst({
-    where: {
-      id: visitId,
-      clinicId: context.clinicId,
-    },
+    where: { id: visitId, clinicId: context.clinicId },
     select: {
       id: true,
       patientId: true,
@@ -154,9 +145,7 @@ export async function createVisit(
       select: { id: true },
     });
 
-    if (!patient) {
-      throw new Error("PATIENT_NOT_FOUND");
-    }
+    if (!patient) throw new Error("PATIENT_NOT_FOUND");
 
     const visit = await tx.visit.create({
       data: {
@@ -209,20 +198,14 @@ export async function updateVisit(
 ) {
   return db.$transaction(async (tx) => {
     const current = await tx.visit.findFirst({
-      where: {
-        id: input.visitId,
-        clinicId: context.clinicId,
-      },
+      where: { id: input.visitId, clinicId: context.clinicId },
       select: { id: true, status: true, notes: true },
     });
 
-    if (!current) {
-      throw new Error("VISIT_NOT_FOUND");
-    }
+    if (!current) throw new Error("VISIT_NOT_FOUND");
 
     if (input.status && input.status !== current.status) {
-      const allowed = ALLOWED_TRANSITIONS[current.status];
-      if (!allowed.includes(input.status)) {
+      if (!ALLOWED_TRANSITIONS[current.status].includes(input.status)) {
         throw new Error("INVALID_VISIT_TRANSITION");
       }
     }
@@ -266,14 +249,22 @@ export async function updateVisit(
   });
 }
 
-function startOfTodayKenya() {
+/**
+ * Produces UTC instants representing the current Kenya calendar day.
+ * Africa/Nairobi is UTC+3, with no daylight-saving transition.
+ */
+function getKenyaDayBounds() {
   const now = new Date();
-  const kenya = new Date(now.toLocaleString("en-US", { timeZone: "Africa/Nairobi" }));
-  kenya.setHours(0, 0, 0, 0);
-  return new Date(kenya.toLocaleString("en-US", { timeZone: "UTC" }));
-}
+  const kenyaDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const [year, month, day] = kenyaDate.split("-").map(Number);
 
-function startOfTomorrowKenya() {
-  const start = startOfTodayKenya();
-  return new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return {
+    dayStart: new Date(Date.UTC(year, month - 1, day, -3)),
+    dayEnd: new Date(Date.UTC(year, month - 1, day + 1, -3)),
+  };
 }
