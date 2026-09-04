@@ -15,7 +15,7 @@ const navigation = [
  * Displays the authenticated staff workspace and operational dashboard.
  *
  * The user identity shown in the header comes from the server-side session
- * context. Sign out remains available from the same compact user panel.
+ * context. Sign out remains available as the third line of the user block.
  */
 export default async function DashboardPage() {
   const context = await requireAuth();
@@ -58,20 +58,9 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          <div
-            style={{
-              minWidth: 190,
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
-              padding: "12px 14px",
-              background: "#fff",
-              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
-            }}
-          >
+          <div style={{ minWidth: 190, padding: "2px 0 0 20px", textAlign: "right" }}>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{context.userName}</p>
-            <p style={{ margin: "3px 0 10px", color: "#6b7280", fontSize: 12 }}>
-              {context.roleCode}
-            </p>
+            <p style={{ margin: "4px 0", color: "#6b7280", fontSize: 12 }}>{context.roleCode}</p>
             <LogoutButton />
           </div>
         </header>
