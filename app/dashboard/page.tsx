@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { StaffProfile } from "@/components/dashboard/staff-profile";
 import { requireAuth } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getDashboardMetrics } from "@/lib/dashboard/metrics";
@@ -26,23 +26,8 @@ export default async function DashboardPage() {
 
   return (
     <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <header
-        style={{
-          minHeight: 76,
-          borderBottom: "1px solid #e5e7eb",
-          background: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "12px 32px",
-        }}
-      >
-        <div style={{ textAlign: "right" }}>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{context.userName}</p>
-          <p style={{ margin: "3px 0 6px", color: "#6b7280", fontSize: 12 }}>{context.roleCode}</p>
-          <LogoutButton />
-        </div>
-      </header>
+      {/* Staff identity and sign-out stay above the workspace content. */}
+      <StaffProfile userName={context.userName} roleCode={context.roleCode} />
 
       <div style={{ display: "flex", flex: 1 }}>
         <aside style={{ width: 240, padding: 24, borderRight: "1px solid #e5e7eb", background: "#fff" }}>
