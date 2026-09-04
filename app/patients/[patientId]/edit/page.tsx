@@ -25,26 +25,29 @@ export default async function EditPatientPage({
   return (
     <WorkspaceShell context={context} activeHref="/patients">
       <div className={styles.page}>
-        <nav aria-label="Page navigation">
-          <Link href={`/patients/${patient.id}`} className={styles.backLink}>
-            ← Back to patient
-          </Link>
-        </nav>
+        <div className={styles.pageUtility}>
+          <Link href={`/patients/${patient.id}`} className={styles.backLink}>Back to patient profile</Link>
+        </div>
 
-        <header className={styles.hero}>
-          <p className={styles.eyebrow}>Patient registry</p>
-          <h1 className={styles.title}>Edit patient</h1>
-          <p className={styles.description}>
-            Update registry information for {patient.firstName} {patient.lastName}. Patient No. {patient.patientNo} stays unchanged.
-          </p>
+        <header className={styles.editHero}>
+          <div>
+            <p className={styles.eyebrow}>Patient registry</p>
+            <h1 className={styles.title}>Edit patient</h1>
+            <p className={styles.description}>
+              Update registry information for {patient.firstName} {patient.lastName}.
+            </p>
+            <p className={styles.patientNumber}>Patient No. {patient.patientNo}</p>
+          </div>
+          <span className={styles.auditBadge}>Changes are audit logged</span>
         </header>
 
         <section className={styles.section} aria-labelledby="edit-patient-information">
           <div className={styles.sectionHeader}>
             <div>
+              <p className={styles.sectionKicker}>Registry details</p>
               <h2 id="edit-patient-information" className={styles.sectionTitle}>Patient information</h2>
               <p className={styles.sectionDescription}>
-                Changes are recorded in the audit log. Visits, prescriptions and billing are separate clinical and financial records.
+                Keep contact and demographic information current. Visits, prescriptions and billing remain separate records.
               </p>
             </div>
           </div>
