@@ -20,8 +20,8 @@ const navigation: NavigationItem[] = [
 
 /**
  * Provides the authenticated clinic workspace frame shared by staff pages.
- * It owns navigation and staff identity presentation, while page components
- * remain responsible for their own data loading and authorization checks.
+ * The top bar keeps clinic identity and staff identity together; the sidebar
+ * owns workspace navigation while page components own their data and guards.
  */
 export function WorkspaceShell({
   context,
@@ -38,15 +38,15 @@ export function WorkspaceShell({
 
   return (
     <main className={styles.shell}>
-      <StaffProfile userName={context.userName} roleCode={context.roleCode} />
+      <header className={styles.topBar}>
+        <Link href="/dashboard" className={styles.topBrand}>
+          Clinic Management System
+        </Link>
+        <StaffProfile userName={context.userName} roleCode={context.roleCode} />
+      </header>
 
       <div className={styles.body}>
         <aside className={styles.sidebar}>
-          <div className={styles.brandBlock}>
-            <strong className={styles.brand}>Clinic Management System</strong>
-            <span className={styles.workspaceLabel}>{context.roleCode} workspace</span>
-          </div>
-
           <nav aria-label="Main navigation" className={styles.navigation}>
             {visibleNavigation.map((item) => {
               const isActive = item.href === activeHref;
