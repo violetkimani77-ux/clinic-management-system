@@ -10,8 +10,12 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    void submitLogin();
+  }
+
+  async function submitLogin() {
     setError("");
     setPending(true);
 
@@ -43,13 +47,17 @@ export function LoginForm() {
         name="email"
         type="email"
         autoComplete="username"
+        list="staff-email-suggestions"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         required
       />
+      <datalist id="staff-email-suggestions">
+        <option value="admin@demo-clinic.local" />
+      </datalist>
 
       <label htmlFor="password">Password</label>
-      <div style={{ position: "relative" }}>
+      <div className="password-field">
         <input
           id="password"
           name="password"
@@ -58,23 +66,13 @@ export function LoginForm() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           required
-          style={{ paddingRight: "5.5rem", width: "100%" }}
         />
         <button
           type="button"
+          className="password-toggle"
           onClick={() => setShowPassword((visible) => !visible)}
           aria-label={showPassword ? "Hide password" : "Show password"}
           aria-pressed={showPassword}
-          style={{
-            position: "absolute",
-            right: "0.5rem",
-            top: "50%",
-            transform: "translateY(-50%)",
-            border: 0,
-            background: "transparent",
-            padding: "0.35rem 0.5rem",
-            cursor: "pointer",
-          }}
         >
           {showPassword ? "Hide" : "Show"}
         </button>
