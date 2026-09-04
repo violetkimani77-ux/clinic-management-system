@@ -6,7 +6,7 @@
 .pageUtility { display: flex; align-items: center; min-height: 24px; }
 .backLink { color: #475569; font-size: 14px; font-weight: 700; text-decoration: none; }
 .backLink:hover { color: #0f172a; text-decoration: underline; }
-.backLink:focus-visible, .patientLink:focus-visible, .tableAction:focus-visible, .secondaryButton:focus-visible, .primaryButton:focus-visible, .detailsSummary:focus-visible { outline: 3px solid rgba(37,99,235,.25); outline-offset: 3px; border-radius: 4px; }
+.backLink:focus-visible, .patientLink:focus-visible, .tableAction:focus-visible, .secondaryButton:focus-visible, .primaryButton:focus-visible, .detailsSummary:focus-visible { outline: 3px solid rgba(45,109,142,.25); outline-offset: 3px; border-radius: 4px; }
 .eyebrow, .sectionKicker { margin: 0 0 8px; color: #64748b; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .title { margin: 0; color: #0f172a; font-size: clamp(28px,4vw,36px); line-height: 1.1; letter-spacing: -.025em; }
 .description { max-width: 680px; margin: 10px 0 0; color: #64748b; font-size: 15px; line-height: 1.6; }
@@ -38,12 +38,12 @@
 .input, .textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #0f172a; font: inherit; box-sizing: border-box; }
 .input { min-height: 42px; padding: 10px 12px; }
 .textarea { min-height: 90px; padding: 10px 12px; resize: vertical; }
-.input:focus, .textarea:focus { border-color: #64748b; outline: 2px solid rgba(37,99,235,.12); outline-offset: 1px; }
+.input:focus, .textarea:focus { border-color: #2d6d8e; outline: 2px solid rgba(45,109,142,.12); outline-offset: 1px; }
 .primaryButton, .secondaryButton { min-height: 42px; padding: 10px 16px; border-radius: 9px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; }
-.primaryButton { border: 1px solid #0f172a; background: #0f172a; color: #fff; }
-.primaryButton:hover { background: #1e293b; }
-.secondaryButton { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; background: #fff; color: #334155; }
-.secondaryButton:hover { background: #f8fafc; }
+.primaryButton { border: 1px solid #173f56; background: #173f56; color: #fff; }
+.primaryButton:hover { background: #215a78; border-color: #215a78; }
+.secondaryButton { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #173f56; background: #fff; color: #173f56; }
+.secondaryButton:hover { background: #eef5f8; }
 .details { margin-top: 18px; border-top: 1px solid #e2e8f0; padding-top: 18px; }
 .detailsSummary { cursor: pointer; color: #0f172a; font-size: 14px; font-weight: 800; }
 .formHint { max-width: 700px; margin: 8px 0 0; color: #64748b; font-size: 13px; line-height: 1.5; }
@@ -59,7 +59,7 @@
 .table tbody tr:last-child td { border-bottom: 0; }
 .table tbody tr:hover { background: #f8fafc; }
 .visitStatus { padding: 5px 8px; background: #f1f5f9; color: #475569; }
-.patientLink, .tableAction { color: #0f172a; font-weight: 700; text-decoration: none; }
+.patientLink, .tableAction { color: #173f56; font-weight: 700; text-decoration: none; }
 .patientLink:hover, .tableAction:hover { text-decoration: underline; }
 .tableAction { white-space: nowrap; }
 .emptyState { margin-top: 18px; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; }
