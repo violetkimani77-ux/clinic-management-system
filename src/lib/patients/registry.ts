@@ -15,10 +15,19 @@ export type PatientSearchResult = {
   archivedAt: Date | null;
 };
 
-/**
- * Builds a human-readable patient number while retaining the clinic-scoped
- * unique constraint as the final collision guard.
- */
+export type PatientProfile = {
+  id: string;
+  patientNo: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  notes: string | null;
+};
+
+/** Builds a human-readable patient number with a clinic-scoped unique guard. */
 function createPatientNumber(): string {
   const date = new Date();
   const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
@@ -28,44 +37,33 @@ function createPatientNumber(): string {
   return `P-${day}-${suffix}`;
 }
 
-/**
- * Searches only the active clinic's patient records.
- *
- * Archived patients remain in the database for record integrity but are
- * excluded from normal registry searches unless explicitly requested later.
- */
-export async function searchPatients(
-  context: AuthContext,
-  query = "",
-): Promise<PatientSearchResult[]> {
+/** Searches only active patients belonging to the authenticated clinic. */
+export async function searchPatients(context: AuthContext, query = ""): Promise<PatientSearchResult[]> {
   const normalizedQuery = query.trim();
-
   return db.patient.findMany({
     where: {
       clinicId: context.clinicId,
       archivedAt: null,
       ...(normalizedQuery
-        ? {
-            OR: [
-              { patientNo: { contains: normalizedQuery, mode: "insensitive" } },
-              { firstName: { contains: normalizedQuery, mode: "insensitive" } },
-              { lastName: { contains: normalizedQuery, mode: "insensitive" } },
-              { phone: { contains: normalizedQuery, mode: "insensitive" } },
-            ],
-          }
+        ? { OR: [
+            { patientNo: { contains: normalizedQuery, mode: "insensitive" } },
+            { firstName: { contains: normalizedQuery, mode: "insensitive" } },
+            { lastName: { contains: normalizedQuery, mode: "insensitive" } },
+            { phone: { contains: normalizedQuery, mode: "insensitive" } },
+          ] }
         : {}),
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     take: 50,
-    select: {
-      id: true,
-      patientNo: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      dateOfBirth: true,
-      archivedAt: true,
-    },
+    select: { id: true, patientNo: true, firstName: true, lastName: true, phone: true, dateOfBirth: true, archivedAt: true },
+  });
+}
+
+/** Loads only the registry fields needed by the patient profile page. */
+export async function getPatientProfile(context: AuthContext, patientId: string): Promise<PatientProfile | null> {
+  return db.patient.findFirst({
+    where: { id: patientId, clinicId: context.clinicId, archivedAt: null },
+    select: { id: true, patientNo: true, firstName: true, lastName: true, dateOfBirth: true, phone: true, email: true, address: true, notes: true },
   });
 }
 
@@ -79,23 +77,11 @@ export type CreatePatientInput = {
   notes?: string | null;
 };
 
-/**
- * Creates a patient and its audit event atomically.
- *
- * The clinic is taken from the authenticated context rather than caller input
- * so a client cannot choose another tenant when creating a patient.
- */
-export async function createPatient(
-  context: AuthContext,
-  input: CreatePatientInput,
-) {
+/** Creates a patient and its audit event atomically within the active clinic. */
+export async function createPatient(context: AuthContext, input: CreatePatientInput) {
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
-
-  if (!firstName || !lastName) {
-    throw new Error("PATIENT_NAME_REQUIRED");
-  }
-
+  if (!firstName || !lastName) throw new Error("PATIENT_NAME_REQUIRED");
   const patientNo = createPatientNumber();
 
   return db.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -112,18 +98,45 @@ export async function createPatient(
         notes: input.notes?.trim() || null,
       },
     });
-
     await tx.auditLog.create({
+      data: { clinicId: context.clinicId, userId: context.userId, action: "PATIENT_CREATED", entityType: "Patient", entityId: patient.id, metadata: { patientNo: patient.patientNo } },
+    });
+    return patient;
+  });
+}
+
+/**
+ * Updates registry data only when the patient belongs to the active clinic.
+ *
+ * The operation records who made the change; important clinical history is
+ * intentionally not overwritten here because those workflows will have their
+ * own immutable/audited records.
+ */
+export async function updatePatient(context: AuthContext, patientId: string, input: CreatePatientInput) {
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+  if (!firstName || !lastName) throw new Error("PATIENT_NAME_REQUIRED");
+
+  return db.$transaction(async (tx: Prisma.TransactionClient) => {
+    const patient = await tx.patient.findFirst({ where: { id: patientId, clinicId: context.clinicId, archivedAt: null }, select: { id: true, patientNo: true } });
+    if (!patient) throw new Error("PATIENT_NOT_FOUND");
+
+    const updated = await tx.patient.update({
+      where: { id: patient.id },
       data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "PATIENT_CREATED",
-        entityType: "Patient",
-        entityId: patient.id,
-        metadata: { patientNo: patient.patientNo },
+        firstName,
+        lastName,
+        dateOfBirth: input.dateOfBirth ?? null,
+        phone: input.phone?.trim() || null,
+        email: input.email?.trim().toLowerCase() || null,
+        address: input.address?.trim() || null,
+        notes: input.notes?.trim() || null,
       },
     });
 
-    return patient;
+    await tx.auditLog.create({
+      data: { clinicId: context.clinicId, userId: context.userId, action: "PATIENT_UPDATED", entityType: "Patient", entityId: patient.id, metadata: { patientNo: patient.patientNo } },
+    });
+    return updated;
   });
 }
