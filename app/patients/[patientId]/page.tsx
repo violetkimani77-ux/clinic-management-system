@@ -6,7 +6,7 @@ import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getPatientProfile } from "@/lib/patients/registry";
 import { listVisits } from "@/lib/visits/registry";
-import { openVisit } from "@/app/visits/actions";
+import { openVisit } from "../../../visits/actions";
 
 /**
  * Displays the read-focused patient record and its clinical workflow history.
