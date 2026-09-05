@@ -1,0 +1,38 @@
+name: Apply production database migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "prisma/migrations/**"
+  workflow_dispatch:
+
+concurrency:
+  group: production-database-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Apply Prisma migrations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Apply pending production migrations
+        run: npx --yes prisma@6.19.3 migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

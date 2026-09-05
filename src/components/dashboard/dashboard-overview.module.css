@@ -1,0 +1,109 @@
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.cardLabel {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.cardValue {
+  display: block;
+  margin-top: 10px;
+  color: #111827;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.attention {
+  margin-top: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.attentionTitle {
+  margin: 0;
+  font-size: 20px;
+}
+
+.attentionList {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attentionItem {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.attentionItem:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.attentionItem:focus-visible {
+  outline: 2px solid #111827;
+  outline-offset: 2px;
+}
+
+.attentionIndicator {
+  width: 20px;
+  text-align: center;
+}
+
+.attentionAction {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .cards {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
+
+  .card,
+  .attention {
+    padding: 18px;
+  }
+
+  .attentionItem {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .attentionAction {
+    grid-column: 2;
+  }
+}
