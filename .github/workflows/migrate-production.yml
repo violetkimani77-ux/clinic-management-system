@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "prisma/migrations/**"
+      - ".github/workflows/migrate-production.yml"
   workflow_dispatch:
 
 concurrency:
