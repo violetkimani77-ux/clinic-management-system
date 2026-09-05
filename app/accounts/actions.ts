@@ -13,9 +13,7 @@ export async function createInvoiceAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const quantity = Number(formData.get("quantity") ?? 0);
   const unitPrice = Number(formData.get("unitPrice") ?? 0);
-
   if (!visitId) throw new Error("VISIT_ID_REQUIRED");
-
   await createInvoice(context, { visitId, description, quantity, unitPrice });
   revalidatePath("/accounts");
   revalidatePath("/dashboard");
@@ -28,19 +26,9 @@ export async function recordPaymentAction(formData: FormData) {
   const amount = Number(formData.get("amount") ?? 0);
   const methodValue = String(formData.get("method") ?? "").trim();
   const externalRef = String(formData.get("externalRef") ?? "").trim() || null;
-
   if (!invoiceId) throw new Error("INVOICE_ID_REQUIRED");
-  if (!Object.values(PaymentMethod).includes(methodValue as PaymentMethod)) {
-    throw new Error("INVALID_PAYMENT_METHOD");
-  }
-
-  await recordPayment(context, {
-    invoiceId,
-    amount,
-    method: methodValue as PaymentMethod,
-    externalRef,
-  });
-
+  if (!Object.values(PaymentMethod).includes(methodValue as PaymentMethod)) throw new Error("INVALID_PAYMENT_METHOD");
+  await recordPayment(context, { invoiceId, amount, method: methodValue as PaymentMethod, externalRef });
   revalidatePath("/accounts");
   revalidatePath("/dashboard");
   redirect("/accounts");
