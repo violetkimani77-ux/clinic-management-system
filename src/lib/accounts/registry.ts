@@ -62,13 +62,11 @@ export async function createInvoice(context: AuthContext, input: { visitId: stri
   if (!description) throw new Error("INVOICE_DESCRIPTION_REQUIRED");
   if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new Error("INVALID_INVOICE_QUANTITY");
   if (!Number.isFinite(input.unitPrice) || input.unitPrice <= 0) throw new Error("INVALID_INVOICE_PRICE");
-
   return db.$transaction(async (tx) => {
     const visit = await tx.visit.findFirst({ where: { id: input.visitId, clinicId: context.clinicId }, select: { id: true, patientId: true } });
     if (!visit) throw new Error("VISIT_NOT_FOUND");
     const existing = await tx.invoice.findFirst({ where: { clinicId: context.clinicId, visitId: visit.id, status: { not: InvoiceStatus.VOID } }, select: { id: true } });
     if (existing) throw new Error("VISIT_ALREADY_INVOICED");
-
     const total = input.quantity * input.unitPrice;
     const invoice = await tx.invoice.create({
       data: { clinicId: context.clinicId, patientId: visit.patientId, visitId: visit.id, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total, issuedAt: new Date(), items: { create: { description, quantity: input.quantity, unitPrice: input.unitPrice, total } } },
@@ -82,24 +80,18 @@ export async function createInvoice(context: AuthContext, input: { visitId: stri
 export async function recordPayment(context: AuthContext, input: { invoiceId: string; amount: number; method: PaymentMethod; externalRef?: string | null }) {
   if (!Number.isFinite(input.amount) || input.amount <= 0) throw new Error("INVALID_PAYMENT_AMOUNT");
   if (input.method === PaymentMethod.MPESA && !input.externalRef?.trim()) throw new Error("MPESA_REFERENCE_REQUIRED");
-
   return db.$transaction(async (tx) => {
     const invoice = await tx.invoice.findFirst({ where: { id: input.invoiceId, clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } }, select: { id: true, patientId: true, total: true, amountPaid: true } });
     if (!invoice) throw new Error("INVOICE_NOT_FOUND");
     const balance = Number(invoice.total) - Number(invoice.amountPaid);
     if (balance <= 0) throw new Error("INVOICE_ALREADY_PAID");
     if (input.amount > balance + 0.0001) throw new Error("PAYMENT_EXCEEDS_BALANCE");
-
     const externalRef = input.externalRef?.trim() || null;
     if (externalRef) {
       const duplicate = await tx.payment.findFirst({ where: { clinicId: context.clinicId, externalRef }, select: { id: true } });
       if (duplicate) throw new Error("PAYMENT_REFERENCE_ALREADY_USED");
     }
-
-    const payment = await tx.payment.create({
-      data: { clinicId: context.clinicId, patientId: invoice.patientId, invoiceId: invoice.id, amount: input.amount, method: input.method, status: PaymentStatus.VERIFIED, externalRef, receiptNo: makeReceiptNo(), idempotencyKey: randomUUID(), receivedAt: new Date() },
-      select: { id: true, receiptNo: true, amount: true },
-    });
+    const payment = await tx.payment.create({ data: { clinicId: context.clinicId, patientId: invoice.patientId, invoiceId: invoice.id, amount: input.amount, method: input.method, status: PaymentStatus.VERIFIED, externalRef, receiptNo: makeReceiptNo(), idempotencyKey: randomUUID(), receivedAt: new Date() }, select: { id: true, receiptNo: true, amount: true } });
     const newAmountPaid = Number(invoice.amountPaid) + input.amount;
     const nextStatus = newAmountPaid >= Number(invoice.total) - 0.0001 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
     await tx.invoice.update({ where: { id: invoice.id }, data: { amountPaid: newAmountPaid, status: nextStatus } });
@@ -110,16 +102,13 @@ export async function recordPayment(context: AuthContext, input: { invoiceId: st
 
 export async function getAccountsSummary(context: AuthContext) {
   const day = getKenyaDayBounds();
-  const [payments, outstanding, invoices] = await Promise.all([
+  const [payments, mpesa, outstanding, invoices] = await Promise.all([
     db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, receivedAt: { gte: day.start, lt: day.end } }, _sum: { amount: true } }),
+    db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, method: PaymentMethod.MPESA, receivedAt: { gte: day.start, lt: day.end } }, _sum: { amount: true }, _count: { _all: true } }),
     db.invoice.findMany({ where: { clinicId: context.clinicId, status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] } }, select: { total: true, amountPaid: true } }),
     db.invoice.count({ where: { clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } } }),
   ]);
-  return {
-    collectedToday: toNumber(payments._sum.amount),
-    outstanding: outstanding.reduce((sum, invoice) => sum + Math.max(0, toNumber(invoice.total) - toNumber(invoice.amountPaid)), 0),
-    invoiceCount: invoices,
-  };
+  return { collectedToday: toNumber(payments._sum.amount), mpesaToday: toNumber(mpesa._sum.amount), mpesaPaymentCountToday: mpesa._count._all, outstanding: outstanding.reduce((sum, invoice) => sum + Math.max(0, toNumber(invoice.total) - toNumber(invoice.amountPaid)), 0), invoiceCount: invoices };
 }
 
 function getKenyaDayBounds() {
