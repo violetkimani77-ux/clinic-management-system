@@ -3,13 +3,6 @@ import { db } from "@/lib/db";
 import { InvoiceStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 
-/**
- * Owns clinic-scoped invoice and payment operations.
- *
- * Financial mutations are transactional and audited. This module deliberately
- * does not decide whether a staff member has accounts permissions; callers do.
- */
-
 export type AccountInvoice = {
   id: string;
   invoiceNo: string;
@@ -22,13 +15,7 @@ export type AccountInvoice = {
   amountPaid: number;
   balance: number;
   issuedAt: Date | null;
-  items: Array<{
-    id: string;
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    total: number;
-  }>;
+  items: Array<{ id: string; description: string; quantity: number; unitPrice: number; total: number }>;
 };
 
 export type BillableVisit = {
@@ -40,251 +27,94 @@ export type BillableVisit = {
   status: string;
 };
 
-function toNumber(value: unknown) {
-  return Number(value ?? 0);
-}
+function toNumber(value: unknown) { return Number(value ?? 0); }
+function makeInvoiceNo() { return `INV-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}-${randomUUID().slice(0, 6).toUpperCase()}`; }
+function makeReceiptNo() { return `RCT-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}-${randomUUID().slice(0, 6).toUpperCase()}`; }
 
-function makeInvoiceNo() {
-  return `INV-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}-${randomUUID().slice(0, 6).toUpperCase()}`;
-}
-
-function makeReceiptNo() {
-  return `RCT-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}-${randomUUID().slice(0, 6).toUpperCase()}`;
-}
-
-/** Returns issued, partially paid and paid invoices for the current clinic. */
 export async function listInvoices(context: AuthContext): Promise<AccountInvoice[]> {
   const invoices = await db.invoice.findMany({
     where: { clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    select: {
-      id: true,
-      invoiceNo: true,
-      patientId: true,
-      visitId: true,
-      status: true,
-      total: true,
-      amountPaid: true,
-      issuedAt: true,
+    orderBy: { createdAt: "desc" }, take: 100,
+    select: { id: true, invoiceNo: true, patientId: true, visitId: true, status: true, total: true, amountPaid: true, issuedAt: true,
       patient: { select: { patientNo: true, firstName: true, lastName: true } },
-      items: {
-        select: { id: true, description: true, quantity: true, unitPrice: true, total: true },
-      },
-    },
+      items: { select: { id: true, description: true, quantity: true, unitPrice: true, total: true } } },
   });
-
   return invoices.map((invoice) => ({
-    id: invoice.id,
-    invoiceNo: invoice.invoiceNo,
-    patientId: invoice.patientId,
-    patientNo: invoice.patient.patientNo,
-    patientName: `${invoice.patient.firstName} ${invoice.patient.lastName}`,
-    visitId: invoice.visitId,
-    status: invoice.status,
-    total: toNumber(invoice.total),
-    amountPaid: toNumber(invoice.amountPaid),
-    balance: Math.max(0, toNumber(invoice.total) - toNumber(invoice.amountPaid)),
-    issuedAt: invoice.issuedAt,
-    items: invoice.items.map((item) => ({
-      id: item.id,
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: toNumber(item.unitPrice),
-      total: toNumber(item.total),
-    })),
+    id: invoice.id, invoiceNo: invoice.invoiceNo, patientId: invoice.patientId,
+    patientNo: invoice.patient.patientNo, patientName: `${invoice.patient.firstName} ${invoice.patient.lastName}`,
+    visitId: invoice.visitId, status: invoice.status, total: toNumber(invoice.total), amountPaid: toNumber(invoice.amountPaid),
+    balance: Math.max(0, toNumber(invoice.total) - toNumber(invoice.amountPaid)), issuedAt: invoice.issuedAt,
+    items: invoice.items.map((item) => ({ id: item.id, description: item.description, quantity: item.quantity, unitPrice: toNumber(item.unitPrice), total: toNumber(item.total) })),
   }));
 }
 
-/** Returns recent clinic visits that can receive an invoice. */
 export async function listBillableVisits(context: AuthContext): Promise<BillableVisit[]> {
   const visits = await db.visit.findMany({
-    where: {
-      clinicId: context.clinicId,
-      status: { in: ["OPEN", "IN_PROGRESS", "COMPLETED"] },
-      invoices: { none: { status: { not: InvoiceStatus.VOID } } },
-    },
-    orderBy: { openedAt: "desc" },
-    take: 30,
-    select: {
-      id: true,
-      patientId: true,
-      openedAt: true,
-      status: true,
-      patient: { select: { patientNo: true, firstName: true, lastName: true } },
-    },
+    where: { clinicId: context.clinicId, status: { in: ["OPEN", "IN_PROGRESS", "COMPLETED"] }, invoices: { none: { status: { not: InvoiceStatus.VOID } } } },
+    orderBy: { openedAt: "desc" }, take: 30,
+    select: { id: true, patientId: true, openedAt: true, status: true, patient: { select: { patientNo: true, firstName: true, lastName: true } } },
   });
-
-  return visits.map((visit) => ({
-    id: visit.id,
-    patientId: visit.patientId,
-    patientNo: visit.patient.patientNo,
-    patientName: `${visit.patient.firstName} ${visit.patient.lastName}`,
-    openedAt: visit.openedAt,
-    status: visit.status,
-  }));
+  return visits.map((visit) => ({ id: visit.id, patientId: visit.patientId, patientNo: visit.patient.patientNo, patientName: `${visit.patient.firstName} ${visit.patient.lastName}`, openedAt: visit.openedAt, status: visit.status }));
 }
 
-/**
- * Creates and issues one invoice for a clinic visit.
- *
- * The charge is intentionally supplied by accounts staff. Pharmacy charges
- * will later be added from dispensing records without changing this invoice
- * and payment foundation.
- */
-export async function createInvoice(
-  context: AuthContext,
-  input: {
-    visitId: string;
-    description: string;
-    quantity: number;
-    unitPrice: number;
-  },
-) {
+export async function createInvoice(context: AuthContext, input: { visitId: string; description: string; quantity: number; unitPrice: number }) {
   const description = input.description.trim();
   if (!description) throw new Error("INVOICE_DESCRIPTION_REQUIRED");
   if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new Error("INVALID_INVOICE_QUANTITY");
   if (!Number.isFinite(input.unitPrice) || input.unitPrice <= 0) throw new Error("INVALID_INVOICE_PRICE");
 
   return db.$transaction(async (tx) => {
-    const visit = await tx.visit.findFirst({
-      where: { id: input.visitId, clinicId: context.clinicId },
-      select: { id: true, patientId: true },
-    });
+    const visit = await tx.visit.findFirst({ where: { id: input.visitId, clinicId: context.clinicId }, select: { id: true, patientId: true } });
     if (!visit) throw new Error("VISIT_NOT_FOUND");
-
-    const existing = await tx.invoice.findFirst({
-      where: { clinicId: context.clinicId, visitId: visit.id, status: { not: InvoiceStatus.VOID } },
-      select: { id: true },
-    });
+    const existing = await tx.invoice.findFirst({ where: { clinicId: context.clinicId, visitId: visit.id, status: { not: InvoiceStatus.VOID } }, select: { id: true } });
     if (existing) throw new Error("VISIT_ALREADY_INVOICED");
 
     const total = input.quantity * input.unitPrice;
     const invoice = await tx.invoice.create({
-      data: {
-        clinicId: context.clinicId,
-        patientId: visit.patientId,
-        visitId: visit.id,
-        invoiceNo: makeInvoiceNo(),
-        status: InvoiceStatus.ISSUED,
-        total,
-        issuedAt: new Date(),
-        items: {
-          create: {
-            description,
-            quantity: input.quantity,
-            unitPrice: input.unitPrice,
-            total,
-          },
-        },
-      },
+      data: { clinicId: context.clinicId, patientId: visit.patientId, visitId: visit.id, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total, issuedAt: new Date(), items: { create: { description, quantity: input.quantity, unitPrice: input.unitPrice, total } } },
       select: { id: true, invoiceNo: true, total: true },
     });
-
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "INVOICE_CREATED",
-        entityType: "Invoice",
-        entityId: invoice.id,
-        metadata: { visitId: visit.id, total: invoice.total.toString() },
-      },
-    });
-
+    await tx.auditLog.create({ data: { clinicId: context.clinicId, userId: context.userId, action: "INVOICE_CREATED", entityType: "Invoice", entityId: invoice.id, metadata: { visitId: visit.id, total: invoice.total.toString() } } });
     return invoice;
   });
 }
 
-/**
- * Records a verified manual payment and updates the invoice atomically.
- *
- * M-Pesa requires an external reference so a future callback can safely map
- * to the same payment. The idempotency key prevents duplicate submissions.
- */
-export async function recordPayment(
-  context: AuthContext,
-  input: {
-    invoiceId: string;
-    amount: number;
-    method: PaymentMethod;
-    externalRef?: string | null;
-  },
-) {
+export async function recordPayment(context: AuthContext, input: { invoiceId: string; amount: number; method: PaymentMethod; externalRef?: string | null }) {
   if (!Number.isFinite(input.amount) || input.amount <= 0) throw new Error("INVALID_PAYMENT_AMOUNT");
-  if (input.method === PaymentMethod.MPESA && !input.externalRef?.trim()) {
-    throw new Error("MPESA_REFERENCE_REQUIRED");
-  }
+  if (input.method === PaymentMethod.MPESA && !input.externalRef?.trim()) throw new Error("MPESA_REFERENCE_REQUIRED");
 
-  return db.$transaction(
-    async (tx) => {
-      const invoice = await tx.invoice.findFirst({
-        where: { id: input.invoiceId, clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } },
-        select: { id: true, patientId: true, total: true, amountPaid: true, status: true },
-      });
-      if (!invoice) throw new Error("INVOICE_NOT_FOUND");
+  return db.$transaction(async (tx) => {
+    const invoice = await tx.invoice.findFirst({ where: { id: input.invoiceId, clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } }, select: { id: true, patientId: true, total: true, amountPaid: true } });
+    if (!invoice) throw new Error("INVOICE_NOT_FOUND");
+    const balance = Number(invoice.total) - Number(invoice.amountPaid);
+    if (balance <= 0) throw new Error("INVOICE_ALREADY_PAID");
+    if (input.amount > balance + 0.0001) throw new Error("PAYMENT_EXCEEDS_BALANCE");
 
-      const balance = Number(invoice.total) - Number(invoice.amountPaid);
-      if (input.amount > balance + 0.0001) throw new Error("PAYMENT_EXCEEDS_BALANCE");
+    const externalRef = input.externalRef?.trim() || null;
+    if (externalRef) {
+      const duplicate = await tx.payment.findFirst({ where: { clinicId: context.clinicId, externalRef }, select: { id: true } });
+      if (duplicate) throw new Error("PAYMENT_REFERENCE_ALREADY_USED");
+    }
 
-      const payment = await tx.payment.create({
-        data: {
-          clinicId: context.clinicId,
-          patientId: invoice.patientId,
-          invoiceId: invoice.id,
-          amount: input.amount,
-          method: input.method,
-          status: PaymentStatus.VERIFIED,
-          externalRef: input.externalRef?.trim() || null,
-          receiptNo: makeReceiptNo(),
-          idempotencyKey: randomUUID(),
-          receivedAt: new Date(),
-        },
-        select: { id: true, receiptNo: true, amount: true },
-      });
-
-      const newAmountPaid = Number(invoice.amountPaid) + input.amount;
-      const nextStatus = newAmountPaid >= Number(invoice.total) - 0.0001
-        ? InvoiceStatus.PAID
-        : InvoiceStatus.PARTIALLY_PAID;
-
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: { amountPaid: newAmountPaid, status: nextStatus },
-      });
-
-      await tx.auditLog.create({
-        data: {
-          clinicId: context.clinicId,
-          userId: context.userId,
-          action: "PAYMENT_VERIFIED",
-          entityType: "Payment",
-          entityId: payment.id,
-          metadata: { invoiceId: invoice.id, method: input.method, receiptNo: payment.receiptNo },
-        },
-      });
-
-      return payment;
-    },
-    { isolationLevel: "Serializable" },
-  );
+    const payment = await tx.payment.create({
+      data: { clinicId: context.clinicId, patientId: invoice.patientId, invoiceId: invoice.id, amount: input.amount, method: input.method, status: PaymentStatus.VERIFIED, externalRef, receiptNo: makeReceiptNo(), idempotencyKey: randomUUID(), receivedAt: new Date() },
+      select: { id: true, receiptNo: true, amount: true },
+    });
+    const newAmountPaid = Number(invoice.amountPaid) + input.amount;
+    const nextStatus = newAmountPaid >= Number(invoice.total) - 0.0001 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
+    await tx.invoice.update({ where: { id: invoice.id }, data: { amountPaid: newAmountPaid, status: nextStatus } });
+    await tx.auditLog.create({ data: { clinicId: context.clinicId, userId: context.userId, action: "PAYMENT_VERIFIED", entityType: "Payment", entityId: payment.id, metadata: { invoiceId: invoice.id, method: input.method, receiptNo: payment.receiptNo } } });
+    return payment;
+  }, { isolationLevel: "Serializable" });
 }
 
-/** Returns verified payments received during the current Kenya calendar day. */
 export async function getAccountsSummary(context: AuthContext) {
   const day = getKenyaDayBounds();
   const [payments, outstanding, invoices] = await Promise.all([
-    db.payment.aggregate({
-      where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, receivedAt: { gte: day.start, lt: day.end } },
-      _sum: { amount: true },
-    }),
-    db.invoice.findMany({
-      where: { clinicId: context.clinicId, status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] } },
-      select: { total: true, amountPaid: true },
-    }),
+    db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, receivedAt: { gte: day.start, lt: day.end } }, _sum: { amount: true } }),
+    db.invoice.findMany({ where: { clinicId: context.clinicId, status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] } }, select: { total: true, amountPaid: true } }),
     db.invoice.count({ where: { clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } } }),
   ]);
-
   return {
     collectedToday: toNumber(payments._sum.amount),
     outstanding: outstanding.reduce((sum, invoice) => sum + Math.max(0, toNumber(invoice.total) - toNumber(invoice.amountPaid)), 0),
@@ -294,12 +124,7 @@ export async function getAccountsSummary(context: AuthContext) {
 
 function getKenyaDayBounds() {
   const now = new Date();
-  const kenyaDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Africa/Nairobi",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+  const kenyaDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Nairobi", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
   const [year, month, day] = kenyaDate.split("-").map(Number);
   const start = new Date(Date.UTC(year, month - 1, day, -3));
   return { start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
