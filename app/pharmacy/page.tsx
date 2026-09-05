@@ -15,6 +15,7 @@ export default async function PharmacyPage() {
   const context = await requireClinicPermission(PERMISSIONS.PHARMACY_VIEW);
   const overview = await getPharmacyOverview(context);
   const canDispense = context.permissions.has(PERMISSIONS.PHARMACY_DISPENSE);
+  const canAdjust = context.permissions.has(PERMISSIONS.PHARMACY_STOCK_ADJUST);
 
   return (
     <WorkspaceShell context={context} activeHref="/pharmacy">
@@ -27,6 +28,7 @@ export default async function PharmacyPage() {
           <p className={styles.eyebrow}>Pharmacy workspace</p>
           <h1 className={styles.title}>Pharmacy</h1>
           <p className={styles.description}>Manage prescriptions, dispensing, stock and medicine batches from one workspace.</p>
+          {canAdjust ? <p><Link href="/pharmacy/inventory" className={styles.secondaryButton}>Open inventory & stock</Link></p> : null}
         </header>
 
         <section className={styles.cardGrid} aria-label="Pharmacy overview">
