@@ -155,4 +155,4 @@ Patient and clinical information is sensitive. Access must follow least privileg
 
 ## Security and compliance baseline
 
-Engineering controls are mapped to the applicable legal and contractual requirements rather than treating a framework as a legal certification. Kenya data-protection obligations are the primary baseline for Kenyan operations; HIPAA controls are applied when the product or a customer is actually within HIPAA scope. NIST CSF 2.0 is used as the cybersecurity risk-management framework. citeturn0search0turn0search1turn0search2
+Engineering controls are mapped to applicable legal and contractual requirements rather than treating a framework as a legal certification. Kenya data-protection obligations are the primary baseline for Kenyan operations; HIPAA controls apply when the product or a customer is actually within HIPAA scope; NIST CSF 2.0 is used as the cybersecurity risk-management framework.
