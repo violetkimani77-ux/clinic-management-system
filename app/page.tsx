@@ -55,7 +55,7 @@ export default function HomePage() {
             security or operational control.
           </p>
           <div className={styles.heroActions}>
-            <Link href="#trial" className={styles.primaryButton}>Start a 4-Day Free Trial</Link>
+            <Link href="#trial" className={styles.primaryButton}>Start Your 4-Day Free Trial</Link>
             <Link href="/login" className={styles.secondaryButton}>Enter CMS Portal</Link>
           </div>
         </div>
@@ -111,14 +111,14 @@ export default function HomePage() {
         <div className={styles.sectionInner}>
           <div className={styles.sectionIntro}>
             <p className={styles.sectionKicker}>Evaluate it in your own workflow</p>
-            <h2 className={styles.sectionTitle}>Try Hali CMS free for 4 days.</h2>
+            <h2 className={styles.sectionTitle}>Start Your 4-Day Free Trial.</h2>
             <p className={styles.sectionText}>
               We can provision a dedicated trial workspace for your clinic so your team can evaluate the core workflows, roles, security controls and reporting before making a commitment.
             </p>
             <p className={styles.sectionText}>No credit card is required for the trial.</p>
           </div>
           <div className={styles.heroActions}>
-            <Link href="/login" className={styles.primaryButton}>Request Your Free Trial</Link>
+            <Link href="/login" className={styles.primaryButton}>Start Your 4-Day Free Trial</Link>
             <Link href="/login" className={styles.secondaryButton}>Existing staff sign in</Link>
           </div>
         </div>
