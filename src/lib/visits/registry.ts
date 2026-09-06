@@ -1,6 +1,7 @@
 import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { VisitStatus } from "@prisma/client";
+import { recordAuditEvent } from "@/lib/audit";
 
 /**
  * Visit data access for the clinic workspace.
@@ -164,16 +165,12 @@ export async function createVisit(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "VISIT_CREATED",
-        entityType: "Visit",
-        entityId: visit.id,
-        metadata: { patientId: visit.patientId },
-      },
-    });
+    await recordAuditEvent(context, {
+      action: "VISIT_CREATED",
+      entityType: "Visit",
+      entityId: visit.id,
+      metadata: { patientId: visit.patientId },
+    }, tx);
 
     return visit;
   });
@@ -231,19 +228,15 @@ export async function updateVisit(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "VISIT_UPDATED",
-        entityType: "Visit",
-        entityId: visit.id,
-        metadata: {
-          previousStatus: current.status,
-          nextStatus: visit.status,
-        },
+    await recordAuditEvent(context, {
+      action: "VISIT_UPDATED",
+      entityType: "Visit",
+      entityId: visit.id,
+      metadata: {
+        previousStatus: current.status,
+        nextStatus: visit.status,
       },
-    });
+    }, tx);
 
     return visit;
   });

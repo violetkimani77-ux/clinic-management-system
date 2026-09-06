@@ -2,6 +2,7 @@ import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { InvoiceStatus, PrescriptionStatus } from "@prisma/client";
 import { randomUUID } from "node:crypto";
+import { recordAuditEvent } from "@/lib/audit";
 
 /**
  * Owns clinic-scoped pharmacy reads and dispensing transactions.
@@ -128,7 +129,12 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
     }
 
     const updated = await tx.prescription.update({ where: { id: prescription.id }, data: { status: PrescriptionStatus.DISPENSED }, select: { id: true, status: true } });
-    await tx.auditLog.create({ data: { clinicId: context.clinicId, userId: context.userId, action: "PRESCRIPTION_DISPENSED", entityType: "Prescription", entityId: prescription.id, metadata: { dispensingId: dispensing.id, invoiceId, totalCharge } } });
+    await recordAuditEvent(context, {
+      action: "PRESCRIPTION_DISPENSED",
+      entityType: "Prescription",
+      entityId: prescription.id,
+      metadata: { dispensingId: dispensing.id, invoiceId, totalCharge },
+    }, tx);
     return { ...updated, dispensingId: dispensing.id, invoiceId, totalCharge };
   }, { isolationLevel: "Serializable" });
 }

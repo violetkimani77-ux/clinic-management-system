@@ -2,6 +2,7 @@ import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { InvoiceStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import { randomUUID } from "node:crypto";
+import { recordAuditEvent } from "@/lib/audit";
 
 export type AccountInvoice = {
   id: string;
@@ -72,7 +73,7 @@ export async function createInvoice(context: AuthContext, input: { visitId: stri
       data: { clinicId: context.clinicId, patientId: visit.patientId, visitId: visit.id, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total, issuedAt: new Date(), items: { create: { description, quantity: input.quantity, unitPrice: input.unitPrice, total } } },
       select: { id: true, invoiceNo: true, total: true },
     });
-    await tx.auditLog.create({ data: { clinicId: context.clinicId, userId: context.userId, action: "INVOICE_CREATED", entityType: "Invoice", entityId: invoice.id, metadata: { visitId: visit.id, total: invoice.total.toString() } } });
+    await recordAuditEvent(context, { action: "INVOICE_CREATED", entityType: "Invoice", entityId: invoice.id, metadata: { visitId: visit.id, total: invoice.total.toString() } }, tx);
     return invoice;
   });
 }
@@ -95,7 +96,7 @@ export async function recordPayment(context: AuthContext, input: { invoiceId: st
     const newAmountPaid = Number(invoice.amountPaid) + input.amount;
     const nextStatus = newAmountPaid >= Number(invoice.total) - 0.0001 ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID;
     await tx.invoice.update({ where: { id: invoice.id }, data: { amountPaid: newAmountPaid, status: nextStatus } });
-    await tx.auditLog.create({ data: { clinicId: context.clinicId, userId: context.userId, action: "PAYMENT_VERIFIED", entityType: "Payment", entityId: payment.id, metadata: { invoiceId: invoice.id, method: input.method, receiptNo: payment.receiptNo } } });
+    await recordAuditEvent(context, { action: "PAYMENT_VERIFIED", entityType: "Payment", entityId: payment.id, metadata: { invoiceId: invoice.id, method: input.method, receiptNo: payment.receiptNo } }, tx);
     return payment;
   }, { isolationLevel: "Serializable" });
 }

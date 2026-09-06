@@ -1,6 +1,7 @@
 import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { PrescriptionStatus } from "@prisma/client";
+import { recordAuditEvent } from "@/lib/audit";
 
 type PrescriptionItemInput = {
   medicineId: string;
@@ -133,16 +134,12 @@ export async function sendPrescriptionToPharmacy(context: AuthContext, prescript
       select: { id: true, patientId: true, visitId: true },
     });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "PRESCRIPTION_SENT_TO_PHARMACY",
-        entityType: "Prescription",
-        entityId: prescription.id,
-        metadata: { patientId: prescription.patientId, visitId: prescription.visitId },
-      },
-    });
+    await recordAuditEvent(context, {
+      action: "PRESCRIPTION_SENT_TO_PHARMACY",
+      entityType: "Prescription",
+      entityId: prescription.id,
+      metadata: { patientId: prescription.patientId, visitId: prescription.visitId },
+    }, tx);
 
     return updated;
   });

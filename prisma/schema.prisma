@@ -102,6 +102,7 @@ model Clinic {
   payments Payment[]
   expenses Expense[]
   auditLogs AuditLog[]
+  auditSequence AuditSequence?
   sessions AuthSession[]
   stockMovements StockMovement[]
   dispensings Dispensing[]
@@ -418,19 +419,35 @@ model Expense {
   @@index([clinicId, expenseDate])
 }
 
-model AuditLog {
-  id String @id @default(uuid())
-  clinicId String
-  userId String?
-  action String
-  entityType String
-  entityId String?
-  metadata Json?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
+model AuditSequence {
+  id              String   @id @default(uuid())
+  clinicId        String   @unique
+  currentSequence Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  clinicId     String
+  userId       String?
+  sequence     Int
+  action       String
+  entityType   String
+  entityId     String?
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  previousHash String?
+  entryHash    String
+  createdAt    DateTime @default(now())
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([clinicId, sequence])
   @@index([clinicId, createdAt])
   @@index([clinicId, entityType, entityId])
   @@index([userId, createdAt])

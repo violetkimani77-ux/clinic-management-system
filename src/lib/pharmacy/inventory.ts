@@ -1,6 +1,7 @@
 import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { StockMovementType } from "@prisma/client";
+import { recordAuditEvent } from "@/lib/audit";
 
 /**
  * Owns clinic-scoped medicine catalog and stock-batch operations.
@@ -113,16 +114,12 @@ export async function createMedicine(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "MEDICINE_CREATED",
-        entityType: "Medicine",
-        entityId: medicine.id,
-        metadata: { name: medicine.name },
-      },
-    });
+    await recordAuditEvent(context, {
+      action: "MEDICINE_CREATED",
+      entityType: "Medicine",
+      entityId: medicine.id,
+      metadata: { name: medicine.name },
+    }, tx);
 
     return medicine;
   });
@@ -193,16 +190,12 @@ export async function receiveStock(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "STOCK_RECEIVED",
-        entityType: "StockBatch",
-        entityId: batch.id,
-        metadata: { medicineId: medicine.id, quantity: input.quantity, batchNumber },
-      },
-    });
+    await recordAuditEvent(context, {
+      action: "STOCK_RECEIVED",
+      entityType: "StockBatch",
+      entityId: batch.id,
+      metadata: { medicineId: medicine.id, quantity: input.quantity, batchNumber },
+    }, tx);
 
     return batch;
   });
@@ -241,16 +234,12 @@ export async function adjustStock(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        clinicId: context.clinicId,
-        userId: context.userId,
-        action: "STOCK_ADJUSTED",
-        entityType: "StockBatch",
-        entityId: batch.id,
-        metadata: { medicineName: batch.medicine.name, delta: input.delta, reason },
-      },
-    });
+    await recordAuditEvent(context, {
+      action: "STOCK_ADJUSTED",
+      entityType: "StockBatch",
+      entityId: batch.id,
+      metadata: { medicineName: batch.medicine.name, delta: input.delta, reason },
+    }, tx);
 
     return updated;
   });
