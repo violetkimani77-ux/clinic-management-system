@@ -84,6 +84,7 @@ async function isRateLimited(
   keyType: string,
   key: string,
   now: Date,
+  windowMs: number,
 ): Promise<boolean> {
   const keyHash = hashRateLimitKey(key);
   const existing = await tx.authRateLimit.findUnique({
@@ -92,7 +93,7 @@ async function isRateLimited(
   });
 
   if (!existing) return false;
-  if (now.getTime() - existing.windowStartedAt.getTime() >= IP_FAILURE_WINDOW_MS) return false;
+  if (now.getTime() - existing.windowStartedAt.getTime() >= windowMs) return false;
   return Boolean(existing.blockedUntil && existing.blockedUntil > now);
 }
 
@@ -112,7 +113,13 @@ export async function checkLoginSecurity(
 
     return {
       accountBlocked: Boolean(user?.lockedUntil && user.lockedUntil > now),
-      ipBlocked: await isRateLimited(tx, "LOGIN_IP", ipAddress, now),
+      ipBlocked: await isRateLimited(
+        tx,
+        "LOGIN_IP",
+        ipAddress,
+        now,
+        IP_FAILURE_WINDOW_MS,
+      ),
     };
   });
 }
@@ -205,11 +212,10 @@ export async function recordFailedLogin(
 
 export async function recordSuccessfulPasswordLogin(
   userId: string,
+  normalizedEmail: string,
   context: AuthAttemptContext,
   mfaRequired: boolean,
 ): Promise<void> {
-  const now = new Date();
-
   await db.$transaction(async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
@@ -227,13 +233,14 @@ export async function recordSuccessfulPasswordLogin(
       data: { failedLoginAttempts: 0, lockedUntil: null },
     });
 
-    const accountKey = `${user.id}:success`;
-    await tx.authRateLimit.deleteMany({
+    await tx.authRateLimit.delete({
       where: {
-        keyType: "LOGIN_ACCOUNT",
-        keyHash: hashRateLimitKey(`${user.id}:${user.id}`),
+        keyType_keyHash: {
+          keyType: "LOGIN_ACCOUNT",
+          keyHash: hashRateLimitKey(`${user.id}:${normalizedEmail}`),
+        },
       },
-    });
+    }).catch(() => undefined);
 
     const clinicId = user.memberships[0]?.clinicId;
     if (!clinicId) return;
