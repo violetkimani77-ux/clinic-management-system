@@ -2,51 +2,19 @@ import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { InvoiceStatus, PrescriptionStatus } from "@prisma/client";
 import { randomUUID } from "node:crypto";
+import { recordAuditEvent } from "@/lib/audit";
 
-/**
- * Owns clinic-scoped pharmacy reads and dispensing transactions.
- *
- * Stock allocation and the resulting pharmacy charge are committed together
- * so inventory and billing cannot drift apart.
- */
-
-export type PharmacyPrescriptionItem = {
-  id: string; medicineId: string; medicineName: string; strength: string | null; form: string | null;
-  quantity: number; dosage: string | null; frequency: string | null; duration: string | null; instructions: string | null;
-};
-export type PharmacyPrescription = {
-  id: string; patientId: string; patientNo: string; patientName: string; visitId: string | null;
-  status: PrescriptionStatus; createdAt: Date; notes: string | null; items: PharmacyPrescriptionItem[];
-};
-export type PharmacyOverview = {
-  prescriptions: PharmacyPrescription[]; dispensedTodayCount: number;
-  lowStockMedicines: Array<{ id: string; name: string; currentQuantity: number; reorderLevel: number }>;
-  expiredBatchCount: number; expiringSoonBatchCount: number;
-};
+export type PharmacyPrescriptionItem = { id: string; medicineId: string; medicineName: string; strength: string | null; form: string | null; quantity: number; dosage: string | null; frequency: string | null; duration: string | null; instructions: string | null };
+export type PharmacyPrescription = { id: string; patientId: string; patientNo: string; patientName: string; visitId: string | null; status: PrescriptionStatus; createdAt: Date; notes: string | null; items: PharmacyPrescriptionItem[] };
+export type PharmacyOverview = { prescriptions: PharmacyPrescription[]; dispensedTodayCount: number; lowStockMedicines: Array<{ id: string; name: string; currentQuantity: number; reorderLevel: number }>; expiredBatchCount: number; expiringSoonBatchCount: number };
 
 export async function listPharmacyPrescriptions(context: AuthContext): Promise<PharmacyPrescription[]> {
   const prescriptions = await db.prescription.findMany({
     where: { clinicId: context.clinicId, status: { in: [PrescriptionStatus.SENT_TO_PHARMACY, PrescriptionStatus.PROCESSING] } },
     orderBy: { createdAt: "asc" }, take: 100,
-    select: {
-      id: true, patientId: true, visitId: true, status: true, createdAt: true, notes: true,
-      patient: { select: { patientNo: true, firstName: true, lastName: true } },
-      items: { orderBy: { createdAt: "asc" }, select: {
-        id: true, medicineId: true, quantity: true, dosage: true, frequency: true, duration: true, instructions: true,
-        medicine: { select: { name: true, strength: true, form: true } },
-      } },
-    },
+    select: { id: true, patientId: true, visitId: true, status: true, createdAt: true, notes: true, patient: { select: { patientNo: true, firstName: true, lastName: true } }, items: { orderBy: { createdAt: "asc" }, select: { id: true, medicineId: true, quantity: true, dosage: true, frequency: true, duration: true, instructions: true, medicine: { select: { name: true, strength: true, form: true } } } } },
   });
-  return prescriptions.map((prescription) => ({
-    id: prescription.id, patientId: prescription.patientId, patientNo: prescription.patient.patientNo,
-    patientName: `${prescription.patient.firstName} ${prescription.patient.lastName}`, visitId: prescription.visitId,
-    status: prescription.status, createdAt: prescription.createdAt, notes: prescription.notes,
-    items: prescription.items.map((item) => ({
-      id: item.id, medicineId: item.medicineId, medicineName: item.medicine.name, strength: item.medicine.strength,
-      form: item.medicine.form, quantity: item.quantity, dosage: item.dosage, frequency: item.frequency,
-      duration: item.duration, instructions: item.instructions,
-    })),
-  }));
+  return prescriptions.map((prescription) => ({ id: prescription.id, patientId: prescription.patientId, patientNo: prescription.patient.patientNo, patientName: `${prescription.patient.firstName} ${prescription.patient.lastName}`, visitId: prescription.visitId, status: prescription.status, createdAt: prescription.createdAt, notes: prescription.notes, items: prescription.items.map((item) => ({ id: item.id, medicineId: item.medicineId, medicineName: item.medicine.name, strength: item.medicine.strength, form: item.medicine.form, quantity: item.quantity, dosage: item.dosage, frequency: item.frequency, duration: item.duration, instructions: item.instructions })) }));
 }
 
 export async function getPharmacyOverview(context: AuthContext): Promise<PharmacyOverview> {
@@ -61,24 +29,12 @@ export async function getPharmacyOverview(context: AuthContext): Promise<Pharmac
   const lowStockMedicines = medicines.map((medicine) => ({ id: medicine.id, name: medicine.name, currentQuantity: quantityByMedicine.get(medicine.id) ?? 0, reorderLevel: medicine.reorderLevel })).filter((medicine) => medicine.currentQuantity <= medicine.reorderLevel);
   const now = new Date();
   const expiryLimit = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  return {
-    prescriptions, dispensedTodayCount, lowStockMedicines,
-    expiredBatchCount: batches.filter((batch) => batch.expiryDate < now).length,
-    expiringSoonBatchCount: batches.filter((batch) => batch.expiryDate >= now && batch.expiryDate <= expiryLimit).length,
-  };
+  return { prescriptions, dispensedTodayCount, lowStockMedicines, expiredBatchCount: batches.filter((batch) => batch.expiryDate < now).length, expiringSoonBatchCount: batches.filter((batch) => batch.expiryDate >= now && batch.expiryDate <= expiryLimit).length };
 }
 
-/**
- * Dispenses a prescription using FEFO and creates exactly one pharmacy charge
- * for the dispensing event. The unique dispensing reference prevents a second
- * invoice line from being created for the same dispensing.
- */
 export async function dispensePrescription(context: AuthContext, prescriptionId: string) {
   return db.$transaction(async (tx) => {
-    const prescription = await tx.prescription.findFirst({
-      where: { id: prescriptionId, clinicId: context.clinicId },
-      select: { id: true, patientId: true, visitId: true, status: true, items: { select: { medicineId: true, quantity: true } } },
-    });
+    const prescription = await tx.prescription.findFirst({ where: { id: prescriptionId, clinicId: context.clinicId }, select: { id: true, patientId: true, visitId: true, status: true, items: { select: { medicineId: true, quantity: true } } } });
     if (!prescription) throw new Error("PRESCRIPTION_NOT_FOUND");
     if (prescription.status !== PrescriptionStatus.SENT_TO_PHARMACY && prescription.status !== PrescriptionStatus.PROCESSING) throw new Error("PRESCRIPTION_NOT_READY");
     if (prescription.items.length === 0) throw new Error("PRESCRIPTION_HAS_NO_ITEMS");
@@ -90,11 +46,7 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
     let totalCharge = 0;
 
     for (const item of prescription.items) {
-      const batches = await tx.stockBatch.findMany({
-        where: { clinicId: context.clinicId, medicineId: item.medicineId, quantity: { gt: 0 }, expiryDate: { gte: now } },
-        orderBy: [{ expiryDate: "asc" }, { createdAt: "asc" }],
-        select: { id: true, quantity: true, sellingPrice: true, medicine: { select: { name: true } } },
-      });
+      const batches = await tx.stockBatch.findMany({ where: { clinicId: context.clinicId, medicineId: item.medicineId, quantity: { gt: 0 }, expiryDate: { gte: now } }, orderBy: [{ expiryDate: "asc" }, { createdAt: "asc" }], select: { id: true, quantity: true, sellingPrice: true, medicine: { select: { name: true } } } });
       if (batches.reduce((sum, batch) => sum + batch.quantity, 0) < item.quantity) throw new Error("INSUFFICIENT_STOCK");
       let remaining = item.quantity;
       let itemCharge = 0;
@@ -120,15 +72,12 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
       await tx.invoiceItem.create({ data: { invoiceId, dispensingId: dispensing.id, description, quantity: 1, unitPrice: totalCharge, total: totalCharge } });
       await tx.invoice.update({ where: { id: invoiceId }, data: { total: { increment: totalCharge } } });
     } else {
-      const invoice = await tx.invoice.create({
-        data: { clinicId: context.clinicId, patientId: prescription.patientId, visitId: prescription.visitId, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total: totalCharge, issuedAt: new Date(), items: { create: { dispensingId: dispensing.id, description, quantity: 1, unitPrice: totalCharge, total: totalCharge } } },
-        select: { id: true },
-      });
+      const invoice = await tx.invoice.create({ data: { clinicId: context.clinicId, patientId: prescription.patientId, visitId: prescription.visitId, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total: totalCharge, issuedAt: new Date(), items: { create: { dispensingId: dispensing.id, description, quantity: 1, unitPrice: totalCharge, total: totalCharge } } }, select: { id: true } });
       invoiceId = invoice.id;
     }
 
     const updated = await tx.prescription.update({ where: { id: prescription.id }, data: { status: PrescriptionStatus.DISPENSED }, select: { id: true, status: true } });
-    await tx.auditLog.create({ data: { clinicId: context.clinicId, userId: context.userId, action: "PRESCRIPTION_DISPENSED", entityType: "Prescription", entityId: prescription.id, metadata: { dispensingId: dispensing.id, invoiceId, totalCharge } } });
+    await recordAuditEvent(context, { action: "PRESCRIPTION_DISPENSED", entityType: "Prescription", entityId: prescription.id, metadata: { dispensingId: dispensing.id, invoiceId, totalCharge } }, tx);
     return { ...updated, dispensingId: dispensing.id, invoiceId, totalCharge };
   }, { isolationLevel: "Serializable" });
 }
