@@ -1,0 +1,129 @@
+enum PlatformUserStatus {
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum PlatformRole {
+  OWNER
+  ADMIN
+  SUPPORT
+  BILLING
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  SETUP
+  TRIAL
+  ACTIVE
+  GRACE_PERIOD
+  PAST_DUE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+enum TenantIsolationMode {
+  POOL
+  BRIDGE_DATABASE
+  SILO_DATABASE
+}
+
+enum TenantDataStoreStatus {
+  PROVISIONING
+  MIGRATING
+  HEALTHY
+  DEGRADED
+  SUSPENDED
+  RETIRED
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model PlatformUser {
+  id String @id @default(uuid())
+  email String @unique
+  name String
+  passwordHash String
+  role PlatformRole @default(SUPPORT)
+  status PlatformUserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, role])
+}
+
+model ClinicQuote {
+  id String @id @default(uuid())
+  clinicId String
+  status QuoteStatus @default(DRAFT)
+  currency String @default("KES")
+  quotedAmount Decimal? @db.Decimal(14, 2)
+  validUntil DateTime?
+  sentAt DateTime?
+  acceptedAt DateTime?
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([clinicId, status])
+  @@index([status, validUntil])
+}
+
+model ClinicSubscription {
+  id String @id @default(uuid())
+  clinicId String @unique
+  quoteId String?
+  status SubscriptionStatus @default(SETUP)
+  activatedAt DateTime?
+  currentPeriodEnd DateTime?
+  graceEndsAt DateTime?
+  suspendedAt DateTime?
+  cancelledAt DateTime?
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, currentPeriodEnd])
+}
+
+model TenantDataStore {
+  id String @id @default(uuid())
+  clinicId String @unique
+  isolationMode TenantIsolationMode @default(POOL)
+  status TenantDataStoreStatus @default(HEALTHY)
+  connectionRef String?
+  databaseName String?
+  schemaName String?
+  region String?
+  migrationVersion String?
+  provisionedAt DateTime?
+  lastHealthCheckAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([isolationMode, status])
+  @@index([region, status])
+}
+
+model MaintenanceWindow {
+  id String @id @default(uuid())
+  status MaintenanceStatus @default(SCHEDULED)
+  startsAt DateTime
+  endsAt DateTime?
+  expectedEndAt DateTime?
+  maintenanceType String
+  message String
+  lastUpdatedById String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, startsAt, endsAt])
+}
