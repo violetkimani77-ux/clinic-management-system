@@ -1,17 +1,9 @@
 import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma, SubscriptionStatus, TenantDataStoreStatus, TenantIsolationMode, TenantResidencyPolicy, TransferAssessmentStatus, UserStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
-import {
-  SubscriptionStatus,
-  TenantDataStoreStatus,
-  TenantIsolationMode,
-  TenantResidencyPolicy,
-  TransferAssessmentStatus,
-  UserStatus,
-} from "@prisma/client";
 
 const TRIAL_DURATION_MS = 4 * 24 * 60 * 60 * 1000;
 const TRIAL_WINDOW_MS = 60 * 60 * 1000;
