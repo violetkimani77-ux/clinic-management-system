@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuthContext } from "@/lib/auth/authorization";
 
@@ -7,7 +8,7 @@ export type AuditEventInput = {
   action: string;
   entityType: string;
   entityId?: string | null;
-  metadata?: Record<string, unknown>;
+  metadata?: Prisma.InputJsonValue;
 };
 
 /**
