@@ -40,6 +40,7 @@ export default function HomePage() {
         <div className={styles.navActions}>
           <Link href="#capabilities" className={styles.navLink}>Capabilities</Link>
           <Link href="#security" className={styles.navLink}>Security</Link>
+          <Link href="#trial" className={styles.navLink}>Free trial</Link>
           <Link href="/login" className={styles.primaryButton}>CMS Portal Sign in</Link>
         </div>
       </nav>
@@ -54,11 +55,11 @@ export default function HomePage() {
             security or operational control.
           </p>
           <div className={styles.heroActions}>
-            <Link href="/login" className={styles.primaryButton}>Enter CMS Portal</Link>
-            <Link href="#capabilities" className={styles.secondaryButton}>Explore capabilities</Link>
+            <Link href="#trial" className={styles.primaryButton}>Start a 4-Day Free Trial</Link>
+            <Link href="/login" className={styles.secondaryButton}>Enter CMS Portal</Link>
           </div>
           <div className={styles.trustRow} aria-label="Platform highlights">
-            <span className={styles.trustItem}>Multi-clinic ready</span>
+            <span className={styles.trustItem}>4-day free trial</span>
             <span className={styles.trustItem}>MFA protected</span>
             <span className={styles.trustItem}>Kenya-first residency</span>
           </div>
@@ -111,14 +112,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.cta}`}>
+      <section id="trial" className={`${styles.section} ${styles.cta}`}>
         <div className={styles.sectionInner}>
           <div className={styles.sectionIntro}>
-            <p className={styles.sectionKicker}>Ready when your team is</p>
-            <h2 className={styles.sectionTitle}>Sign in to your clinic workspace.</h2>
-            <p className={styles.sectionText}>Existing clinic staff can continue directly to the secure CMS portal.</p>
+            <p className={styles.sectionKicker}>Evaluate it in your own workflow</p>
+            <h2 className={styles.sectionTitle}>Try the Clinic Management System free for 4 days.</h2>
+            <p className={styles.sectionText}>
+              We can provision a dedicated trial workspace for your clinic so your team can evaluate the core workflows, roles, security controls and reporting before making a commitment.
+            </p>
+            <p className={styles.sectionText}>No credit card is required for the trial.</p>
           </div>
-          <Link href="/login" className={styles.primaryButton}>Open CMS Portal</Link>
+          <div className={styles.heroActions}>
+            <Link href="/login" className={styles.primaryButton}>Request Your Free Trial</Link>
+            <Link href="/login" className={styles.secondaryButton}>Existing staff sign in</Link>
+          </div>
         </div>
       </section>
 
