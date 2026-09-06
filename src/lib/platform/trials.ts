@@ -108,21 +108,7 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
           data: {
             name: clinicName,
             code: createClinicCode(),
-            memberships: {
-              create: {
-                roleId: adminRole.id,
-                user: {
-                  create: {
-                    email,
-                    name: administratorName,
-                    passwordHash,
-                    status: UserStatus.ACTIVE,
-                  },
-                },
-              },
-            },
           },
-          include: { memberships: { include: { user: true } } },
         });
         break;
       } catch (error) {
@@ -131,6 +117,23 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
     }
 
     if (!clinic) throw new Error("TRIAL_CLINIC_CREATION_FAILED");
+
+    const administrator = await tx.user.create({
+      data: {
+        email,
+        name: administratorName,
+        passwordHash,
+        status: UserStatus.ACTIVE,
+      },
+    });
+
+    await tx.membership.create({
+      data: {
+        clinicId: clinic.id,
+        userId: administrator.id,
+        roleId: adminRole.id,
+      },
+    });
 
     await tx.clinicSubscription.create({
       data: {
@@ -155,9 +158,6 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
         lastHealthCheckAt: now,
       },
     });
-
-    const administrator = clinic.memberships[0]?.user;
-    if (!administrator) throw new Error("TRIAL_ADMIN_CREATION_FAILED");
 
     return {
       clinicId: clinic.id,
