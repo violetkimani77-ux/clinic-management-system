@@ -1,6 +1,14 @@
 import type { AuthContext } from "@/lib/auth/authorization";
 import { recordAuditEvent } from "@/lib/audit";
-import { db } from "@/lib/db";
+
+type AuditCreateData = {
+  clinicId: string;
+  userId: string | null;
+  sequence: number;
+  previousHash: string | null;
+  entryHash: string;
+  metadata?: unknown;
+};
 
 const auditRows: Array<{ sequence: number; entryHash: string }> = [];
 
@@ -13,7 +21,7 @@ const tx = {
     findUnique: jest.fn(async ({ where }: { where: { clinicId_sequence: { sequence: number } } }) =>
       auditRows.find((row) => row.sequence === where.clinicId_sequence.sequence) ?? null,
     ),
-    create: jest.fn(async ({ data }: { data: { sequence: number; entryHash: string } }) => {
+    create: jest.fn(async ({ data }: { data: AuditCreateData }) => {
       auditRows.push({ sequence: data.sequence, entryHash: data.entryHash });
       return data;
     }),
@@ -24,7 +32,6 @@ const tx = {
 jest.mock("@/lib/db", () => ({
   db: {
     $transaction: jest.fn(async (callback: (client: typeof tx) => unknown) => callback(tx)),
-    auditLog: { create: jest.fn() },
   },
 }));
 
@@ -58,8 +65,16 @@ describe("audit events", () => {
   });
 
   it("chains a second event to the first event hash", async () => {
-    await recordAuditEvent(context, { action: "PATIENT_VIEWED", entityType: "Patient", entityId: "patient-1" });
-    await recordAuditEvent(context, { action: "PATIENT_SEARCHED", entityType: "Patient", metadata: { resultCount: 4 } });
+    await recordAuditEvent(context, {
+      action: "PATIENT_VIEWED",
+      entityType: "Patient",
+      entityId: "patient-1",
+    });
+    await recordAuditEvent(context, {
+      action: "PATIENT_SEARCHED",
+      entityType: "Patient",
+      metadata: { resultCount: 4 },
+    });
 
     const calls = jest.mocked(tx.auditLog.create).mock.calls;
     expect(calls[0][0].data.sequence).toBe(1);
