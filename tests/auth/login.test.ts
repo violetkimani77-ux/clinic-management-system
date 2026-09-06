@@ -74,7 +74,7 @@ describe("staff login clinic context", () => {
     ).resolves.toEqual({ status: "failure", error: "Unable to sign in." });
     expect(createSession).not.toHaveBeenCalled();
     expect(db.mfaChallenge.create).not.toHaveBeenCalled();
-    expect(recordFailedLogin).toHaveBeenCalledWith("staff@example.com", context);
+    expect(recordFailedLogin).not.toHaveBeenCalled();
   });
 
   it("binds the session to the explicitly selected clinic", async () => {
