@@ -68,6 +68,24 @@ enum StockMovementType {
   DISPOSAL
 }
 
+enum ConsentPurpose {
+  CLINICAL_CARE
+}
+
+enum ConsentStatus {
+  CONSENTED
+  REFUSED
+  NOT_REQUIRED
+  WITHDRAWN
+}
+
+enum ConsentMethod {
+  VERBAL
+  WRITTEN
+  ELECTRONIC
+  NOT_APPLICABLE
+}
+
 model Clinic {
   id String @id @default(uuid())
   name String
@@ -87,6 +105,7 @@ model Clinic {
   sessions AuthSession[]
   stockMovements StockMovement[]
   dispensings Dispensing[]
+  patientConsents PatientConsent[]
 }
 
 model User {
@@ -101,6 +120,7 @@ model User {
   auditLogs AuditLog[]
   sessions AuthSession[]
   dispensing Dispensing[]
+  recordedConsents PatientConsent[]
 }
 
 model AuthSession {
@@ -172,9 +192,34 @@ model Patient {
   prescriptions Prescription[]
   invoices Invoice[]
   payments Payment[]
+  consents PatientConsent[]
   @@unique([clinicId, patientNo])
   @@index([clinicId, lastName, firstName])
   @@index([clinicId, phone])
+}
+
+model PatientConsent {
+  id String @id @default(uuid())
+  clinicId String
+  patientId String
+  purpose ConsentPurpose
+  status ConsentStatus
+  method ConsentMethod
+  consentVersion String?
+  obtainedAt DateTime?
+  withdrawnAt DateTime?
+  recordedById String?
+  representativeName String?
+  representativeRelationship String?
+  exceptionReason String?
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  recordedBy User? @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+  @@index([clinicId, patientId])
+  @@index([patientId, purpose, createdAt])
 }
 
 model Visit {
