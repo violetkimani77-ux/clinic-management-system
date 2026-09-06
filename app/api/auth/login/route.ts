@@ -5,9 +5,9 @@ import { SESSION_COOKIE } from "@/lib/auth/session";
 
 const SESSION_MAX_AGE = 60 * 60 * 8;
 
-/** Authenticates staff and returns either a session or a short-lived MFA challenge. */
+/** Authenticates staff and returns a clinic-scoped session, MFA challenge, or clinic-selection result. */
 export async function POST(request: Request) {
-  let body: { email?: unknown; password?: unknown };
+  let body: { email?: unknown; password?: unknown; clinicId?: unknown };
 
   try {
     body = await request.json();
@@ -23,20 +23,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
+  const clinicId = typeof body.clinicId === "string" && body.clinicId.trim() ? body.clinicId : undefined;
   const result = await authenticateStaff(body.email, body.password, {
     ipAddress: getClientIp(request),
     userAgent: getUserAgent(request),
-  });
+  }, clinicId);
 
   if (result.status === "failure") {
     return NextResponse.json({ error: result.error }, { status: 401 });
+  }
+
+  if (result.status === "clinic_selection_required") {
+    return NextResponse.json({ ok: true, clinicSelectionRequired: true, clinics: result.clinics });
   }
 
   if (result.status === "mfa_required") {
     return NextResponse.json({ ok: true, mfaRequired: true, challengeToken: result.challengeToken });
   }
 
-  const response = NextResponse.json({ ok: true, mfaRequired: false });
+  const response = NextResponse.json({ ok: true, mfaRequired: false, clinicId: result.session.clinicId });
   response.cookies.set(SESSION_COOKIE, result.session.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
