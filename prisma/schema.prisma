@@ -107,6 +107,7 @@ model Clinic {
   stockMovements StockMovement[]
   dispensings Dispensing[]
   patientConsents PatientConsent[]
+  mfaChallenges MfaChallenge[]
 }
 
 model User {
@@ -115,6 +116,12 @@ model User {
   name String
   passwordHash String
   status UserStatus @default(INVITED)
+  failedLoginAttempts Int @default(0)
+  lockedUntil DateTime?
+  mfaEnabled Boolean @default(false)
+  mfaSecretEncrypted String?
+  mfaEnrolledAt DateTime?
+  mfaRecoveryCodesGeneratedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   memberships Membership[]
@@ -122,6 +129,8 @@ model User {
   sessions AuthSession[]
   dispensing Dispensing[]
   recordedConsents PatientConsent[]
+  mfaRecoveryCodes MfaRecoveryCode[]
+  mfaChallenges MfaChallenge[]
 }
 
 model AuthSession {
@@ -136,6 +145,45 @@ model AuthSession {
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   @@index([userId, expiresAt])
   @@index([clinicId, expiresAt])
+}
+
+model MfaRecoveryCode {
+  id String @id @default(uuid())
+  userId String
+  codeHash String
+  usedAt DateTime?
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, codeHash])
+  @@index([userId, usedAt])
+}
+
+model MfaChallenge {
+  id String @id @default(uuid())
+  tokenHash String @unique
+  userId String
+  clinicId String
+  expiresAt DateTime
+  attempts Int @default(0)
+  consumedAt DateTime?
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  @@index([userId, expiresAt])
+  @@index([clinicId, expiresAt])
+}
+
+model AuthRateLimit {
+  id String @id @default(uuid())
+  keyType String
+  keyHash String
+  attempts Int @default(0)
+  windowStartedAt DateTime
+  blockedUntil DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([keyType, keyHash])
+  @@index([blockedUntil])
 }
 
 model Role {
@@ -420,33 +468,30 @@ model Expense {
 }
 
 model AuditSequence {
-  id              String   @id @default(uuid())
-  clinicId        String   @unique
-  currentSequence Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
+  id String @id @default(uuid())
+  clinicId String @unique
+  currentSequence Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
 }
 
 model AuditLog {
-  id           String   @id @default(uuid())
-  clinicId     String
-  userId       String?
-  sequence     Int
-  action       String
-  entityType   String
-  entityId     String?
-  metadata     Json?
-  ipAddress    String?
-  userAgent    String?
+  id String @id @default(uuid())
+  clinicId String
+  userId String?
+  sequence Int
+  action String
+  entityType String
+  entityId String?
+  metadata Json?
+  ipAddress String?
+  userAgent String?
   previousHash String?
-  entryHash    String
-  createdAt    DateTime @default(now())
-
+  entryHash String
+  createdAt DateTime @default(now())
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  user   User?  @relation(fields: [userId], references: [id], onDelete: Restrict)
-
+  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
   @@unique([clinicId, sequence])
   @@index([clinicId, createdAt])
   @@index([clinicId, entityType, entityId])
