@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuthContext } from "@/lib/auth/authorization";
@@ -80,6 +81,8 @@ async function writeAuditEvent(
   const currentSequence = lockedSequence[0]?.currentSequence ?? 0;
   const sequence = currentSequence + 1;
 
+  const id = randomUUID();
+  const createdAt = new Date();
   const previous =
     sequence > 1
       ? await tx.auditLog.findUnique({
@@ -92,9 +95,6 @@ async function writeAuditEvent(
           select: { entryHash: true },
         })
       : null;
-
-  const id = crypto.randomUUID();
-  const createdAt = new Date();
   const previousHash = previous?.entryHash ?? null;
   const metadata = event.metadata ?? null;
   const ipAddress = event.ipAddress ?? null;
