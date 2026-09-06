@@ -28,7 +28,6 @@ export type PatientProfile = {
   notes: string | null;
 };
 
-/** Builds a human-readable patient number with a clinic-scoped unique guard. */
 function createPatientNumber(): string {
   const date = new Date();
   const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
@@ -38,7 +37,6 @@ function createPatientNumber(): string {
   return `P-${day}-${suffix}`;
 }
 
-/** Searches only active patients belonging to the authenticated clinic. */
 export async function searchPatients(context: AuthContext, query = ""): Promise<PatientSearchResult[]> {
   const normalizedQuery = query.trim();
   const patients = await db.patient.findMany({
@@ -68,7 +66,6 @@ export async function searchPatients(context: AuthContext, query = ""): Promise<
   return patients;
 }
 
-/** Loads only the registry fields needed by the patient profile page. */
 export async function getPatientProfile(context: AuthContext, patientId: string): Promise<PatientProfile | null> {
   const patient = await db.patient.findFirst({
     where: { id: patientId, clinicId: context.clinicId, archivedAt: null },
@@ -96,7 +93,6 @@ export type CreatePatientInput = {
   notes?: string | null;
 };
 
-/** Creates a patient and its audit event atomically within the active clinic. */
 export async function createPatient(context: AuthContext, input: CreatePatientInput) {
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
@@ -117,20 +113,18 @@ export async function createPatient(context: AuthContext, input: CreatePatientIn
         notes: input.notes?.trim() || null,
       },
     });
-    await tx.auditLog.create({
-      data: { clinicId: context.clinicId, userId: context.userId, action: "PATIENT_CREATED", entityType: "Patient", entityId: patient.id, metadata: { patientNo: patient.patientNo } },
-    });
+
+    await recordAuditEvent(context, {
+      action: "PATIENT_CREATED",
+      entityType: "Patient",
+      entityId: patient.id,
+      metadata: { patientNo: patient.patientNo },
+    }, tx);
+
     return patient;
   });
 }
 
-/**
- * Updates registry data only when the patient belongs to the active clinic.
- *
- * The operation records who made the change; important clinical history is
- * intentionally not overwritten here because those workflows will have their
- * own immutable/audited records.
- */
 export async function updatePatient(context: AuthContext, patientId: string, input: CreatePatientInput) {
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
@@ -153,9 +147,13 @@ export async function updatePatient(context: AuthContext, patientId: string, inp
       },
     });
 
-    await tx.auditLog.create({
-      data: { clinicId: context.clinicId, userId: context.userId, action: "PATIENT_UPDATED", entityType: "Patient", entityId: patient.id, metadata: { patientNo: patient.patientNo } },
-    });
+    await recordAuditEvent(context, {
+      action: "PATIENT_UPDATED",
+      entityType: "Patient",
+      entityId: patient.id,
+      metadata: { patientNo: patient.patientNo },
+    }, tx);
+
     return updated;
   });
 }
