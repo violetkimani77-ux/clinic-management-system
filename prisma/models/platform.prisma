@@ -45,6 +45,19 @@ enum TenantDataStoreStatus {
   RETIRED
 }
 
+enum TenantResidencyPolicy {
+  KENYA_ONLY
+  KENYA_SERVING_COPY
+}
+
+enum TransferAssessmentStatus {
+  NOT_REQUIRED
+  REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum MaintenanceStatus {
   SCHEDULED
   ACTIVE
@@ -101,10 +114,18 @@ model TenantDataStore {
   clinicId String @unique
   isolationMode TenantIsolationMode @default(POOL)
   status TenantDataStoreStatus @default(HEALTHY)
+  residencyPolicy TenantResidencyPolicy @default(KENYA_ONLY)
+  transferAssessmentStatus TransferAssessmentStatus @default(NOT_REQUIRED)
   connectionRef String?
   databaseName String?
   schemaName String?
+  provider String?
+  country String @default("KE")
   region String?
+  backupCountry String @default("KE")
+  backupRegion String?
+  allowedTransferCountries String[] @default([])
+  transferAssessmentRef String?
   migrationVersion String?
   provisionedAt DateTime?
   lastHealthCheckAt DateTime?
@@ -112,6 +133,7 @@ model TenantDataStore {
   updatedAt DateTime @updatedAt
   @@index([isolationMode, status])
   @@index([region, status])
+  @@index([residencyPolicy, transferAssessmentStatus])
 }
 
 model MaintenanceWindow {
