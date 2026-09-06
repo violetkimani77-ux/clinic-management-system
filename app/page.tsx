@@ -24,10 +24,26 @@ const modules = [
 ];
 
 const securityItems = [
-  "Multi-factor authentication for protected staff access",
-  "Role-based permissions for clinical and operational teams",
-  "Clinic-aware sessions designed for multi-clinic operations",
-  "Kenya-first data residency and controlled cross-border processing",
+  {
+    benefit: "Protect sensitive clinic information",
+    feature: "Multi-factor authentication",
+    detail: "Add a stronger verification layer for staff accessing protected clinic data.",
+  },
+  {
+    benefit: "Give every staff member the right access",
+    feature: "Role-based permissions",
+    detail: "Control what clinical and operational teams can see and do according to their responsibilities.",
+  },
+  {
+    benefit: "Keep each clinic's information properly separated",
+    feature: "Multi-clinic tenant isolation",
+    detail: "Use clinic-aware sessions and data boundaries to support secure multi-clinic operations.",
+  },
+  {
+    benefit: "Keep data where your clinic expects it",
+    feature: "Kenya-first data residency",
+    detail: "Build around Kenya-based data storage with controlled cross-border processing when approved and required safeguards are in place.",
+  },
 ];
 
 export default function HomePage() {
@@ -99,11 +115,20 @@ export default function HomePage() {
         <div className={styles.sectionInner}>
           <div>
             <p className={styles.sectionKicker}>Security by design</p>
-            <h2 className={styles.sectionTitle}>Access and data controls belong in the platform foundation.</h2>
-            <p className={styles.sectionText}>The platform is being built around strong authentication, explicit permissions, tenant isolation and residency-aware infrastructure.</p>
+            <h2 className={styles.sectionTitle}>Protection that helps your clinic stay secure, controlled and accountable.</h2>
+            <p className={styles.sectionText}>Hali CMS combines practical security controls with clinic operations, helping protect sensitive information while making access easier to manage as your team grows.</p>
           </div>
           <div className={styles.securityList}>
-            {securityItems.map((item) => <div key={item} className={styles.securityItem}>{item}</div>)}
+            {securityItems.map((item, index) => (
+              <div key={item.feature} className={styles.securityItem}>
+                <span aria-hidden="true">0{index + 1}</span>
+                <div>
+                  <strong>{item.benefit}</strong>
+                  <h3>{item.feature}</h3>
+                  <p>{item.detail}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
