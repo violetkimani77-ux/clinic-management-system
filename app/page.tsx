@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Clinic Management System",
+  title: "Hali CMS | Clinic Management System",
   description:
-    "A secure, multi-clinic management platform for patient care, visits, pharmacy, accounts and reporting.",
+    "Hali CMS is a secure clinic management system for patient care, visits, pharmacy, accounts and reporting.",
 };
 
 const modules = [
@@ -35,7 +35,7 @@ export default function HomePage() {
     <main className={styles.page}>
       <nav className={styles.nav} aria-label="Public navigation">
         <Link href="/" className={styles.brand}>
-          Clinic Management System
+          Hali CMS <span>Clinic Management System</span>
         </Link>
         <div className={styles.navActions}>
           <Link href="#capabilities" className={styles.navLink}>Capabilities</Link>
@@ -47,7 +47,7 @@ export default function HomePage() {
 
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Modern clinic operations</p>
+          <p className={styles.eyebrow}>Hali CMS · Clinic Management System</p>
           <h1 className={styles.heroTitle}>One secure workspace for better clinic management.</h1>
           <p className={styles.heroText}>
             A focused management platform for clinics that need dependable patient,
@@ -57,11 +57,6 @@ export default function HomePage() {
           <div className={styles.heroActions}>
             <Link href="#trial" className={styles.primaryButton}>Start a 4-Day Free Trial</Link>
             <Link href="/login" className={styles.secondaryButton}>Enter CMS Portal</Link>
-          </div>
-          <div className={styles.trustRow} aria-label="Platform highlights">
-            <span className={styles.trustItem}>4-day free trial</span>
-            <span className={styles.trustItem}>MFA protected</span>
-            <span className={styles.trustItem}>Kenya-first residency</span>
           </div>
         </div>
 
@@ -116,7 +111,7 @@ export default function HomePage() {
         <div className={styles.sectionInner}>
           <div className={styles.sectionIntro}>
             <p className={styles.sectionKicker}>Evaluate it in your own workflow</p>
-            <h2 className={styles.sectionTitle}>Try the Clinic Management System free for 4 days.</h2>
+            <h2 className={styles.sectionTitle}>Try Hali CMS free for 4 days.</h2>
             <p className={styles.sectionText}>
               We can provision a dedicated trial workspace for your clinic so your team can evaluate the core workflows, roles, security controls and reporting before making a commitment.
             </p>
@@ -130,7 +125,7 @@ export default function HomePage() {
       </section>
 
       <footer className={styles.footer}>
-        <div className={styles.footerInner}><span>Clinic Management System</span><span>POWERED BY IHL TECH</span></div>
+        <div className={styles.footerInner}><span>Hali CMS · Clinic Management System</span><span>POWERED BY IHL TECH</span></div>
       </footer>
     </main>
   );
