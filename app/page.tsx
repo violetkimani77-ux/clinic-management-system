@@ -34,8 +34,9 @@ export default function HomePage() {
   return (
     <main className={styles.page}>
       <nav className={styles.nav} aria-label="Public navigation">
-        <Link href="/" className={styles.brand}>
-          Hali CMS <span>Clinic Management System</span>
+        <Link href="/" className={styles.brand} aria-label="Hali CMS — Clinic Management System">
+          <span className={styles.brandName}>Hali CMS</span>
+          <span className={styles.brandSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
         </Link>
         <div className={styles.navActions}>
           <Link href="#capabilities" className={styles.navLink}>Capabilities</Link>
