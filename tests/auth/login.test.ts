@@ -19,15 +19,15 @@ jest.mock("@/lib/auth/mfa", () => ({
   getMfaChallengeExpiry: jest.fn(() => new Date(Date.now() + 300_000)),
 }));
 
-const { authenticateStaff } = require("@/lib/auth/login") as typeof import("@/lib/auth/login");
-const { db } = require("@/lib/db") as typeof import("@/lib/db");
-const { createSession } = require("@/lib/auth/session") as typeof import("@/lib/auth/session");
-const {
+import { authenticateStaff } from "@/lib/auth/login";
+import { db } from "@/lib/db";
+import { verifyPassword } from "@/lib/auth/password";
+import { createSession } from "@/lib/auth/session";
+import {
   checkLoginSecurity,
   recordFailedLogin,
   recordSuccessfulPasswordLogin,
-} = require("@/lib/auth/security") as typeof import("@/lib/auth/security");
-const { verifyPassword } = require("@/lib/auth/password") as typeof import("@/lib/auth/password");
+} from "@/lib/auth/security";
 
 const context = { ipAddress: "127.0.0.1", userAgent: "jest" };
 
