@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "npx --yes prisma@6.19.3 generate && next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --ignore-pattern '**/next-env.d.ts'",
     "typecheck": "tsc --noEmit",
     "db:migrate:deploy": "npx --yes prisma@6.19.3 migrate deploy",
     "test": "jest",
@@ -28,7 +28,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.0",
     "jest": "^30.5.1",
-    "jest-environment-jsdom": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.0",
     "typescript": "^5.0.0"
   }
 }
