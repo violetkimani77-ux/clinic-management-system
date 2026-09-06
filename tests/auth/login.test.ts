@@ -1,36 +1,33 @@
-import { authenticateStaff } from "@/lib/auth/login";
-
-const findUnique = jest.fn();
-const create = jest.fn();
-const createSession = jest.fn();
-const verifyPassword = jest.fn();
-const checkLoginSecurity = jest.fn();
-const recordFailedLogin = jest.fn();
-const recordSuccessfulPasswordLogin = jest.fn();
-const createMfaChallengeToken = jest.fn(() => "challenge-token");
-const hashMfaChallengeToken = jest.fn(() => "challenge-hash");
-const getMfaChallengeExpiry = jest.fn(() => new Date(Date.now() + 300_000));
-
 jest.mock("@/lib/db", () => ({
   db: {
-    user: { findUnique },
-    mfaChallenge: { create },
+    user: { findUnique: jest.fn() },
+    mfaChallenge: { create: jest.fn() },
   },
 }));
 
-jest.mock("@/lib/auth/password", () => ({ verifyPassword: (...args: unknown[]) => verifyPassword(...args) }));
-jest.mock("@/lib/auth/session", () => ({ createSession: (...args: unknown[]) => createSession(...args) }));
+jest.mock("@/lib/auth/password", () => ({ verifyPassword: jest.fn() }));
+jest.mock("@/lib/auth/session", () => ({ createSession: jest.fn() }));
 jest.mock("@/lib/auth/security", () => ({
-  checkLoginSecurity: (...args: unknown[]) => checkLoginSecurity(...args),
+  checkLoginSecurity: jest.fn(),
   GENERIC_AUTH_ERROR: "Unable to sign in.",
-  recordFailedLogin: (...args: unknown[]) => recordFailedLogin(...args),
-  recordSuccessfulPasswordLogin: (...args: unknown[]) => recordSuccessfulPasswordLogin(...args),
+  recordFailedLogin: jest.fn(),
+  recordSuccessfulPasswordLogin: jest.fn(),
 }));
 jest.mock("@/lib/auth/mfa", () => ({
-  createMfaChallengeToken: () => createMfaChallengeToken(),
-  hashMfaChallengeToken: (...args: unknown[]) => hashMfaChallengeToken(...args),
-  getMfaChallengeExpiry: () => getMfaChallengeExpiry(),
+  createMfaChallengeToken: jest.fn(() => "challenge-token"),
+  hashMfaChallengeToken: jest.fn(() => "challenge-hash"),
+  getMfaChallengeExpiry: jest.fn(() => new Date(Date.now() + 300_000)),
 }));
+
+const { authenticateStaff } = require("@/lib/auth/login") as typeof import("@/lib/auth/login");
+const { db } = require("@/lib/db") as typeof import("@/lib/db");
+const { createSession } = require("@/lib/auth/session") as typeof import("@/lib/auth/session");
+const {
+  checkLoginSecurity,
+  recordFailedLogin,
+  recordSuccessfulPasswordLogin,
+} = require("@/lib/auth/security") as typeof import("@/lib/auth/security");
+const { verifyPassword } = require("@/lib/auth/password") as typeof import("@/lib/auth/password");
 
 const context = { ipAddress: "127.0.0.1", userAgent: "jest" };
 
@@ -52,11 +49,11 @@ function makeUser() {
 describe("staff login clinic context", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    checkLoginSecurity.mockResolvedValue({ accountBlocked: false, ipBlocked: false });
-    verifyPassword.mockResolvedValue(true);
-    createSession.mockResolvedValue({ token: "session-token", expiresAt: new Date(Date.now() + 28_800_000) });
-    create.mockResolvedValue({});
-    findUnique.mockResolvedValue(makeUser());
+    (checkLoginSecurity as jest.Mock).mockResolvedValue({ accountBlocked: false, ipBlocked: false });
+    (verifyPassword as jest.Mock).mockResolvedValue(true);
+    (createSession as jest.Mock).mockResolvedValue({ token: "session-token", expiresAt: new Date(Date.now() + 28_800_000) });
+    (db.mfaChallenge.create as jest.Mock).mockResolvedValue({});
+    (db.user.findUnique as jest.Mock).mockResolvedValue(makeUser());
   });
 
   it("requires clinic selection for multi-clinic users", async () => {
@@ -68,7 +65,7 @@ describe("staff login clinic context", () => {
       ],
     });
     expect(createSession).not.toHaveBeenCalled();
-    expect(create).not.toHaveBeenCalled();
+    expect(db.mfaChallenge.create).not.toHaveBeenCalled();
   });
 
   it("rejects a clinic that is not one of the authenticated user's memberships", async () => {
@@ -92,15 +89,17 @@ describe("staff login clinic context", () => {
     const user = makeUser();
     user.mfaEnabled = true;
     user.mfaSecretEncrypted = "encrypted-secret";
-    findUnique.mockResolvedValue(user);
+    (db.user.findUnique as jest.Mock).mockResolvedValue(user);
 
     await expect(
       authenticateStaff("staff@example.com", "password", context, "clinic-b"),
     ).resolves.toEqual({ status: "mfa_required", challengeToken: "challenge-token" });
 
-    expect(create).toHaveBeenCalledWith({
+    expect(db.mfaChallenge.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ userId: "user-1", clinicId: "clinic-b", tokenHash: "challenge-hash" }),
     });
     expect(createSession).not.toHaveBeenCalled();
+    expect(recordSuccessfulPasswordLogin).toHaveBeenCalledWith("user-1", "staff@example.com", context, true);
+    expect(recordFailedLogin).not.toHaveBeenCalled();
   });
 });
