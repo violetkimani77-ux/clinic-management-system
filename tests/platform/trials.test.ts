@@ -46,6 +46,26 @@ describe("createClinicTrial", () => {
     expect(result.trialEndsAt.getTime() - Date.now()).toBeGreaterThan(3.9 * 24 * 60 * 60 * 1000);
   });
 
+  it("blocks the fifth trial attempt in the same hour", async () => {
+    mockDb.authRateLimit.findUnique.mockResolvedValue({
+      attempts: 4,
+      windowStartedAt: new Date(),
+      blockedUntil: null,
+    });
+
+    await expect(createClinicTrial({
+      clinicName: "Example Clinic",
+      administratorName: "Admin User",
+      email: "admin@example.com",
+      password: "a-secure-password",
+      ipAddress: "127.0.0.1",
+    })).rejects.toThrow("TRIAL_RATE_LIMITED");
+
+    expect(mockDb.authRateLimit.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ attempts: 5 }),
+    }));
+  });
+
   it("retries only Prisma P2002 clinic-code collisions", async () => {
     const clinicCreate = jest
       .fn()
