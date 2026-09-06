@@ -4,6 +4,7 @@ import { randomInt } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuthContext } from "@/lib/auth/authorization";
+import { recordAuditEvent } from "@/lib/audit";
 
 export type PatientSearchResult = {
   id: string;
@@ -40,7 +41,7 @@ function createPatientNumber(): string {
 /** Searches only active patients belonging to the authenticated clinic. */
 export async function searchPatients(context: AuthContext, query = ""): Promise<PatientSearchResult[]> {
   const normalizedQuery = query.trim();
-  return db.patient.findMany({
+  const patients = await db.patient.findMany({
     where: {
       clinicId: context.clinicId,
       archivedAt: null,
@@ -57,14 +58,32 @@ export async function searchPatients(context: AuthContext, query = ""): Promise<
     take: 50,
     select: { id: true, patientNo: true, firstName: true, lastName: true, phone: true, dateOfBirth: true, archivedAt: true },
   });
+
+  await recordAuditEvent(context, {
+    action: "PATIENT_SEARCHED",
+    entityType: "Patient",
+    metadata: { resultCount: patients.length },
+  });
+
+  return patients;
 }
 
 /** Loads only the registry fields needed by the patient profile page. */
 export async function getPatientProfile(context: AuthContext, patientId: string): Promise<PatientProfile | null> {
-  return db.patient.findFirst({
+  const patient = await db.patient.findFirst({
     where: { id: patientId, clinicId: context.clinicId, archivedAt: null },
     select: { id: true, patientNo: true, firstName: true, lastName: true, dateOfBirth: true, phone: true, email: true, address: true, notes: true },
   });
+
+  if (patient) {
+    await recordAuditEvent(context, {
+      action: "PATIENT_VIEWED",
+      entityType: "Patient",
+      entityId: patient.id,
+    });
+  }
+
+  return patient;
 }
 
 export type CreatePatientInput = {
