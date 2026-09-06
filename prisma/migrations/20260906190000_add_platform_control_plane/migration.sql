@@ -91,9 +91,9 @@ CREATE TABLE "MaintenanceWindow" (
 CREATE INDEX "MaintenanceWindow_status_startsAt_endsAt_idx" ON "MaintenanceWindow"("status", "startsAt", "endsAt");
 
 INSERT INTO "ClinicSubscription" ("id", "clinicId", "status", "activatedAt", "createdAt", "updatedAt")
-SELECT gen_random_uuid()::text, "id", 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT md5(random()::text || clock_timestamp()::text), "id", 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "Clinic";
 
 INSERT INTO "TenantDataStore" ("id", "clinicId", "isolationMode", "status", "provisionedAt", "lastHealthCheckAt", "createdAt", "updatedAt")
-SELECT gen_random_uuid()::text, "id", 'POOL', 'HEALTHY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT md5(random()::text || clock_timestamp()::text), "id", 'POOL', 'HEALTHY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "Clinic";
