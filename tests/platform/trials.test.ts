@@ -1,26 +1,37 @@
 import { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
 import { createClinicTrial } from "@/lib/platform/trials";
 
-const mockTransaction = jest.fn();
-const mockDb = {
-  $transaction: mockTransaction,
-  authRateLimit: {
-    findUnique: jest.fn(),
-    upsert: jest.fn(),
-    update: jest.fn(),
+jest.mock("@/lib/db", () => ({
+  db: {
+    $transaction: jest.fn(),
+    authRateLimit: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+      update: jest.fn(),
+    },
   },
-};
-
-jest.mock("@/lib/db", () => ({ db: mockDb }));
+}));
 jest.mock("@/lib/auth/password", () => ({
   hashPassword: jest.fn(async () => "scrypt:test-salt:test-key"),
 }));
+
+const mockDb = db as typeof db & {
+  $transaction: jest.Mock;
+  authRateLimit: {
+    findUnique: jest.Mock;
+    upsert: jest.Mock;
+    update: jest.Mock;
+  };
+};
+const mockTransaction = mockDb.$transaction;
 
 describe("createClinicTrial", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockDb.authRateLimit.findUnique.mockResolvedValue(null);
     mockDb.authRateLimit.upsert.mockResolvedValue(undefined);
+    mockDb.authRateLimit.update.mockResolvedValue(undefined);
     mockTransaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
       authRateLimit: mockDb.authRateLimit,
       user: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn().mockResolvedValue({ id: "user-1", email: "admin@example.com" }) },
