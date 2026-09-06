@@ -1,6 +1,6 @@
 import "server-only";
 
-import {
+import type {
   TenantDataStoreStatus,
   TenantIsolationMode,
   TenantResidencyPolicy,
@@ -26,27 +26,31 @@ export type ResidencyDecision =
   | { allowed: false; reason: string };
 
 const KENYA = "KE";
+const POOL = "POOL";
+const KENYA_ONLY = "KENYA_ONLY";
+const TRANSFER_APPROVED = "APPROVED";
+const HEALTHY = "HEALTHY";
 
 export function validateTenantResidency(request: ResidencyRequest): ResidencyDecision {
-  const policy = request.residencyPolicy ?? TenantResidencyPolicy.KENYA_ONLY;
+  const policy = request.residencyPolicy ?? KENYA_ONLY;
   const country = request.country.toUpperCase();
   const backupCountry = (request.backupCountry ?? KENYA).toUpperCase();
 
-  if (request.isolationMode === TenantIsolationMode.POOL && country !== KENYA) {
+  if (request.isolationMode === POOL && country !== KENYA) {
     return { allowed: false, reason: "POOL_MUST_BE_KENYA_HOSTED" };
   }
 
-  if (policy === TenantResidencyPolicy.KENYA_ONLY) {
+  if (policy === KENYA_ONLY) {
     if (country !== KENYA) return { allowed: false, reason: "PRIMARY_DATASTORE_OUTSIDE_KENYA" };
     if (backupCountry !== KENYA) return { allowed: false, reason: "BACKUP_DATASTORE_OUTSIDE_KENYA" };
     return { allowed: true, reason: "KENYA_ONLY" };
   }
 
-  if (request.isolationMode === TenantIsolationMode.POOL) {
+  if (request.isolationMode === POOL) {
     return { allowed: false, reason: "CROSS_BORDER_POOL_NOT_SUPPORTED" };
   }
 
-  if (request.transferAssessmentStatus !== TransferAssessmentStatus.APPROVED) {
+  if (request.transferAssessmentStatus !== TRANSFER_APPROVED) {
     return { allowed: false, reason: "TRANSFER_ASSESSMENT_NOT_APPROVED" };
   }
   if (!request.hasRequiredTransferBasis) {
@@ -82,9 +86,9 @@ export function isResidencyHealthy(store: {
   backupCountry: string;
   transferAssessmentStatus: TransferAssessmentStatus;
 }) {
-  if (store.status !== TenantDataStoreStatus.HEALTHY) return false;
-  if (store.residencyPolicy === TenantResidencyPolicy.KENYA_ONLY) {
+  if (store.status !== HEALTHY) return false;
+  if (store.residencyPolicy === KENYA_ONLY) {
     return store.country === KENYA && store.backupCountry === KENYA;
   }
-  return store.transferAssessmentStatus === TransferAssessmentStatus.APPROVED;
+  return store.transferAssessmentStatus === TRANSFER_APPROVED;
 }
