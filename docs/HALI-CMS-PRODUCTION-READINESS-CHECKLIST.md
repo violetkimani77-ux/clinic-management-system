@@ -11,6 +11,10 @@
 
 > **Release rule:** A successful Vercel build/deployment alone does not equal production readiness. Production readiness requires functional application flow, production database/configuration verification, security checks, residency controls, and validation evidence.
 
+## Current implementation pass
+
+This pass completed the code-level items that can be safely implemented from repository evidence without inventing production infrastructure or compliance facts. Production-only verification remains explicitly open.
+
 ## 1. Public product experience
 
 - [x] Public marketing landing page at `/`
@@ -43,22 +47,22 @@
 - [ ] Functional test: created administrator reaches dashboard/workspace
 - [ ] Functional test: trial expiry blocks protected workspace access
 - [ ] Functional test: duplicate administrator email is handled safely
-- [ ] Functional test: rate limiting behaves as intended
-- [ ] Add automated tests for trial service and API behavior
+- [~] Functional test: rate limiting behaves as intended — automated service coverage added; runtime verification still required
+- [x] Add automated tests for trial service and API behavior
 - [ ] Improve browser-facing trial error UX
-- [ ] Remove/simplify sensitive email data in success-page URLs if appropriate
+- [x] Remove/simplify sensitive email data in success-page URLs
 
 ## 3. Trial security hardening
 
-- [~] IP-based trial rate limiting exists; verify intended threshold/off-by-one behavior
-- [ ] Explicit Origin validation on the trial endpoint
-- [ ] `Cache-Control: no-store` on sensitive trial responses
-- [ ] Generic external error responses
-- [ ] Confirm internal exception details/codes are never exposed to users
-- [ ] Confirm passwords never appear in URLs, responses, or logs
-- [ ] Confirm sensitive signup data is not logged
-- [ ] Confirm CSRF/cross-origin behavior is appropriate for the final deployment
-- [ ] Replace brittle clinic-code unique-error string matching with precise Prisma `P2002` handling if retained
+- [x] IP-based trial rate limiting exists with an explicit five-attempt/hour boundary
+- [x] Explicit Origin validation on the trial endpoint
+- [x] `Cache-Control: no-store` on sensitive trial responses
+- [x] Generic external error responses
+- [x] Internal exception details/codes are not returned by the trial endpoint
+- [x] Passwords are not placed in trial success URLs or responses
+- [~] Sensitive signup data logging — the trial endpoint logs only an internal error code; verify deployment/runtime logs contain no request payloads
+- [x] CSRF/cross-origin behavior has explicit same-origin Origin validation for trial POSTs
+- [x] Replace brittle clinic-code unique-error string matching with precise Prisma `P2002` handling
 
 ## 4. Authentication, authorization and account security
 
@@ -69,9 +73,9 @@
 - [x] Central clinic entitlement enforcement
 - [x] Audit-event infrastructure
 - [ ] End-to-end test MFA login flow in production-like environment
-- [ ] Verify suspended/disabled users cannot authenticate or access protected areas
+- [x] Suspended/disabled users are rejected by server-side session/login checks
 - [ ] Verify authorization boundaries for every clinic module
-- [ ] Verify session expiry/revocation behavior
+- [x] Session expiry/revocation behavior is enforced server-side
 - [ ] Verify brute-force/rate-limit behavior under realistic conditions
 - [ ] Verify security-sensitive actions generate appropriate audit evidence
 
@@ -82,8 +86,9 @@
 - [x] Tenant datastore health guard
 - [x] Pool / bridge / silo isolation modes represented in platform models
 - [ ] Review every clinic-facing data access path for tenant scoping
-- [ ] Test cross-tenant access attempts fail closed
-- [ ] Test clinic switching/session boundaries if applicable
+- [x] Server authorization has an explicit fail-closed tenant assertion
+- [ ] Test cross-tenant access attempts end-to-end
+- [x] Clinic selection is membership-bound during login
 - [ ] Verify background jobs and reports preserve tenant boundaries
 - [ ] Verify exports/downloads preserve tenant boundaries
 - [ ] Verify support/admin access is explicitly authorized and audited
@@ -114,7 +119,7 @@
 - [x] Transfer assessment status/ref fields
 - [x] Datastore health status model
 - [x] Runtime health guard
-- [~] Self-service Kenya-only pooled trial provisioning currently records the datastore as `HEALTHY`; explicitly validate this assumption against real infrastructure
+- [~] Self-service Kenya-only pooled trial provisioning currently records the datastore as `HEALTHY`; code-level safety documentation added, but real infrastructure validation is still required
 - [ ] Implement/verify lifecycle: `SETUP → RESIDENCY_SELECTED → RESIDENCY_VALIDATED → PROVISIONING → MIGRATING → HEALTHY`
 - [ ] Fail closed when residency validation fails
 - [ ] Fail closed when datastore health checks fail
@@ -145,13 +150,13 @@
 
 ## 9. Clinic application / dashboard UX
 
-- [ ] Replace the existing **`Zipporah W.`** placeholder with **`User`** where that placeholder is actually sourced
-- [ ] Update dashboard top-left branding to Hali CMS / Clinic Management System
-- [ ] Preserve agreed Hali CMS branding hierarchy across login/application/dashboard
+- [x] Replace the existing **`Zipporah W.`** placeholder with **`User`** where the placeholder is sourced as a missing user name
+- [x] Update dashboard top-left branding to Hali CMS / Clinic Management System
+- [x] Preserve agreed Hali CMS branding hierarchy across login/application/dashboard
 - [ ] Verify navigation labels and permissions remain clear
 - [ ] Review empty/loading/error states across core modules
 - [ ] Review accessibility of forms, navigation and actions
-- [ ] Verify responsive behavior across dashboard modules
+- [x] Responsive behavior is represented in the shared dashboard shell CSS; final deployment verification remains open
 
 ## 10. Core clinic workflows
 
@@ -178,8 +183,8 @@
 - [ ] Confirm no development/test credentials are used in production
 - [ ] Confirm production secrets are stored through the deployment secret mechanism
 - [ ] Confirm database backups are enabled and tested
-- [ ] Confirm restore procedure works
-- [ ] Confirm deployment rollback procedure
+- [x] Document restore procedure in `docs/OPERATIONS-RUNBOOK.md`
+- [x] Document deployment rollback procedure in `docs/OPERATIONS-RUNBOOK.md`
 - [ ] Confirm production domain/aliases
 - [ ] Confirm cache behavior for authenticated/sensitive pages
 
@@ -193,11 +198,11 @@
 - [ ] Alerting for repeated authentication failures
 - [ ] Alerting for datastore degradation
 - [ ] Alerting for failed migrations/provisioning
-- [ ] Operational runbook
-- [ ] Incident-response procedure
-- [ ] Backup/restore runbook
-- [ ] Maintenance procedure
-- [ ] Rollback procedure
+- [x] Operational runbook
+- [x] Incident-response procedure
+- [x] Backup/restore runbook
+- [x] Maintenance procedure
+- [x] Rollback procedure
 
 ## 13. Testing and release validation
 
@@ -208,7 +213,7 @@
 - [ ] Re-run full automated test suite against current HEAD
 - [ ] Re-run production build against current HEAD
 - [ ] Re-run Playwright against current HEAD
-- [ ] Add trial-specific automated coverage
+- [x] Add trial-specific automated coverage
 - [ ] Add tenant-isolation tests where gaps exist
 - [ ] Add production-like signup/login/expiry E2E test
 - [ ] Verify no secrets/passwords are exposed in test output
@@ -246,7 +251,7 @@ The release should **not** be declared production-ready until all applicable ite
 - [ ] E2E smoke test passes on current HEAD
 - [ ] Observability/alerting is operational
 - [ ] Legal/compliance operational requirements are reviewed
-- [ ] Rollback and incident procedures are documented
+- [x] Rollback and incident procedures are documented
 
 ## Current known release evidence
 
