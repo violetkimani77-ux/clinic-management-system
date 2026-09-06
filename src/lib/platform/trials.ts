@@ -149,7 +149,6 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
         status: TenantDataStoreStatus.HEALTHY,
         residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
         transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
-        provider: "managed-postgresql",
         country: "KE",
         backupCountry: "KE",
         provisionedAt: now,
