@@ -2,15 +2,19 @@
 
 import { useState, type FormEvent } from "react";
 
-/**
- * Provides the interactive staff sign-in form.
- * Authentication remains server-side; this component only manages input,
- * pending state, password visibility and user-facing login errors.
- */
+type ClinicOption = {
+  clinicId: string;
+  clinicName: string;
+  clinicCode: string;
+  roleCode: string;
+};
+
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [clinics, setClinics] = useState<ClinicOption[]>([]);
+  const [clinicId, setClinicId] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -27,11 +31,25 @@ export function LoginForm() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, ...(clinicId ? { clinicId } : {}) }),
       });
+      const data = (await response.json().catch(() => null)) as
+        | { clinics?: ClinicOption[]; clinicSelectionRequired?: boolean; mfaRequired?: boolean }
+        | null;
 
       if (!response.ok) {
         setError("Unable to sign in. Check your email and password.");
+        return;
+      }
+
+      if (data?.clinicSelectionRequired && data.clinics?.length) {
+        setClinics(data.clinics);
+        setClinicId(data.clinics[0].clinicId);
+        return;
+      }
+
+      if (data?.mfaRequired) {
+        setError("Multi-factor verification is required. Complete the verification step to continue.");
         return;
       }
 
@@ -42,6 +60,8 @@ export function LoginForm() {
       setPending(false);
     }
   }
+
+  const selectingClinic = clinics.length > 0;
 
   return (
     <form className="auth-form" onSubmit={handleSubmit} noValidate>
@@ -55,6 +75,7 @@ export function LoginForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required
+          disabled={selectingClinic}
           placeholder="staff@clinic.example"
         />
       </div>
@@ -72,6 +93,7 @@ export function LoginForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
+            disabled={selectingClinic}
             placeholder="Enter your password"
           />
           <button
@@ -80,20 +102,31 @@ export function LoginForm() {
             onClick={() => setShowPassword((visible) => !visible)}
             aria-label={showPassword ? "Hide password" : "Show password"}
             aria-pressed={showPassword}
+            disabled={selectingClinic}
           >
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
       </div>
 
-      {error ? (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
+      {selectingClinic ? (
+        <div className="auth-field">
+          <label htmlFor="clinic">Choose clinic</label>
+          <select id="clinic" value={clinicId} onChange={(event) => setClinicId(event.target.value)} required>
+            {clinics.map((clinic) => (
+              <option key={clinic.clinicId} value={clinic.clinicId}>
+                {clinic.clinicName} ({clinic.roleCode})
+              </option>
+            ))}
+          </select>
+          <p className="auth-form-note">Your clinic choice is verified server-side and becomes part of your session.</p>
+        </div>
       ) : null}
 
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+
       <button type="submit" className="auth-submit" disabled={pending}>
-        {pending ? "Signing in…" : "Sign in"}
+        {pending ? "Signing in…" : selectingClinic ? "Continue" : "Sign in"}
       </button>
 
       <p className="auth-form-note">If you cannot access your account, contact your clinic administrator.</p>
