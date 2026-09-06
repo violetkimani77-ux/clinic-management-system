@@ -26,7 +26,15 @@ const tx = {
       return data;
     }),
   },
-  $queryRaw: jest.fn(async () => [{ currentSequence: auditRows.length }]),
+  $queryRaw: jest.fn(async (strings: TemplateStringsArray) => {
+    const query = strings.join(" ");
+
+    if (query.includes('"computeAuditEntryHash"')) {
+      return [{ entryHash: "a".repeat(64) }];
+    }
+
+    return [{ currentSequence: auditRows.length }];
+  }),
 };
 
 jest.mock("@/lib/db", () => ({
