@@ -34,7 +34,7 @@ async function auditMfaFailure(
   clinicId: string,
   reason: string,
   context: { ipAddress: string | null; userAgent: string | null },
-  tx?: Prisma.TransactionClient,
+  tx: Prisma.TransactionClient,
 ) {
   await recordAuditEvent(
     authContext(userId, userName, clinicId),
@@ -55,13 +55,13 @@ export async function verifyMfaLogin(
   code: string,
   context: { ipAddress: string | null; userAgent: string | null },
 ): Promise<MfaVerificationResult> {
-  const tokenHash = hashMfaChallengeToken(challengeToken);
-  const normalizedCode = code.replace(/[\s-]/g, "").toUpperCase();
-  const now = new Date();
-
   if (!challengeToken || !code) {
     return { status: "failure", error: MFA_GENERIC_ERROR };
   }
+
+  const tokenHash = hashMfaChallengeToken(challengeToken);
+  const normalizedCode = code.replace(/[\s-]/g, "").toUpperCase();
+  const now = new Date();
 
   return db.$transaction(async (tx) => {
     const challenge = await tx.mfaChallenge.findUnique({
@@ -188,7 +188,11 @@ export async function verifyMfaLogin(
       return { status: "failure", error: MFA_GENERIC_ERROR };
     }
 
-    const session = await createSession(challenge.user.id, challenge.clinicId);
+    const session = await createSession(
+      challenge.user.id,
+      challenge.clinicId,
+      tx,
+    );
 
     await recordAuditEvent(
       authContext(challenge.user.id, challenge.user.name, challenge.clinicId),
