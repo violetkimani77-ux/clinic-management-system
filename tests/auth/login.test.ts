@@ -38,7 +38,7 @@ function makeUser() {
     passwordHash: "hash",
     status: "ACTIVE",
     mfaEnabled: false,
-    mfaSecretEncrypted: null,
+    mfaSecretEncrypted: null as string | null,
     memberships: [
       { clinicId: "clinic-a", role: { code: "ADMIN" }, clinic: { id: "clinic-a", name: "Clinic A", code: "A" } },
       { clinicId: "clinic-b", role: { code: "PHARMACY" }, clinic: { id: "clinic-b", name: "Clinic B", code: "B" } },
@@ -73,6 +73,8 @@ describe("staff login clinic context", () => {
       authenticateStaff("staff@example.com", "password", context, "clinic-z"),
     ).resolves.toEqual({ status: "failure", error: "Unable to sign in." });
     expect(createSession).not.toHaveBeenCalled();
+    expect(db.mfaChallenge.create).not.toHaveBeenCalled();
+    expect(recordFailedLogin).toHaveBeenCalledWith("user-1", "staff@example.com", context);
   });
 
   it("binds the session to the explicitly selected clinic", async () => {
