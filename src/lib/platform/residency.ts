@@ -65,6 +65,16 @@ export function validateTenantResidency(request: ResidencyRequest): ResidencyDec
   return { allowed: true, reason: "APPROVED_CROSS_BORDER" };
 }
 
+export function assertTenantResidencyEligible(request: ResidencyRequest) {
+  const decision = validateTenantResidency(request);
+
+  if (!decision.allowed) {
+    throw new Error(`TENANT_RESIDENCY_PROVISIONING_BLOCKED:${decision.reason}`);
+  }
+
+  return decision;
+}
+
 export function isResidencyHealthy(store: {
   status: TenantDataStoreStatus;
   residencyPolicy: TenantResidencyPolicy;
