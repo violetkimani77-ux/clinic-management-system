@@ -17,6 +17,46 @@ ADD COLUMN "sequence" INTEGER,
 ADD COLUMN "previousHash" TEXT,
 ADD COLUMN "entryHash" TEXT;
 
+CREATE OR REPLACE FUNCTION "computeAuditEntryHash"(
+  p_id TEXT,
+  p_clinic_id TEXT,
+  p_user_id TEXT,
+  p_sequence INTEGER,
+  p_action TEXT,
+  p_entity_type TEXT,
+  p_entity_id TEXT,
+  p_metadata JSONB,
+  p_ip_address TEXT,
+  p_user_agent TEXT,
+  p_previous_hash TEXT,
+  p_created_at TIMESTAMPTZ
+)
+RETURNS TEXT
+LANGUAGE SQL
+IMMUTABLE
+AS $$
+  SELECT encode(
+    digest(
+      jsonb_build_object(
+        'action', p_action,
+        'clinicId', p_clinic_id,
+        'createdAt', to_char(p_created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+        'entityId', p_entity_id,
+        'entityType', p_entity_type,
+        'id', p_id,
+        'ipAddress', p_ip_address,
+        'metadata', p_metadata,
+        'previousHash', p_previous_hash,
+        'sequence', p_sequence,
+        'userAgent', p_user_agent,
+        'userId', p_user_id
+      )::text,
+      'sha256'
+    ),
+    'hex'
+  )
+$$;
+
 INSERT INTO "AuditSequence" ("id", "clinicId")
 SELECT gen_random_uuid()::text, "id"
 FROM "Clinic"
@@ -28,7 +68,6 @@ DECLARE
   audit_row RECORD;
   current_sequence INTEGER;
   previous_hash TEXT;
-  payload JSONB;
   calculated_hash TEXT;
 BEGIN
   FOR clinic_row IN SELECT "id" AS clinic_id FROM "Clinic" LOOP
@@ -44,22 +83,20 @@ BEGIN
     LOOP
       current_sequence := current_sequence + 1;
 
-      payload := jsonb_build_object(
-        'action', audit_row."action",
-        'clinicId', audit_row."clinicId",
-        'createdAt', to_char(audit_row."createdAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
-        'entityId', audit_row."entityId",
-        'entityType', audit_row."entityType",
-        'id', audit_row."id",
-        'ipAddress', audit_row."ipAddress",
-        'metadata', audit_row."metadata",
-        'previousHash', previous_hash,
-        'sequence', current_sequence,
-        'userAgent', audit_row."userAgent",
-        'userId', audit_row."userId"
+      calculated_hash := "computeAuditEntryHash"(
+        audit_row."id",
+        audit_row."clinicId",
+        audit_row."userId",
+        current_sequence,
+        audit_row."action",
+        audit_row."entityType",
+        audit_row."entityId",
+        audit_row."metadata",
+        audit_row."ipAddress",
+        audit_row."userAgent",
+        previous_hash,
+        audit_row."createdAt"
       );
-
-      calculated_hash := encode(digest(payload::text, 'sha256'), 'hex');
 
       UPDATE "AuditLog"
       SET "sequence" = current_sequence,
