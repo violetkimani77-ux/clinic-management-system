@@ -3,7 +3,6 @@ import "server-only";
 import { db } from "@/lib/db";
 import {
   createMfaChallengeToken,
-  encryptMfaSecret,
   getMfaChallengeExpiry,
   hashMfaChallengeToken,
 } from "./mfa";
