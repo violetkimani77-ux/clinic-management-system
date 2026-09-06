@@ -80,8 +80,8 @@ export default function HomePage() {
         <div className={styles.sectionInner}>
           <div className={styles.sectionIntro}>
             <p className={styles.sectionKicker}>Built for the whole clinic</p>
-            <h2 className={styles.sectionTitle}>Practical workflows without unnecessary complexity.</h2>
-            <p className={styles.sectionText}>Give each team the information and tools they need while keeping the overall clinic operation connected.</p>
+            <h2 className={styles.sectionTitle}>Better Clinic Management</h2>
+            <p className={styles.sectionText}>Connect patient care, visits, pharmacy, accounts and reporting in one secure platform, so your team spends less time chasing information and more time caring for patients and running the clinic.</p>
           </div>
           <div className={styles.cards}>
             {modules.map((module) => (
