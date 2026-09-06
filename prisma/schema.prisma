@@ -86,6 +86,43 @@ enum ConsentMethod {
   NOT_APPLICABLE
 }
 
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum TenantDataStoreStatus {
+  SETUP
+  RESIDENCY_SELECTED
+  RESIDENCY_VALIDATED
+  PROVISIONING
+  MIGRATING
+  HEALTHY
+  DEGRADED
+  FAILED
+}
+
+enum TenantIsolationMode {
+  POOL
+  BRIDGE_DATABASE
+  SILO_DATABASE
+}
+
+enum TenantResidencyPolicy {
+  KENYA_ONLY
+  INTERNATIONAL
+}
+
+enum TransferAssessmentStatus {
+  NOT_REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Clinic {
   id String @id @default(uuid())
   name String
@@ -107,6 +144,8 @@ model Clinic {
   stockMovements StockMovement[]
   dispensings Dispensing[]
   patientConsents PatientConsent[]
+  subscriptions ClinicSubscription[]
+  tenantDataStore TenantDataStore?
 }
 
 model User {
@@ -451,4 +490,50 @@ model AuditLog {
   @@index([clinicId, createdAt])
   @@index([clinicId, entityType, entityId])
   @@index([userId, createdAt])
+}
+
+model AuthRateLimit {
+  id String @id @default(uuid())
+  keyType String
+  keyHash String
+  attempts Int @default(0)
+  windowStartedAt DateTime
+  blockedUntil DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([keyType, keyHash])
+  @@index([blockedUntil])
+}
+
+model ClinicSubscription {
+  id String @id @default(uuid())
+  clinicId String
+  status SubscriptionStatus
+  activatedAt DateTime?
+  currentPeriodEnd DateTime
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  @@index([clinicId, status])
+  @@index([currentPeriodEnd])
+}
+
+model TenantDataStore {
+  id String @id @default(uuid())
+  clinicId String @unique
+  isolationMode TenantIsolationMode
+  status TenantDataStoreStatus
+  residencyPolicy TenantResidencyPolicy
+  transferAssessmentStatus TransferAssessmentStatus
+  transferAssessmentRef String?
+  country String
+  backupCountry String
+  provisionedAt DateTime?
+  lastHealthCheckAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  @@index([status])
+  @@index([residencyPolicy, status])
 }
