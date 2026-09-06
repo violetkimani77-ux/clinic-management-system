@@ -4,35 +4,31 @@ import { redirect } from "next/navigation";
 import type { PermissionCode } from "./permissions";
 import { getAuthContext } from "./session";
 import { assertTenant, requirePermission } from "./authorization";
+import { requireClinicEntitlement } from "@/lib/platform/subscriptions";
+import { requireHealthyTenantDataStore } from "@/lib/platform/tenant-datastore";
+import { requirePlatformAvailable } from "@/lib/platform/maintenance";
 
 /**
- * Requires an authenticated user for a server-rendered page or server-side
- * operation. Unauthenticated requests are sent to the staff login page.
+ * Requires an authenticated, entitled clinic with a healthy registered datastore.
+ * Maintenance is enforced at the server boundary rather than only in the UI.
  */
 export async function requireAuth() {
   const context = await getAuthContext();
   if (!context) redirect("/login");
+
+  await requirePlatformAvailable();
+  await requireClinicEntitlement(context.clinicId);
+  await requireHealthyTenantDataStore(context.clinicId);
+
   return context;
 }
 
-/**
- * Requires both authentication and a specific permission.
- *
- * Use this at the server boundary of each protected workspace or action;
- * client-side navigation filtering is only a usability feature.
- */
 export async function requireClinicPermission(permission: PermissionCode) {
   const context = await requireAuth();
   requirePermission(context, permission);
   return context;
 }
 
-/**
- * Requires authentication, permission, and ownership by the active clinic.
- *
- * This helper is intended for operations acting on a specific clinic-owned
- * resource and makes the tenant check explicit at the call site.
- */
 export async function requireTenantPermission(
   clinicId: string,
   permission: PermissionCode,
