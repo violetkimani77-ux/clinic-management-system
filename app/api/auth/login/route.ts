@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { authenticateStaff } from "@/lib/auth/login";
+import { getClientIp, getUserAgent } from "@/lib/auth/security";
 import { SESSION_COOKIE } from "@/lib/auth/session";
 
 const SESSION_MAX_AGE = 60 * 60 * 8;
 
-/** Creates a clinic-scoped session cookie after successful staff authentication. */
+/** Authenticates staff and returns either a session or a short-lived MFA challenge. */
 export async function POST(request: Request) {
   let body: { email?: unknown; password?: unknown };
 
@@ -22,22 +23,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const session = await authenticateStaff(body.email, body.password);
-  if (!session) {
-    return NextResponse.json(
-      { error: "Invalid email or password." },
-      { status: 401 },
-    );
+  const result = await authenticateStaff(body.email, body.password, {
+    ipAddress: getClientIp(request),
+    userAgent: getUserAgent(request),
+  });
+
+  if (result.status === "failure") {
+    return NextResponse.json({ error: result.error }, { status: 401 });
   }
 
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set(SESSION_COOKIE, session.token, {
+  if (result.status === "mfa_required") {
+    return NextResponse.json({ ok: true, mfaRequired: true, challengeToken: result.challengeToken });
+  }
+
+  const response = NextResponse.json({ ok: true, mfaRequired: false });
+  response.cookies.set(SESSION_COOKIE, result.session.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE,
-    expires: session.expiresAt,
+    expires: result.session.expiresAt,
   });
 
   return response;
