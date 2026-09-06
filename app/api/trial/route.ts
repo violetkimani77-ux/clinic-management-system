@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   const ipAddress = forwardedFor?.split(",")[0]?.trim() || request.headers.get("x-real-ip");
 
   try {
-    const trial = await createClinicTrial({
+    await createClinicTrial({
       clinicName,
       administratorName,
       email,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.redirect(
-      new URL(`/trial/success?email=${encodeURIComponent(trial.email)}`, request.url),
+      new URL("/trial/success", request.url),
       303,
       { headers: { "Cache-Control": "no-store" } },
     );
