@@ -3,6 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import type { PermissionCode } from "./permissions";
 import type { AuthContext } from "./authorization";
 
@@ -32,15 +33,19 @@ export function createSessionToken(): string {
 /**
  * Persists a session for a specific user and clinic.
  *
- * The returned token must be placed in a secure HttpOnly cookie by the login
- * flow. Keeping persistence separate from cookie handling makes the session
- * service easier to test and keeps authentication concerns explicit.
+ * An optional transaction client lets security-sensitive workflows atomically
+ * consume an MFA challenge, create the authenticated session, and append the
+ * corresponding audit event.
  */
-export async function createSession(userId: string, clinicId: string) {
+export async function createSession(
+  userId: string,
+  clinicId: string,
+  client: Prisma.TransactionClient | typeof db = db,
+) {
   const token = createSessionToken();
   const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
 
-  await db.authSession.create({
+  await client.authSession.create({
     data: { tokenHash: hashToken(token), userId, clinicId, expiresAt },
   });
 
