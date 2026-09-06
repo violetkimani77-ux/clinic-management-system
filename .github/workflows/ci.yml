@@ -18,9 +18,9 @@ permissions:
 
 jobs:
   test:
-    name: Lint, typecheck, test, and build
+    name: Lint, typecheck, test, build, and E2E smoke test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -35,6 +35,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prisma schema validation
+        run: npx prisma validate
+
+      - name: Prisma client generation
+        run: npx prisma generate
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
       - name: Lint
         run: npm run lint
 
@@ -46,3 +55,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser smoke test
+        run: npx playwright test tests/e2e/auth.spec.ts
