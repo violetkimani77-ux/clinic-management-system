@@ -1,34 +1,12 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuthContext } from "@/lib/auth/authorization";
 
 type AuditClient = Prisma.TransactionClient | typeof db;
 
-export type AuditEventInput = {
-  action: string;
-  entityType: string;
-  entityId?: string | null;
-  metadata?: Prisma.InputJsonValue;
-  ipAddress?: string | null;
-  userAgent?: string | null;
-};
-
-function canonicalize(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value !== null && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, item]) => [key, canonicalize(item)]),
-    );
-  }
-  return value;
-}
-
-function buildEntryHash(input: {
+type AuditHashInput = {
   id: string;
   clinicId: string;
   userId: string | null;
@@ -41,25 +19,44 @@ function buildEntryHash(input: {
   userAgent: string | null;
   previousHash: string | null;
   createdAt: Date;
-}) {
-  const payload = {
-    action: input.action,
-    clinicId: input.clinicId,
-    createdAt: input.createdAt.toISOString(),
-    entityId: input.entityId,
-    entityType: input.entityType,
-    id: input.id,
-    ipAddress: input.ipAddress,
-    metadata: input.metadata,
-    previousHash: input.previousHash,
-    sequence: input.sequence,
-    userAgent: input.userAgent,
-    userId: input.userId,
-  };
+};
 
-  return createHash("sha256")
-    .update(JSON.stringify(canonicalize(payload)))
-    .digest("hex");
+export type AuditEventInput = {
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  metadata?: Prisma.InputJsonValue;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+};
+
+async function buildEntryHash(
+  tx: Prisma.TransactionClient,
+  input: AuditHashInput,
+): Promise<string> {
+  const rows = await tx.$queryRaw<Array<{ entryHash: string }>>`
+    SELECT "computeAuditEntryHash"(
+      ${input.id},
+      ${input.clinicId},
+      ${input.userId},
+      ${input.sequence},
+      ${input.action},
+      ${input.entityType},
+      ${input.entityId},
+      CAST(${JSON.stringify(input.metadata)} AS jsonb),
+      ${input.ipAddress},
+      ${input.userAgent},
+      ${input.previousHash},
+      ${input.createdAt.toISOString()}
+    ) AS "entryHash"
+  `;
+
+  const entryHash = rows[0]?.entryHash;
+  if (!entryHash || !/^[a-f0-9]{64}$/.test(entryHash)) {
+    throw new Error("Audit hash computation returned an invalid entry hash");
+  }
+
+  return entryHash;
 }
 
 async function writeAuditEvent(
@@ -96,13 +93,13 @@ async function writeAuditEvent(
         })
       : null;
 
-  const id = randomUUID();
+  const id = crypto.randomUUID();
   const createdAt = new Date();
   const previousHash = previous?.entryHash ?? null;
   const metadata = event.metadata ?? null;
   const ipAddress = event.ipAddress ?? null;
   const userAgent = event.userAgent ?? null;
-  const entryHash = buildEntryHash({
+  const entryHash = await buildEntryHash(tx, {
     id,
     clinicId: context.clinicId,
     userId: context.userId,
@@ -144,9 +141,11 @@ async function writeAuditEvent(
 /**
  * Records an append-only, clinic-scoped audit event.
  *
- * When called without a transaction client, the event gets its own atomic
- * transaction. Mutation workflows should pass their existing transaction
- * client so the business write and audit event commit or roll back together.
+ * Hash canonicalization is centralized in PostgreSQL so migration backfills
+ * and runtime writes use the exact same representation. When called without
+ * a transaction client, the event gets its own atomic transaction. Mutation
+ * workflows should pass their existing transaction client so the business
+ * write and audit event commit or roll back together.
  */
 export async function recordAuditEvent(
   context: AuthContext,
