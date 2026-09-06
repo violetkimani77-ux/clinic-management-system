@@ -9,8 +9,9 @@
     "lint": "eslint .",
     "typecheck": "prisma generate && tsc --noEmit",
     "db:migrate:deploy": "npx --yes prisma@6.19.3 migrate deploy",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --testPathIgnorePatterns=tests/e2e",
+    "test:watch": "jest --watch",
+    "test:e2e": "playwright test"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
