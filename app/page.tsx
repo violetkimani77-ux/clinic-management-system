@@ -119,7 +119,7 @@ export default function HomePage() {
             <p className={styles.sectionText}>No credit card is required for the trial.</p>
           </div>
           <div className={styles.heroActions}>
-            <Link href="/login" className={styles.primaryButton}>Start Your 4-Day Free Trial</Link>
+            <Link href="/login" className={styles.primaryButton}>Talk to our Team</Link>
             <Link href="/login" className={styles.secondaryButton}>Existing staff sign in</Link>
           </div>
         </div>
