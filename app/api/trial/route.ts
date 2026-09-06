@@ -37,11 +37,10 @@ export async function POST(request: NextRequest) {
       ipAddress,
     });
 
-    return NextResponse.redirect(
-      new URL("/trial/success", request.url),
-      303,
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    return NextResponse.redirect(new URL("/trial/success", request.url), {
+      status: 303,
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "TRIAL_CREATION_FAILED";
 
