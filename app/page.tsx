@@ -49,7 +49,7 @@ export default function HomePage() {
       <section className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>Hali CMS · Clinic Management System</p>
-          <h1 className={styles.heroTitle}>One secure workspace for better clinic management.</h1>
+          <h1 className={styles.heroTitle}>One secure platform for your clinic operations</h1>
           <p className={styles.heroText}>
             A focused management platform for clinics that need dependable patient,
             visit, pharmacy, accounts and reporting workflows without sacrificing
