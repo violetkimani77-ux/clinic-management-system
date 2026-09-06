@@ -4,6 +4,8 @@ CREATE TYPE "QuoteStatus" AS ENUM ('DRAFT', 'SENT', 'ACCEPTED', 'EXPIRED', 'CANC
 CREATE TYPE "SubscriptionStatus" AS ENUM ('SETUP', 'TRIAL', 'ACTIVE', 'GRACE_PERIOD', 'PAST_DUE', 'SUSPENDED', 'CANCELLED', 'EXPIRED');
 CREATE TYPE "TenantIsolationMode" AS ENUM ('POOL', 'BRIDGE_DATABASE', 'SILO_DATABASE');
 CREATE TYPE "TenantDataStoreStatus" AS ENUM ('PROVISIONING', 'MIGRATING', 'HEALTHY', 'DEGRADED', 'SUSPENDED', 'RETIRED');
+CREATE TYPE "TenantResidencyPolicy" AS ENUM ('KENYA_ONLY', 'KENYA_SERVING_COPY');
+CREATE TYPE "TransferAssessmentStatus" AS ENUM ('NOT_REQUIRED', 'REQUIRED', 'PENDING', 'APPROVED', 'REJECTED');
 CREATE TYPE "MaintenanceStatus" AS ENUM ('SCHEDULED', 'ACTIVE', 'COMPLETED', 'CANCELLED');
 
 CREATE TABLE "PlatformUser" (
@@ -60,10 +62,18 @@ CREATE TABLE "TenantDataStore" (
   "clinicId" TEXT NOT NULL,
   "isolationMode" "TenantIsolationMode" NOT NULL DEFAULT 'POOL',
   "status" "TenantDataStoreStatus" NOT NULL DEFAULT 'HEALTHY',
+  "residencyPolicy" "TenantResidencyPolicy" NOT NULL DEFAULT 'KENYA_ONLY',
+  "transferAssessmentStatus" "TransferAssessmentStatus" NOT NULL DEFAULT 'NOT_REQUIRED',
   "connectionRef" TEXT,
   "databaseName" TEXT,
   "schemaName" TEXT,
+  "provider" TEXT,
+  "country" TEXT NOT NULL DEFAULT 'KE',
   "region" TEXT,
+  "backupCountry" TEXT NOT NULL DEFAULT 'KE',
+  "backupRegion" TEXT,
+  "allowedTransferCountries" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  "transferAssessmentRef" TEXT,
   "migrationVersion" TEXT,
   "provisionedAt" TIMESTAMP(3),
   "lastHealthCheckAt" TIMESTAMP(3),
@@ -74,6 +84,7 @@ CREATE TABLE "TenantDataStore" (
 CREATE UNIQUE INDEX "TenantDataStore_clinicId_key" ON "TenantDataStore"("clinicId");
 CREATE INDEX "TenantDataStore_isolationMode_status_idx" ON "TenantDataStore"("isolationMode", "status");
 CREATE INDEX "TenantDataStore_region_status_idx" ON "TenantDataStore"("region", "status");
+CREATE INDEX "TenantDataStore_residencyPolicy_transferAssessmentStatus_idx" ON "TenantDataStore"("residencyPolicy", "transferAssessmentStatus");
 
 CREATE TABLE "MaintenanceWindow" (
   "id" TEXT NOT NULL,
@@ -94,6 +105,6 @@ INSERT INTO "ClinicSubscription" ("id", "clinicId", "status", "activatedAt", "cr
 SELECT md5(random()::text || clock_timestamp()::text), "id", 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "Clinic";
 
-INSERT INTO "TenantDataStore" ("id", "clinicId", "isolationMode", "status", "provisionedAt", "lastHealthCheckAt", "createdAt", "updatedAt")
-SELECT md5(random()::text || clock_timestamp()::text), "id", 'POOL', 'HEALTHY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+INSERT INTO "TenantDataStore" ("id", "clinicId", "isolationMode", "status", "residencyPolicy", "transferAssessmentStatus", "country", "backupCountry", "provisionedAt", "lastHealthCheckAt", "createdAt", "updatedAt")
+SELECT md5(random()::text || clock_timestamp()::text), "id", 'POOL', 'HEALTHY', 'KENYA_ONLY', 'NOT_REQUIRED', 'KE', 'KE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "Clinic";
