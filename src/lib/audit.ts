@@ -16,16 +16,8 @@ export type AuditEventInput = {
   userAgent?: string | null;
 };
 
-function canonicalize(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value !== null && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, item]) => [key, canonicalize(item)]),
-    );
-  }
-  return value;
+function canonicalMetadata(metadata: Prisma.InputJsonValue | null) {
+  return JSON.stringify(metadata ?? null);
 }
 
 function buildEntryHash(input: {
@@ -42,24 +34,22 @@ function buildEntryHash(input: {
   previousHash: string | null;
   createdAt: Date;
 }) {
-  const payload = {
-    action: input.action,
-    clinicId: input.clinicId,
-    createdAt: input.createdAt.toISOString(),
-    entityId: input.entityId,
-    entityType: input.entityType,
-    id: input.id,
-    ipAddress: input.ipAddress,
-    metadata: input.metadata,
-    previousHash: input.previousHash,
-    sequence: input.sequence,
-    userAgent: input.userAgent,
-    userId: input.userId,
-  };
+  const canonical = [
+    input.id,
+    input.clinicId,
+    input.userId ?? "",
+    String(input.sequence),
+    input.action,
+    input.entityType,
+    input.entityId ?? "",
+    canonicalMetadata(input.metadata),
+    input.ipAddress ?? "",
+    input.userAgent ?? "",
+    input.previousHash ?? "",
+    input.createdAt.toISOString(),
+  ].join("|");
 
-  return createHash("sha256")
-    .update(JSON.stringify(canonicalize(payload)))
-    .digest("hex");
+  return createHash("sha256").update(canonical).digest("hex");
 }
 
 async function writeAuditEvent(
