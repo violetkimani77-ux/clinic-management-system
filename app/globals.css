@@ -9,7 +9,7 @@ body {
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
   background: #f6f7f9;
   color: #17191c;
 }
@@ -66,7 +66,7 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 14px;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
 }
 
@@ -74,7 +74,7 @@ a {
 .auth-panel-kicker {
   margin: 0 0 10px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -87,6 +87,7 @@ a {
   max-width: 520px;
   margin: 0;
   font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.035em;
 }
@@ -96,6 +97,7 @@ a {
   margin: 22px 0 0;
   color: #d8e7ee;
   font-size: 16px;
+  font-weight: 400;
   line-height: 1.7;
 }
 
@@ -137,6 +139,7 @@ a {
 .auth-panel-header h2 {
   margin: 0;
   font-size: 30px;
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.025em;
 }
@@ -145,6 +148,7 @@ a {
   margin: 9px 0 0;
   color: #687982;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
 }
 
@@ -214,7 +218,7 @@ a {
   color: #2d617c;
   font: inherit;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -230,7 +234,7 @@ a {
   background: #173f56;
   color: #ffffff;
   font: inherit;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
   transition: transform 140ms ease, background 140ms ease;
 }
@@ -253,6 +257,7 @@ a {
   background: #fff5f5;
   color: #9c2929;
   font-size: 13px;
+  font-weight: 400;
   line-height: 1.45;
 }
 
@@ -260,6 +265,7 @@ a {
   margin: -2px 0 0;
   color: #7a898f;
   font-size: 12px;
+  font-weight: 400;
   line-height: 1.5;
   text-align: center;
 }
@@ -268,7 +274,7 @@ a {
   margin: 14px 0 0;
   color: #7a898f;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1.4;
   text-align: center;
