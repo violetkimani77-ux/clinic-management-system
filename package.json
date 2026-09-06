@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "db:migrate:deploy": "npx --yes prisma@6.19.3 migrate deploy"
+    "db:migrate:deploy": "npx --yes prisma@6.19.3 migrate deploy",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
@@ -21,11 +23,14 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.0",
+    "jest": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.1",
     "typescript": "^5.0.0"
   }
 }

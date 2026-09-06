@@ -21,7 +21,7 @@ export default async function ReportsPage() {
           <p className={styles.eyebrow}>Reporting</p>
           <h1 className={styles.title}>Reports</h1>
           <p className={styles.description}>
-            Operational and financial reporting built from the clinic's source workflows.
+            Operational and financial reporting built from the clinic&apos;s source workflows.
           </p>
         </header>
 
