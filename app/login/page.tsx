@@ -34,8 +34,8 @@ export default function LoginPage() {
           </div>
           <LoginForm />
           <div className="auth-switch">
-            <span>Need a new clinic workspace?</span>
-            <Link href="/trial">Start a 4-day free trial</Link>
+            <span>Not yet signed up?</span>
+            <Link href="/trial">Start a Free trial today</Link>
           </div>
         </div>
       </section>
