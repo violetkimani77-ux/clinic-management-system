@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Heri CMS | Clinic Management System"
 const modules = [
   { title: "Patient care", text: "Keep a digital patient registry organized, with a live dashboard for easy monitoring" },
   { title: "Pharmacy", text: "Track medicines, inventory and pharmacy activity with role-aware access and operational visibility." },
-  { title: "Accounts & reports", text: "Bring collections, outstanding balances and operational reporting into a controlled workflow." },
+  { title: "Accounts & reports", text: "Monitoring payments, collections, outstanding balances and operational reporting into a controlled workflow." },
 ];
 const securityItems = [
   { benefit: "Protect sensitive clinic information", feature: "Multi-factor authentication", detail: "Add a stronger verification layer for staff accessing protected clinic data." },
