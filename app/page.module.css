@@ -2,7 +2,7 @@
 .nav { max-width: 1180px; margin: 0 auto; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; color: #0f4c5c; text-decoration: none; }
 .brandName { font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -0.025em; }
-.brandHeri { color: #9bc7a3; }
+.brandHeri { color: #36CF36; }
 .brandCms { color: #0f4c5c; }
 .brandSubtitle { color: #000; font-size: 9px; font-weight: 700; line-height: 1.1; letter-spacing: .12em; }
 .navActions { display: flex; align-items: center; gap: 12px; }
