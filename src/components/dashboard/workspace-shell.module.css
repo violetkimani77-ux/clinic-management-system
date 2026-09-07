@@ -23,14 +23,26 @@
   text-decoration: none;
 }
 
-.topBrand:hover .brandName {
-  color: #374151;
-}
-
 .brandName {
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+.brandHeri {
+  color: #8fd2b1;
+}
+
+.brandCms {
+  color: #173f56;
+}
+
+.topBrand:hover .brandHeri {
+  color: #6fbe99;
+}
+
+.topBrand:hover .brandCms {
+  color: #215a78;
 }
 
 .brandSubtitle {
