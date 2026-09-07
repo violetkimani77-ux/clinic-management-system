@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
 
 /**
@@ -10,7 +11,9 @@ export default function LoginPage() {
     <main className="auth-page">
       <section className="auth-shell" aria-labelledby="login-title">
         <div className="auth-intro">
-          <div className="auth-mark">CMS Portal</div>
+          <div className="auth-mark" aria-label="Heri CMS">
+            <span className="brand-heri">Heri</span><span className="brand-cms"> CMS</span>
+          </div>
           <p className="auth-kicker">Clinic operations</p>
           <h1 id="login-title">Clinic Management System</h1>
           <p className="auth-lead">
@@ -30,6 +33,11 @@ export default function LoginPage() {
             <p>Use your clinic staff account to continue.</p>
           </div>
           <LoginForm />
+          <div className="auth-switch">
+            <span>Not yet signed up?</span>
+            <Link href="/trial">Start a Free trial today</Link>
+          </div>
+          <Link href="/" className="auth-home-link">Back to homepage</Link>
         </div>
       </section>
       <p className="site-credit">POWERED BY IHL TECH</p>

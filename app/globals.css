@@ -19,11 +19,6 @@ a {
   text-decoration: none;
 }
 
-/*
- * The login page uses a calm, high-contrast workspace aesthetic rather than
- * decorative marketing UI. The layout stays usable on small screens and the
- * form remains the primary interaction for clinic staff.
- */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -59,15 +54,29 @@ a {
 .auth-mark {
   width: fit-content;
   min-height: 52px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
   margin-bottom: 36px;
   padding: 0 16px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 14px;
-  font-size: 14px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.025em;
+}
+
+.brand-heri,
+.brandHeri {
+  color: #36CF36;
+}
+
+.brand-cms,
+.brandCms {
+  color: #173f56;
+}
+
+.auth-mark .brand-cms {
+  color: #ffffff;
 }
 
 .auth-kicker,
@@ -261,6 +270,41 @@ a {
   color: #7a898f;
   font-size: 12px;
   line-height: 1.5;
+  text-align: center;
+}
+
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #e5ebee;
+  color: #687982;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.auth-switch a,
+.auth-home-link {
+  color: #2d617c;
+  font-weight: 800;
+}
+
+.auth-switch a:hover,
+.auth-home-link:hover {
+  color: #173f56;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-home-link {
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
   text-align: center;
 }
 

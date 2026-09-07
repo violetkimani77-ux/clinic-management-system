@@ -5,11 +5,13 @@ export default function TrialPage() {
   return (
     <main className={styles.page}>
       <section className={styles.card}>
-        <Link href="/" className={styles.brand}>Hali CMS</Link>
+        <Link href="/" className={styles.brand} aria-label="Heri CMS">
+          <span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span>
+        </Link>
         <p className={styles.eyebrow}>Clinic Management System</p>
         <h1>Start Your 4-Day Free Trial</h1>
         <p className={styles.intro}>
-          Create a secure clinic workspace and start evaluating Hali CMS without a credit card.
+          Create a secure clinic workspace and start evaluating Heri CMS without a credit card.
         </p>
         <form action="/api/trial" method="post" className={styles.form}>
           <label>Clinic name<input name="clinicName" required minLength={2} maxLength={120} /></label>
@@ -19,7 +21,10 @@ export default function TrialPage() {
           <button type="submit">Create Trial Workspace</button>
         </form>
         <p className={styles.note}>Your password is securely hashed and is never displayed after signup.</p>
-        <Link href="/login" className={styles.login}>Already have access? Sign in</Link>
+        <div className={styles.navigation}>
+          <Link href="/login" className={styles.login}>Already have access? Sign in</Link>
+          <Link href="/" className={styles.home}>Back to homepage</Link>
+        </div>
       </section>
     </main>
   );
