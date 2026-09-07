@@ -35,7 +35,7 @@ export default function LoginPage() {
           <LoginForm />
           <div className="auth-switch">
             <span>Not yet signed up?</span>
-            <Link href="/trial">Start a Free trial today</Link>
+            <Link href="/trial">Start Your Free trial today</Link>
           </div>
         </div>
       </section>
