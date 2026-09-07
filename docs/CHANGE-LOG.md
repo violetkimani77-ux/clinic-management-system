@@ -2,6 +2,15 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
+## 2026-09-07 — Vercel deployment retry for corrected Heri branch
+
+### Queued
+- Current Heri branch head before retry: `e551a548613c5e2104c36e3c3740f94618ff4a8e`.
+- The historical Vercel pharmacy TypeScript failure was corrected in that head; `StockMovementType` is used as a type and runtime movement values are represented as literals.
+- Other recent Vercel deployments are succeeding, so a fresh Git deployment is being triggered now without changing pharmacy logic or production database state.
+- Verification gate: Vercel must create a Preview deployment whose `githubCommitSha` matches the resulting branch head, then reach `READY`.
+- Do not treat older failed deployment snapshots as current build failures.
+
 ## 2026-09-07 — Pharmacy remediation implemented on Heri branch
 
 ### Completed on branch
