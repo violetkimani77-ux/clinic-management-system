@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "npx --yes prisma@6.19.3 generate && next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --ignore-pattern 'next-env.d.ts'",
     "typecheck": "prisma generate && tsc --noEmit",
     "db:migrate:deploy": "npx --yes prisma@6.19.3 migrate deploy",
     "test": "jest --testPathIgnorePatterns=tests/e2e",

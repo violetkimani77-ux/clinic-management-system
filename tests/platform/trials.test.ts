@@ -80,21 +80,56 @@ describe("createClinicTrial", () => {
   it("retries only Prisma P2002 clinic-code collisions", async () => {
     const clinicCreate = jest
       .fn()
-      .mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("unique", {
-        code: "P2002",
-        clientVersion: "6.19.3",
-      }))
-      .mockResolvedValueOnce({ id: "clinic-1", code: "HALI-ABCD1234" });
+      .mockRejectedValueOnce(
+        new Prisma.PrismaClientKnownRequestError("unique", {
+          code: "P2002",
+          clientVersion: "6.19.3",
+        }),
+      )
+      .mockResolvedValueOnce({
+        id: "clinic-1",
+        code: "HALI-ABCD1234",
+      });
 
-    mockTransaction.mockImplementationOnce(async (callback: (tx: unknown) => unknown) => callback({
-      authRateLimit: mockDb.authRateLimit,
-      user: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn().mockResolvedValue({ id: "user-1", email: "admin@example.com" }) },
-      role: { findUnique: jest.fn().mockResolvedValue({ id: "role-1" }) },
-      clinic: { create: clinicCreate },
-      membership: { create: jest.fn().mockResolvedValue(undefined) },
-      clinicSubscription: { create: jest.fn().mockResolvedValue(undefined) },
-      tenantDataStore: { create: jest.fn().mockResolvedValue(undefined) },
-    }));
+    // createClinicTrial() uses two transactions:
+    // 1. rate-limit transaction
+    // 2. clinic provisioning transaction
+    mockTransaction
+      .mockImplementationOnce(
+        async (callback: (tx: unknown) => unknown) =>
+          callback({
+            authRateLimit: mockDb.authRateLimit,
+          }),
+      )
+      .mockImplementationOnce(
+        async (callback: (tx: unknown) => unknown) =>
+          callback({
+            user: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              create: jest
+                .fn()
+                .mockResolvedValue({
+                  id: "user-1",
+                  email: "admin@example.com",
+                }),
+            },
+            role: {
+              findUnique: jest.fn().mockResolvedValue({ id: "role-1" }),
+            },
+            clinic: {
+              create: clinicCreate,
+            },
+            membership: {
+              create: jest.fn().mockResolvedValue(undefined),
+            },
+            clinicSubscription: {
+              create: jest.fn().mockResolvedValue(undefined),
+            },
+            tenantDataStore: {
+              create: jest.fn().mockResolvedValue(undefined),
+            },
+          }),
+      );
 
     await createClinicTrial({
       clinicName: "Example Clinic",
