@@ -39,7 +39,7 @@ export async function receiveStock(context: AuthContext, input: { medicineId: st
   });
 }
 
-async function removeStock(context: AuthContext, input: { batchId: string; quantity: number; type: "RETURN" | "EXPIRY" | "DISPOSAL"; reason: string }) {
+async function removeStock(context: AuthContext, input: { batchId: string; quantity: number; type: Extract<StockMovementType, "RETURN" | "EXPIRY" | "DISPOSAL">; reason: string }) {
   if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new Error("INVALID_STOCK_QUANTITY"); const reason = input.reason.trim(); if (!reason) throw new Error("STOCK_REMOVAL_REASON_REQUIRED");
   return db.$transaction(async (tx) => {
     const batch = await tx.stockBatch.findFirst({ where: { id: input.batchId, clinicId: context.clinicId }, select: { id: true, quantity: true, expiryDate: true, medicine: { select: { name: true } } } }); if (!batch) throw new Error("STOCK_BATCH_NOT_FOUND"); if (batch.quantity < input.quantity) throw new Error("INSUFFICIENT_STOCK"); if (input.type === "EXPIRY" && batch.expiryDate > new Date()) throw new Error("BATCH_NOT_EXPIRED");
