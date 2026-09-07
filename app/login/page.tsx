@@ -37,6 +37,7 @@ export default function LoginPage() {
             <span>Not yet signed up?</span>
             <Link href="/trial">Start a Free trial today</Link>
           </div>
+          <Link href="/" className="auth-home-link">Back to homepage</Link>
         </div>
       </section>
       <p className="site-credit">POWERED BY IHL TECH</p>
