@@ -107,11 +107,25 @@
   font-size: 13px;
 }
 
-.login {
-  display: inline-block;
+.navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  align-items: center;
   margin-top: 12px;
+}
+
+.login,
+.home {
   color: #2d617c;
   font-weight: 800;
+}
+
+.login:hover,
+.home:hover {
+  color: #173f56;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (max-width: 560px) {
