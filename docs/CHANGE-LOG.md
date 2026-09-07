@@ -2,14 +2,28 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
+## 2026-09-07 — Pharmacy partial-dispensing verification fix
+
+### Completed on branch
+- Reviewed the partial-dispensing implementation against the Prisma prescription/dispensing model and identified a correctness edge case when a prescription contains multiple items for the same medicine.
+- Partial dispensing now allocates previously dispensed quantities to prescription items in order instead of treating the entire medicine total as belonging to every matching item.
+- Added focused unit coverage for repeated-medicine prescription items and separate-medicine progress.
+- No production database migration was added or modified.
+- No production clinical data was created.
+- Code commits: `0a83f34` and `7bc8d91`.
+
+### Verification status
+- Source review completed for the affected pharmacy flow.
+- Automated test execution and fresh Heri preview deployment remain required before this fix is marked verified.
+
 ## 2026-09-07 — Vercel deployment retry for corrected Heri branch
 
-### Queued
-- Current Heri branch head before retry: `e551a548613c5e2104c36e3c3740f94618ff4a8e`.
-- The historical Vercel pharmacy TypeScript failure was corrected in that head; `StockMovementType` is used as a type and runtime movement values are represented as literals.
-- Other recent Vercel deployments are succeeding, so a fresh Git deployment is being triggered now without changing pharmacy logic or production database state.
-- Verification gate: Vercel must create a Preview deployment whose `githubCommitSha` matches the resulting branch head, then reach `READY`.
-- Do not treat older failed deployment snapshots as current build failures.
+### Completed / verified
+- Fresh Heri Preview deployment reached `READY`.
+- Deployment: `dpl_8mkgkE7PigucqgY4PzKXNJYYTMZ6`.
+- Preview URL: `clinic-management-system-bqpe12r6m.vercel.app`.
+- Deployment commit: `0e75fd959490fb28f230de587ec68f0b64285021`.
+- This deployment validated the corrected pharmacy TypeScript source; the trigger commit itself changed only this durable change log.
 
 ## 2026-09-07 — Pharmacy remediation implemented on Heri branch
 
