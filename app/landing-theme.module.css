@@ -31,19 +31,19 @@
   font-family: var(--font-landing), sans-serif;
 }
 
-.theme :global(.brandCms),
-.theme :global(.navLink:hover),
-.theme :global(.primaryButton),
-.theme :global(.secondaryButton) {
-  color: var(--landing-navy);
-}
-
 .theme :global(.brand) {
   color: var(--landing-navy);
 }
 
+.theme :global(.brandCms),
+.theme :global(.navLink:hover),
+.theme :global(.secondaryButton) {
+  color: var(--landing-navy);
+}
+
 .theme :global(.brandHeri),
-.theme :global(.trustIndicators b) {
+.theme :global(.trustIndicators b),
+.theme :global(.previewLogo .brandHeri) {
   color: var(--landing-green);
 }
 
@@ -68,7 +68,6 @@
 .theme :global(.secondaryButton) {
   border-color: #D5DDE7;
   background: var(--landing-white);
-  color: var(--landing-navy);
 }
 
 .theme :global(.heroTitle),
@@ -95,16 +94,16 @@
   background: var(--landing-navy);
 }
 
+.theme :global(.previewLogoCms) {
+  color: #fff;
+}
+
 .theme :global(.previewWindowTitle),
 .theme :global(.previewTopbar strong),
 .theme :global(.previewSectionTitle),
 .theme :global(.previewMetrics strong),
 .theme :global(.previewMiniGrid b) {
   color: var(--landing-navy);
-}
-
-.theme :global(.previewLogo .brandHeri) {
-  color: var(--landing-green);
 }
 
 .theme :global(.previewAlert em) {
