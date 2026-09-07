@@ -10,7 +10,7 @@ const manrope = Manrope({ subsets: ["latin"], display: "swap", variable: "--font
 export const metadata: Metadata = { title: "Heri CMS | Clinic Management System", description: "Heri CMS is a secure clinic management system for patient care, visits, pharmacy, accounts and reporting." };
 
 const modules = [
-  { title: "Patient care", text: "Keep patient records, visits and clinical workflows organized in one staff workspace." },
+  { title: "Patient care", text: "Keep a digital patient registry organized, with a live dashboard for easy monitoring" },
   { title: "Pharmacy", text: "Track medicines, inventory and pharmacy activity with role-aware access and operational visibility." },
   { title: "Accounts & reports", text: "Bring collections, outstanding balances and operational reporting into a controlled workflow." },
 ];
