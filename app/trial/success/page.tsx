@@ -16,7 +16,10 @@ export default function TrialSuccessPage() {
           Your clinic workspace and administrator account have been created. Sign in to the CMS Portal using the administrator email and password you chose.
         </p>
         <p className={styles.note}>Use the administrator email you entered during signup to sign in.</p>
-        <Link href="/login" className={styles.login}>Enter CMS Portal</Link>
+        <div className={styles.navigation}>
+          <Link href="/login" className={styles.login}>Enter CMS Portal</Link>
+          <Link href="/" className={styles.home}>Back to homepage</Link>
+        </div>
       </section>
     </main>
   );
