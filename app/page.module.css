@@ -25,10 +25,13 @@
 .productPreview { position: relative; z-index: 1; width: 100%; min-width: 0; border: 1px solid #d7e0dc; border-radius: 22px; background: #fff; box-shadow: 24px -18px 0 -12px rgba(78,217,78,.12), 0 38px 100px rgba(20,45,54,.20), 0 12px 30px rgba(20,45,54,.10); overflow: hidden; transform: perspective(1600px) rotateY(-1.5deg) scale(1.025); transform-origin: center right; }
 .productPreview::before { content: ""; position: absolute; top: 0; right: 0; width: 38%; height: 4px; background: #4ED94E; z-index: 2; }
 .productPreview::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 30%, transparent 70%, rgba(15,76,92,.025)); }
-.activityCard { position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 11px 13px; border: 1px solid rgba(215,224,220,.92); border-radius: 13px; background: rgba(255,255,255,.9); box-shadow: 0 18px 42px rgba(20,45,54,.16), 0 4px 12px rgba(20,45,54,.07); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #183440; }
+.activityCard { position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 11px 13px; border: 1px solid rgba(255,255,255,.72); border-radius: 13px; background: linear-gradient(135deg, rgba(255,255,255,.68), rgba(247,251,249,.34)); box-shadow: inset 0 1px 0 rgba(255,255,255,.92), inset 0 -1px 0 rgba(15,76,92,.05), 0 20px 48px rgba(20,45,54,.16), 0 6px 16px rgba(20,45,54,.08); backdrop-filter: blur(20px) saturate(135%); -webkit-backdrop-filter: blur(20px) saturate(135%); color: #183440; overflow: hidden; }
+.activityCard::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, rgba(255,255,255,.55), rgba(255,255,255,.08) 42%, rgba(78,217,78,.05) 100%); }
+.activityCard::after { content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 1px; background: rgba(255,255,255,.95); opacity: .85; }
+.activityCard > * { position: relative; z-index: 1; }
 .activityCard strong { display: block; font-size: 10px; line-height: 1.3; font-weight: 800; }
 .activityCard small { display: block; margin-top: 3px; color: #849096; font-size: 7px; line-height: 1.2; }
-.activityIcon { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: rgba(78,217,78,.12); color: #4ED94E; font-size: 11px; font-weight: 900; }
+.activityIcon { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.72); border-radius: 50%; background: rgba(78,217,78,.14); color: #4ED94E; font-size: 11px; font-weight: 900; box-shadow: inset 0 1px 2px rgba(255,255,255,.7); }
 .activityPayment { right: -4px; top: 10px; }
 .activityAppointment { left: -18px; bottom: 6px; }
 .activityCard:not(.activityPayment):not(.activityAppointment) { right: 48%; top: -2px; transform: translateX(50%); }
