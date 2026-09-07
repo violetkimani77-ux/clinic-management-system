@@ -5,7 +5,9 @@ export default function TrialPage() {
   return (
     <main className={styles.page}>
       <section className={styles.card}>
-        <Link href="/" className={styles.brand}>Heri CMS</Link>
+        <Link href="/" className={styles.brand} aria-label="Heri CMS">
+          <span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span>
+        </Link>
         <p className={styles.eyebrow}>Clinic Management System</p>
         <h1>Start Your 4-Day Free Trial</h1>
         <p className={styles.intro}>
