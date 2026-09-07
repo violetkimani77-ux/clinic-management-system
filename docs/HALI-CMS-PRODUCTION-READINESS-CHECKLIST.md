@@ -145,6 +145,8 @@ This pass completed the code-level items that can be safely implemented from rep
 - [ ] Platform-admin audit trail
 - [ ] Safe tenant provisioning/deprovisioning controls
 - [ ] Safe maintenance controls with confirmation and audit evidence
+- [ ] Define platform-only notification events separately from clinic notification events
+- [ ] Define platform operator notification audience and permissions
 
 > The Platform Control surface is **not currently an existing UI**. It must not be represented as already available.
 
@@ -174,7 +176,86 @@ This pass completed the code-level items that can be safely implemented from rep
 - [ ] Verify all workflows enforce clinic permissions
 - [ ] Verify sensitive operations are audited where required
 
-## 11. Production database and deployment configuration
+## 11. Pharmacy, accounts and user-account readiness audit
+
+The modules exist in code, but existence is not treated as production readiness. This audit must establish that the workflows are complete, secure, tested and operational before notifications are wired to them.
+
+### Pharmacy
+
+- [x] Pharmacy workspace exists and reads live clinic-scoped prescriptions, stock and expiry data
+- [x] Dispensing workflow exists with FEFO stock allocation
+- [x] Dispensing creates the associated pharmacy charge/invoice item
+- [x] Dispensing records an audit event
+- [ ] Verify inventory management UI and stock-adjustment actions end-to-end
+- [ ] Verify stock movement/history and discrepancy handling
+- [ ] Verify expiry/expired-stock workflow and edge cases
+- [ ] Verify prescription → dispensing lifecycle end-to-end
+- [ ] Verify pharmacy permissions and negative authorization cases
+- [ ] Verify pharmacy automated/browser test coverage
+
+### Accounts / finance
+
+- [x] Accounts workspace exists and reads live clinic-scoped invoice/payment data
+- [x] Invoice creation workflow exists
+- [x] Payment recording exists with duplicate external-reference protection
+- [x] Invoice status updates on payment
+- [x] Payment/invoice audit events exist
+- [ ] Verify reconciliation workflow and financial edge cases
+- [ ] Verify partial payment, overpayment, duplicate payment and void scenarios
+- [ ] Verify accounts permissions and negative authorization cases
+- [ ] Verify accounts automated/browser test coverage
+- [ ] Verify financial reporting consistency with source records
+
+### User accounts / roles
+
+- [x] Clinic-scoped session and membership model exists
+- [x] Roles include ADMIN, PHARMACY and ACCOUNTS
+- [x] Permission model distinguishes pharmacy/accounts/user-management capabilities
+- [x] Session rejects inactive users and missing clinic membership
+- [ ] Verify staff/user lifecycle management UI
+- [ ] Verify user creation, activation/deactivation and role assignment workflows
+- [ ] Verify user-management permissions and negative authorization cases
+- [ ] Verify account lifecycle audit evidence
+- [ ] Verify user-management automated/browser test coverage
+
+## 12. Clinic notifications and alerts
+
+Notifications are an **attention/action layer**, not a duplicate of live dashboard statistics. The notification center is clinic-scoped and role-aware.
+
+### Boundary with the dashboard
+
+- [ ] Keep live dashboard metrics as live metrics; do not turn every metric into a notification
+- [ ] Allow the dashboard to show a compact attention summary linking to the notification center/workflow
+- [ ] Notifications must represent an actionable event, threshold or exception
+- [ ] Direct notification links must open the relevant clinic workflow/record
+
+### Role-aware event catalog
+
+- [ ] Clinic admin notifications: staff-account actions, important workflow exceptions, important pharmacy/accounts exceptions, security/account events
+- [ ] Pharmacy notifications: low stock, approaching expiry, expired stock, dispensing/prescription exceptions, stock discrepancies
+- [ ] Accounts notifications: overdue/materially outstanding invoices, payment/reconciliation exceptions, failed/incomplete transactions, billing items requiring review
+- [ ] Do not broadcast pharmacy/accounts events to users without the relevant role/permission
+
+### Notification behavior
+
+- [ ] In-app notification center
+- [ ] Unread/read state
+- [ ] Notification history
+- [ ] Severity levels: informational, attention required, critical
+- [ ] Role/permission-aware routing
+- [ ] Direct links to relevant workflows/records
+- [ ] Important notification auditability/acknowledgement where required
+- [ ] Deliberate event catalog and noise controls
+- [ ] Initial delivery remains in-app; email/SMS/push are separate future channels
+
+### Platform-control separation
+
+- [ ] Platform Control notifications are restricted to explicitly authorized Heri platform operators
+- [ ] Platform events include tenant provisioning/health, subscription lifecycle, residency/security failures, failed migrations and other platform-operational exceptions
+- [ ] Platform Control is not the mechanism for ordinary clinic pharmacy/accounts notifications
+- [ ] Shared notification/event infrastructure, if used, must preserve separate audiences and authorization boundaries
+
+## 13. Production database and deployment configuration
 
 - [x] Successful Vercel deployment exists for the corrected trial implementation
 - [ ] Confirm production Prisma migration is applied to the production database
@@ -188,7 +269,7 @@ This pass completed the code-level items that can be safely implemented from rep
 - [ ] Confirm production domain/aliases
 - [ ] Confirm cache behavior for authenticated/sensitive pages
 
-## 12. Observability and operations
+## 14. Observability and operations
 
 - [x] Existing audit infrastructure
 - [ ] Production application error monitoring verification
@@ -204,7 +285,7 @@ This pass completed the code-level items that can be safely implemented from rep
 - [x] Maintenance procedure
 - [x] Rollback procedure
 
-## 13. Testing and release validation
+## 15. Testing and release validation
 
 - [x] Existing auth/MFA/authorization/audit/residency automated tests have passed historically
 - [x] Existing Playwright smoke test has passed historically
@@ -218,7 +299,7 @@ This pass completed the code-level items that can be safely implemented from rep
 - [ ] Add production-like signup/login/expiry E2E test
 - [ ] Verify no secrets/passwords are exposed in test output
 
-## 14. Legal / compliance operational readiness
+## 16. Legal / compliance operational readiness
 
 - [x] Kenya-first residency policy documented
 - [x] Kenya DPA / transfer considerations researched
@@ -232,7 +313,7 @@ This pass completed the code-level items that can be safely implemented from rep
 - [ ] Evidence-retention process
 - [ ] Customer-facing privacy/data-residency disclosures
 
-## 15. Production release gate
+## 17. Production release gate
 
 The release should **not** be declared production-ready until all applicable items below are verified:
 
@@ -250,6 +331,9 @@ The release should **not** be declared production-ready until all applicable ite
 - [ ] Build passes on current HEAD
 - [ ] E2E smoke test passes on current HEAD
 - [ ] Observability/alerting is operational
+- [ ] Clinic notification event catalog and role routing are verified
+- [ ] Notification authorization/tenant isolation is verified
+- [ ] Platform-control notification boundaries are verified
 - [ ] Legal/compliance operational requirements are reviewed
 - [x] Rollback and incident procedures are documented
 
