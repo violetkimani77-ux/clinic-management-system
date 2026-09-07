@@ -43,7 +43,7 @@ export function WorkspaceShell({
     <main className={styles.shell}>
       <header className={styles.topBar}>
         <Link href="/dashboard" className={styles.topBrand} aria-label="Heri CMS Clinic Management System">
-          <span className={styles.brandName}>Heri CMS</span>
+          <span className={styles.brandName}><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span></span>
           <span className={styles.brandSubtitle}>Clinic Management System</span>
         </Link>
         <StaffProfile userName={context.userName} roleCode={context.roleCode} />
