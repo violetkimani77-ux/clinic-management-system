@@ -1,0 +1,136 @@
+.theme {
+  --landing-navy: #0B1F3A;
+  --landing-navy-deep: #07162B;
+  --landing-navy-soft: #16345A;
+  --landing-body: #26364A;
+  --landing-muted: #5F6F82;
+  --landing-green: #4ED94E;
+  --landing-surface: #F7F8F5;
+  --landing-white: #FFFFFF;
+  font-family: var(--font-landing), sans-serif;
+  color: var(--landing-body);
+}
+
+.theme :global(.brandName),
+.theme :global(.brandHeri),
+.theme :global(.brandCms),
+.theme :global(.brandSubtitle),
+.theme :global(.eyebrow),
+.theme :global(.heroTitle),
+.theme :global(.heroText),
+.theme :global(.sectionKicker),
+.theme :global(.sectionTitle),
+.theme :global(.sectionText),
+.theme :global(.cardTitle),
+.theme :global(.cardText),
+.theme :global(.navLink),
+.theme :global(.primaryButton),
+.theme :global(.secondaryButton),
+.theme :global(.trustIndicators),
+.theme :global(.footerInner) {
+  font-family: var(--font-landing), sans-serif;
+}
+
+.theme :global(.brandCms),
+.theme :global(.navLink:hover),
+.theme :global(.primaryButton),
+.theme :global(.secondaryButton) {
+  color: var(--landing-navy);
+}
+
+.theme :global(.brand) {
+  color: var(--landing-navy);
+}
+
+.theme :global(.brandHeri),
+.theme :global(.trustIndicators b) {
+  color: var(--landing-green);
+}
+
+.theme :global(.brandSubtitle) {
+  color: var(--landing-navy-deep);
+}
+
+.theme :global(.navLink) {
+  color: var(--landing-body);
+}
+
+.theme :global(.primaryButton) {
+  background: var(--landing-navy);
+  color: var(--landing-white);
+  box-shadow: 0 10px 26px rgba(11, 31, 58, 0.18);
+}
+
+.theme :global(.primaryButton:hover) {
+  background: var(--landing-navy-soft);
+}
+
+.theme :global(.secondaryButton) {
+  border-color: #D5DDE7;
+  background: var(--landing-white);
+  color: var(--landing-navy);
+}
+
+.theme :global(.heroTitle),
+.theme :global(.sectionTitle) {
+  color: var(--landing-navy-deep);
+}
+
+.theme :global(.heroText),
+.theme :global(.sectionText) {
+  color: var(--landing-muted);
+}
+
+.theme :global(.eyebrow),
+.theme :global(.sectionKicker) {
+  color: #52725A;
+}
+
+.theme :global(.productPreview) {
+  box-shadow: 24px -18px 0 -12px rgba(78, 217, 78, 0.12), 0 38px 100px rgba(7, 22, 43, 0.20), 0 12px 30px rgba(7, 22, 43, 0.10);
+}
+
+.theme :global(.previewSidebar),
+.theme :global(.security) {
+  background: var(--landing-navy);
+}
+
+.theme :global(.previewWindowTitle),
+.theme :global(.previewTopbar strong),
+.theme :global(.previewSectionTitle),
+.theme :global(.previewMetrics strong),
+.theme :global(.previewMiniGrid b) {
+  color: var(--landing-navy);
+}
+
+.theme :global(.previewLogo .brandHeri) {
+  color: var(--landing-green);
+}
+
+.theme :global(.previewAlert em) {
+  color: var(--landing-navy);
+}
+
+.theme :global(.cardAccent) {
+  background: var(--landing-green);
+}
+
+.theme :global(.footer) {
+  background: #F7F8F5;
+}
+
+.theme :global(.activityCard) {
+  color: var(--landing-navy);
+}
+
+.theme :global(.activityIcon) {
+  color: var(--landing-green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme :global(.navLink),
+  .theme :global(.primaryButton),
+  .theme :global(.secondaryButton) {
+    transition: none;
+  }
+}
