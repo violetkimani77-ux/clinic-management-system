@@ -7,7 +7,9 @@ export default function TrialSuccessPage() {
   return (
     <main className={styles.page}>
       <section className={styles.card}>
-        <Link href="/" className={styles.brand}>Heri CMS</Link>
+        <Link href="/" className={styles.brand} aria-label="Heri CMS">
+          <span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span>
+        </Link>
         <p className={styles.eyebrow}>Trial workspace created</p>
         <h1>Your 4-day trial is ready.</h1>
         <p className={styles.intro}>
