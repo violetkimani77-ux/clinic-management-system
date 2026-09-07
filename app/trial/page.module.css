@@ -1,1 +1,126 @@
-.page{min-height:100vh;display:grid;place-items:center;padding:32px;background:#f5f7f8}.card{width:min(100%,520px);padding:40px;background:#fff;border:1px solid #d9e1e5;border-radius:20px;box-shadow:0 16px 45px rgba(15,76,92,.08)}.brand{color:#0f4c5c;font-size:28px;font-weight:700;text-decoration:none}.eyebrow{margin:6px 0 24px;color:#000;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.card h1{margin:0 0 12px;font-size:34px;line-height:1.1}.intro,.note{color:#52616b;line-height:1.6}.form{display:grid;gap:18px;margin:28px 0}.form label{display:grid;gap:7px;font-weight:700}.form input{width:100%;padding:13px 14px;border:1px solid #c8d3d9;border-radius:10px;font:inherit}.form button{padding:14px 18px;border:0;border-radius:10px;background:#0f4c5c;color:#fff;font:inherit;font-weight:700;cursor:pointer}.note{font-size:13px}.login{display:inline-block;margin-top:12px;color:#0f4c5c;font-weight:700}
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background: linear-gradient(135deg, #f7f9fb 0%, #eef3f6 100%);
+}
+
+.card {
+  width: min(100%, 520px);
+  padding: 40px;
+  background: #ffffff;
+  border: 1px solid #dce3e8;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(23, 39, 52, 0.1);
+}
+
+.brand {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-decoration: none;
+}
+
+.brandHeri {
+  color: #8fd2b1;
+}
+
+.brandCms {
+  color: #173f56;
+}
+
+.eyebrow {
+  margin: 6px 0 24px;
+  color: #587080;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.card h1 {
+  margin: 0 0 12px;
+  color: #17262e;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.intro,
+.note {
+  color: #52616b;
+  line-height: 1.6;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+  margin: 28px 0;
+}
+
+.form label {
+  display: grid;
+  gap: 8px;
+  color: #263943;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #cbd6dc;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #17262e;
+  font: inherit;
+  outline: none;
+}
+
+.form input:focus {
+  border-color: #2d6d8e;
+  box-shadow: 0 0 0 3px rgba(45, 109, 142, 0.14);
+}
+
+.form button {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #173f56;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.form button:hover {
+  background: #215a78;
+}
+
+.note {
+  margin: 0;
+  font-size: 13px;
+}
+
+.login {
+  display: inline-block;
+  margin-top: 12px;
+  color: #2d617c;
+  font-weight: 800;
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 20px 16px;
+  }
+
+  .card {
+    padding: 32px 24px;
+    border-radius: 18px;
+  }
+}
