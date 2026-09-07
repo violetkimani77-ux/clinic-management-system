@@ -2,18 +2,18 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
-## 2026-09-07 — Heri CMS branding
+## 2026-09-07 — Heri CMS branding and auth navigation
 
 ### Completed / queued on branch
-- Created branch `chore/rename-hali-to-heri` from current `main`.
-- Renamed customer-facing `Hali CMS` branding to `Heri CMS` in:
-  - `app/layout.tsx` metadata/title/description
-  - `app/trial/page.tsx`
-  - `app/trial/success/page.tsx`
-  - `src/components/dashboard/workspace-shell.tsx`
-- Trial functionality and security/business logic were not changed by the branding rename.
-- Branch is **not merged to `main` and not deployed** yet.
-- Remaining work: validate all customer-facing branding, align trial styling with the public landing/login/CMS portal, then open/merge PR only after review and tests pass.
+- Branch: `chore/rename-hali-to-heri`.
+- Customer-facing `Hali CMS` branding was renamed to `Heri CMS` in application metadata, trial pages, and the authenticated workspace shell.
+- Standardized the logo treatment so **Heri** uses light green and **CMS** uses navy blue in the login/CMS portal and trial signup areas.
+- Added a clear `Start a 4-day free trial` path to the login page so users can choose between signing in and starting a new trial workspace.
+- Kept existing trial/authentication business logic unchanged.
+- Added Playwright coverage for the login-page Heri CMS logo and signup navigation.
+- Trial signup styling was aligned with the existing CMS/login visual language without changing signup security or persistence behavior.
+- Branch is **not merged to `main` and not deployed** yet; validation remains required before release.
+- Historical public landing-page source is still a separate queued task; the landing-page logo should receive the same Heri/CMS color treatment when that source is brought into current `main`.
 
 ## 2026-09-07 — Hali CMS production-readiness baseline
 
@@ -39,11 +39,11 @@ This file is the durable project memory for important completed, queued, and ver
 
 ## 2026-09-07 — Landing page investigation
 
-- User identified the Hali public landing page at the historical Vercel URL `clinic-management-system-9e3ll1je0.vercel.app`.
+- User identified the Hali public landing page at the historical Vercel URL `clinic-management-system-9e3ll1je.vercel.app`.
 - That URL is an older Vercel deployment and is not the current `main` production deployment.
 - Current `main` root route intentionally redirects unauthenticated users to `/login`; therefore the current production root is not the historical public landing page.
 - Safe plan: recover the historical landing-page source and bring it forward into current `main`; do not rollback production.
-- User wants the future trial page styling to match the public landing page and login/CMS portal.
+- User wants the future landing page and trial page to share the same Heri/CMS logo treatment and visual language as the login/CMS portal.
 
 ## Durable operating rules
 - Prefer small, reviewable branches/PRs for changes.
