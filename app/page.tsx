@@ -26,12 +26,15 @@ function ProductPreview() {
     <div className={styles.productPreview} aria-label="Heri CMS dashboard preview">
       <div className={styles.previewBrowserBar}>
         <span className={styles.browserDots} aria-hidden="true"><i /><i /><i /></span>
-        <span className={styles.previewUrl}>app.heri.health / dashboard</span>
-        <span className={styles.previewSecure}>Secure</span>
+        <span className={styles.previewWindowTitle}>Heri CMS</span>
+        <span className={styles.previewSecure}>Secure workspace</span>
       </div>
       <div className={styles.previewBody}>
         <aside className={styles.previewSidebar}>
-          <div className={styles.previewLogo}><span className={styles.brandHeri}>H</span><span>Heri</span></div>
+          <div className={styles.previewLogo}>
+            <span className={styles.previewLogoName}><span className={styles.brandHeri}>Heri</span><span className={styles.previewLogoCms}> CMS</span></span>
+            <span className={styles.previewLogoSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
+          </div>
           <div className={styles.previewClinic}>Mwangaza Clinic</div>
           <nav className={styles.previewNav} aria-label="Dashboard preview navigation">
             <span className={styles.previewNavActive}>Overview</span>
