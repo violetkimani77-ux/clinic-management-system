@@ -127,6 +127,20 @@
   color: var(--landing-green);
 }
 
+/* Premium CTA treatment: keep the green action high-contrast and authoritative. */
+.theme :global(.page .heroActions .primaryButton),
+.theme :global(.page .ctaActions .primaryButton) {
+  background: #4ED94E;
+  color: #07162B;
+  box-shadow: 0 10px 26px rgba(78, 217, 78, 0.28);
+}
+
+.theme :global(.page .heroActions .primaryButton:hover),
+.theme :global(.page .ctaActions .primaryButton:hover) {
+  background: #35C735;
+  box-shadow: 0 12px 30px rgba(78, 217, 78, 0.34);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .theme :global(.navLink),
   .theme :global(.primaryButton),
