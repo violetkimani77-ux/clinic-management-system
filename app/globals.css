@@ -288,15 +288,24 @@ a {
   text-align: center;
 }
 
-.auth-switch a {
+.auth-switch a,
+.auth-home-link {
   color: #2d617c;
   font-weight: 800;
 }
 
-.auth-switch a:hover {
+.auth-switch a:hover,
+.auth-home-link:hover {
   color: #173f56;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.auth-home-link {
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
+  text-align: center;
 }
 
 .site-credit {
