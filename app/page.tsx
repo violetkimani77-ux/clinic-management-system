@@ -23,51 +23,65 @@ const securityItems = [
 
 function ProductPreview() {
   return (
-    <div className={styles.productPreview} aria-label="Heri CMS dashboard preview">
-      <div className={styles.previewBrowserBar}>
-        <span className={styles.browserDots} aria-hidden="true"><i /><i /><i /></span>
-        <span className={styles.previewWindowTitle}>Heri CMS</span>
-        <span className={styles.previewSecure}>Secure workspace</span>
+    <div className={styles.previewStage}>
+      <div className={styles.activityCard} aria-label="Patient checked in">
+        <span className={styles.activityIcon}>✓</span>
+        <span><strong>Patient checked in</strong><small>Just now</small></span>
       </div>
-      <div className={styles.previewBody}>
-        <aside className={styles.previewSidebar}>
-          <div className={styles.previewLogo}>
-            <span className={styles.previewLogoName}><span className={styles.brandHeri}>Heri</span><span className={styles.previewLogoCms}> CMS</span></span>
-            <span className={styles.previewLogoSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
-          </div>
-          <div className={styles.previewClinic}>Mwangaza Clinic</div>
-          <nav className={styles.previewNav} aria-label="Dashboard preview navigation">
-            <span className={styles.previewNavActive}>Overview</span>
-            <span>Patients</span>
-            <span>Visits</span>
-            <span>Pharmacy</span>
-            <span>Accounts</span>
-            <span>Reports</span>
-          </nav>
-          <div className={styles.previewSidebarFooter}>Admin workspace</div>
-        </aside>
-        <div className={styles.previewMain}>
-          <div className={styles.previewTopbar}>
-            <div><span className={styles.previewOverline}>ADMIN WORKSPACE</span><strong>Dashboard</strong></div>
-            <span className={styles.previewAvatar}>AK</span>
-          </div>
-          <p className={styles.previewIntro}>Clinic activity and operational items that need attention.</p>
-          <div className={styles.previewMetrics}>
-            <div><span>Patients today</span><strong>24</strong></div>
-            <div><span>Visits today</span><strong>18</strong></div>
-            <div><span>Collected today</span><strong>KES 48.2k</strong></div>
-            <div><span>Outstanding</span><strong>KES 126k</strong></div>
-          </div>
-          <div className={styles.previewContentGrid}>
-            <div className={styles.previewAttention}>
-              <div className={styles.previewSectionTitle}>Needs attention <span>4</span></div>
-              <div className={styles.previewAlert}><b>●</b><span>3 medicines below reorder level</span><em>View →</em></div>
-              <div className={styles.previewAlert}><b>●</b><span>2 batches expiring within 30 days</span><em>View →</em></div>
-              <div className={styles.previewAlert}><b>●</b><span>KES 126,400 outstanding</span><em>View →</em></div>
+      <div className={`${styles.activityCard} ${styles.activityPayment}`} aria-label="Payment received">
+        <span className={styles.activityIcon}>✓</span>
+        <span><strong>KES 12,500 payment received</strong><small>Accounts · just now</small></span>
+      </div>
+      <div className={`${styles.activityCard} ${styles.activityAppointment}`} aria-label="Appointment confirmed">
+        <span className={styles.activityIcon}>✓</span>
+        <span><strong>Appointment confirmed</strong><small>Today · 2:30 PM</small></span>
+      </div>
+      <div className={styles.productPreview} aria-label="Heri CMS dashboard preview">
+        <div className={styles.previewBrowserBar}>
+          <span className={styles.browserDots} aria-hidden="true"><i /><i /><i /></span>
+          <span className={styles.previewWindowTitle}>Heri CMS</span>
+          <span className={styles.previewSecure}>Secure workspace</span>
+        </div>
+        <div className={styles.previewBody}>
+          <aside className={styles.previewSidebar}>
+            <div className={styles.previewLogo}>
+              <span className={styles.previewLogoName}><span className={styles.brandHeri}>Heri</span><span className={styles.previewLogoCms}> CMS</span></span>
+              <span className={styles.previewLogoSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
             </div>
-            <div className={styles.previewGlance}>
-              <div className={styles.previewSectionTitle}>Clinic at a glance</div>
-              <div className={styles.previewMiniGrid}><span><b>842</b>Active patients</span><span><b>12</b>Registered today</span><span><b>15</b>Completed visits</span><span><b>3</b>Pending visits</span></div>
+            <div className={styles.previewClinic}>Mwangaza Clinic</div>
+            <nav className={styles.previewNav} aria-label="Dashboard preview navigation">
+              <span className={styles.previewNavActive}>Overview</span>
+              <span>Patients</span>
+              <span>Visits</span>
+              <span>Pharmacy</span>
+              <span>Accounts</span>
+              <span>Reports</span>
+            </nav>
+            <div className={styles.previewSidebarFooter}>Admin workspace</div>
+          </aside>
+          <div className={styles.previewMain}>
+            <div className={styles.previewTopbar}>
+              <div><span className={styles.previewOverline}>ADMIN WORKSPACE</span><strong>Dashboard</strong></div>
+              <span className={styles.previewAvatar}>AK</span>
+            </div>
+            <p className={styles.previewIntro}>Clinic activity and operational items that need attention.</p>
+            <div className={styles.previewMetrics}>
+              <div><span>Patients today</span><strong>24</strong></div>
+              <div><span>Visits today</span><strong>18</strong></div>
+              <div><span>Collected today</span><strong>KES 48.2k</strong></div>
+              <div><span>Outstanding</span><strong>KES 126k</strong></div>
+            </div>
+            <div className={styles.previewContentGrid}>
+              <div className={styles.previewAttention}>
+                <div className={styles.previewSectionTitle}>Needs attention <span>4</span></div>
+                <div className={styles.previewAlert}><b>●</b><span>3 medicines below reorder level</span><em>View →</em></div>
+                <div className={styles.previewAlert}><b>●</b><span>2 batches expiring within 30 days</span><em>View →</em></div>
+                <div className={styles.previewAlert}><b>●</b><span>KES 126,400 outstanding</span><em>View →</em></div>
+              </div>
+              <div className={styles.previewGlance}>
+                <div className={styles.previewSectionTitle}>Clinic at a glance</div>
+                <div className={styles.previewMiniGrid}><span><b>842</b>Active patients</span><span><b>12</b>Registered today</span><span><b>15</b>Completed visits</span><span><b>3</b>Pending visits</span></div>
+              </div>
             </div>
           </div>
         </div>
