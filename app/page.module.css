@@ -13,7 +13,7 @@
 .primaryButton:hover, .secondaryButton:hover { transform: translateY(-1px); }
 .hero { max-width: 1180px; margin: 0 auto; padding: 74px 28px 92px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(320px,.85fr); gap: 70px; align-items: center; }
 .eyebrow { margin: 0 0 18px; color: #6b8f71; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.heroTitle { max-width: 720px; margin: 0; color: #0f4c5c; font-size: clamp(42px,6vw,72px); line-height: .98; letter-spacing: -.055em; }
+.heroTitle { max-width: 720px; margin: 0; color: #0b2633; font-size: clamp(42px,6vw,72px); line-height: .98; letter-spacing: -.055em; }
 .heroText { max-width: 650px; margin: 26px 0 0; color: #66757d; font-size: 18px; line-height: 1.7; }
 .heroActions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
 .secondaryButton { border: 1px solid #d5ded9; background: #fff; color: #0f4c5c; padding: 11px 17px; }
@@ -31,7 +31,7 @@
 .sectionInner { max-width:1180px; margin:0 auto; padding:76px 28px; }
 .sectionIntro { max-width:680px; margin-bottom:36px; }
 .sectionKicker { margin:0 0 10px; color:#6b8f71; font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
-.sectionTitle { margin:0; color:#0f4c5c; font-size:clamp(30px,4vw,44px); line-height:1.08; letter-spacing:-.035em; }
+.sectionTitle { margin:0; color:#0b2633; font-size:clamp(30px,4vw,44px); line-height:1.08; letter-spacing:-.035em; }
 .sectionText { margin:15px 0 0; color:#66757d; line-height:1.7; }
 .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
 .card { padding:24px; border:1px solid #e0e6e3; border-radius:18px; background:#fff; }
@@ -47,6 +47,7 @@
 .securityItem { padding:16px 18px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(255,255,255,.06); color:#edf5f6; font-size:14px; }
 .cta { text-align:center; }
 .cta .sectionIntro { margin-left:auto; margin-right:auto; }
+.ctaActions { justify-content: center; }
 .footer { border-top:1px solid #e0e6e3; background:#f7f8f5; }
 .footerInner { max-width:1180px; margin:0 auto; padding:24px 28px; display:flex; justify-content:space-between; gap:20px; color:#748188; font-size:12px; }
 @media (max-width:900px){ .hero,.security .sectionInner{grid-template-columns:1fr;gap:40px}.cards{grid-template-columns:1fr 1fr} }
