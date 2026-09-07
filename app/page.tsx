@@ -39,7 +39,7 @@ export default function HomePage() {
 
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span> · Clinic Management System</p>
+          <p className={styles.eyebrow}>Heri CMS · Clinic Management System</p>
           <h1 className={styles.heroTitle}>One secure platform for your clinic operations</h1>
           <p className={styles.heroText}>A focused management platform for clinics that need dependable patient, visit, pharmacy, accounts and reporting workflows without sacrificing security or operational control.</p>
           <div className={styles.heroActions}>
@@ -82,7 +82,7 @@ export default function HomePage() {
       <section id="trial" className={`${styles.section} ${styles.cta}`}>
         <div className={styles.sectionInner}>
           <div className={styles.sectionIntro}><p className={styles.sectionKicker}>Evaluate it in your own workflow</p><h2 className={styles.sectionTitle}>Start Your 4-Day Free Trial.</h2><p className={styles.sectionText}>Create a trial workspace for your clinic and start evaluating the core workflows, roles, security controls and reporting before making a commitment.</p><p className={styles.sectionText}>No credit card is required for the trial.</p></div>
-          <div className={`${styles.heroActions} ${styles.ctaActions}`}><Link href="/trial" className={styles.primaryButton}>Talk to our Team</Link><Link href="/login" className={styles.secondaryButton}>Existing staff sign in</Link></div>
+          <div className={`${styles.heroActions} ${styles.ctaActions}`}><a href="mailto:invest@investit.click" className={styles.primaryButton}>Talk to our Team</a><Link href="/login" className={styles.secondaryButton}>Existing staff sign in</Link></div>
         </div>
       </section>
 
