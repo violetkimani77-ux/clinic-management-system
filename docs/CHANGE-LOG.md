@@ -2,6 +2,18 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
+## 2026-09-08 — Heri E2E trial-link expectation aligned
+
+### Completed on branch
+- Updated the Heri login Playwright assertion to match the intentional current copy: `Start a Free trial today`.
+- The assertion continues to verify that the link targets `/trial`.
+- No production authentication, authorization, trial, pharmacy, or database logic was changed.
+- Commit: `9984921`.
+
+### Verification status
+- CI rerun is required after this test-only alignment change.
+- Pharmacy production-readiness remains unverified until the full CI gate and fresh Heri preview deployment are both successful.
+
 ## 2026-09-07 — Pharmacy partial-dispensing verification fix
 
 ### Completed on branch
