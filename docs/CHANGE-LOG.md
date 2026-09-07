@@ -2,6 +2,19 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
+## 2026-09-07 — Heri auth/trial homepage navigation
+
+### Completed on branch
+- Branch: `chore/rename-hali-to-heri`.
+- Added a clear `Back to homepage` path on the login page.
+- Added a clear `Back to homepage` path on the free-trial signup page.
+- Added a clear `Back to homepage` path on the trial-success page.
+- Kept the existing sign-in, trial, and trial-success destinations intact.
+- No authentication, authorization, trial persistence, or database logic was changed.
+- Navigation styling reuses the existing trial-page visual system.
+- Latest commits for this UX slice: `777fe859`, `40c91fd`, `75fadf8`, `9f75f41`.
+- Browser/build validation is still required before release.
+
 ## 2026-09-07 — Heri public landing page recovered
 
 ### Completed on branch
@@ -47,6 +60,7 @@ This file is the durable project memory for important completed, queued, and ver
 - Actual production database/backup/DR geography and provider/subprocessor residency evidence remain unverified.
 - Observability/alerting, backup testing, final legal/compliance review, full cross-module E2E, and other checklist gates remain outstanding unless separately marked verified.
 - The production-readiness checklist contains some stale deployment evidence and should be updated as release evidence changes.
+- Heri platform control panel architecture and implementation remain outstanding; this is a separate platform-level surface from clinic workspaces and must have explicit authorization boundaries before powerful cross-tenant operations are introduced.
 
 ## Durable operating rules
 - Prefer small, reviewable branches/PRs for changes.
