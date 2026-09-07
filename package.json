@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx --yes prisma@6.19.3 generate && next build",
+    "build": "node -e \"const fs=require('fs'); fs.mkdirSync('public',{recursive:true}); fs.copyFileSync('hero dashboard.mp4','public/hero-dashboard.mp4')\" && npx --yes prisma@6.19.3 generate && next build",
     "start": "next start",
     "lint": "eslint . --ignore-pattern 'next-env.d.ts'",
     "typecheck": "prisma generate && tsc --noEmit",
