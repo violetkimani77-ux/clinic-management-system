@@ -1,6 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 import styles from "./page.module.css";
+import landingTheme from "./landing-theme.module.css";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-landing",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "Heri CMS | Clinic Management System",
@@ -92,7 +101,7 @@ function ProductPreview() {
 
 export default function HomePage() {
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${landingTheme.theme} ${manrope.variable}`}>
       <nav className={styles.nav} aria-label="Public navigation">
         <Link href="/" className={styles.brand} aria-label="Heri CMS — Clinic Management System">
           <span className={styles.brandName}><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span></span>
