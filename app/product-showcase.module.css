@@ -9,7 +9,7 @@
 .chrome { min-height: 38px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 0 13px; border-bottom: 1px solid rgba(255,255,255,.1); color: #9fb0c1; font-size: 9px; font-weight: 700; }
 .dots { display: inline-flex; gap: 4px; }
 .dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.28); }
-.badge { padding: 4px 7px; border: 1px solid rgba(78,217,green,.28); border-radius: 99px; color: #9fe39f; background: rgba(78,217,78,.08); font-size: 8px; }
+.badge { padding: 4px 7px; border: 1px solid rgba(78,217,78,.28); border-radius: 99px; color: #9fe39f; background: rgba(78,217,78,.08); font-size: 8px; }
 .video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #020b16; }
 .video:focus-visible { outline: 3px solid #4ED94E; outline-offset: -3px; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; gap: 30px; } .intro { max-width: 700px; } .text { max-width: 650px; } .browser { max-width: 900px; } }
