@@ -22,7 +22,7 @@ const navigation: NavigationItem[] = [
 
 /**
  * Provides the authenticated clinic workspace frame shared by staff pages.
- * The top bar keeps Hali CMS clinic identity and staff identity together;
+ * The top bar keeps Heri CMS clinic identity and staff identity together;
  * the sidebar owns workspace navigation while page components own their
  * data and authorization checks.
  */
@@ -42,8 +42,8 @@ export function WorkspaceShell({
   return (
     <main className={styles.shell}>
       <header className={styles.topBar}>
-        <Link href="/dashboard" className={styles.topBrand} aria-label="Hali CMS Clinic Management System">
-          <span className={styles.brandName}>Hali CMS</span>
+        <Link href="/dashboard" className={styles.topBrand} aria-label="Heri CMS Clinic Management System">
+          <span className={styles.brandName}>Heri CMS</span>
           <span className={styles.brandSubtitle}>Clinic Management System</span>
         </Link>
         <StaffProfile userName={context.userName} roleCode={context.roleCode} />
