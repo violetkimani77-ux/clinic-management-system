@@ -119,7 +119,7 @@ export default function HomePage() {
 
       <section id="security" className={`${styles.section} ${styles.security}`}>
         <div className={styles.sectionInner}>
-          <div><p className={styles.sectionKicker}>Security by design</p><h2 className={styles.sectionTitle}>Protection that helps your clinic stay secure, controlled and accountable.</h2><p className={styles.sectionText}>Heri CMS combines practical security controls with clinic operations, helping protect sensitive information while making access easier to manage as your team grows.</p></div>
+          <div><p className={styles.sectionKicker}>Security by design</p><h2 className={styles.sectionTitle}>Protection that helps your data stay secure, controlled and accountable.</h2><p className={styles.sectionText}>Heri CMS combines practical security controls with clinic operations, helping protect sensitive information while making access easier to manage as your team grows.</p></div>
           <div className={styles.securityList}>{securityItems.map((item, index) => <div key={item.feature} className={styles.securityItem}><span aria-hidden="true">0{index + 1}</span><div><strong>{item.benefit}</strong><h3>{item.feature}</h3><p>{item.detail}</p></div></div>)}</div>
         </div>
       </section>
