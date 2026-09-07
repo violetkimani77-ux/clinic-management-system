@@ -2,6 +2,21 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
+## 2026-09-07 — Pharmacy remediation implemented on Heri branch
+
+### Completed on branch
+- Added controlled stock return-to-supplier, expired-stock recording and disposal actions behind `PHARMACY_STOCK_ADJUST`.
+- Added clinic-scoped stock movement history at `/pharmacy/movements`.
+- Tightened inventory summary calculations so usable stock excludes zero/expired batches and expiry alerts only count batches with positive quantity.
+- Added controlled partial-dispensing backend with cumulative dispensing quantities, FEFO allocation, per-dispensing stock movements/audit events, billing linkage and `PARTIALLY_DISPENSED` status until all prescribed quantities are fulfilled.
+- Added the `PARTIALLY_DISPENSED` queue state to the pharmacy work queue.
+- Important stock records remain correction-oriented rather than delete-oriented; stock changes are represented through movements and audited actions.
+- Commits for this slice: `45d0c4d` (partial dispensing domain), `891a99f` (partial dispensing action), `e18293a` (movement history), `5e83a79` (controlled stock action layer), `ff56534` (inventory UI), `2879933` (pharmacy queue/usable-stock fixes).
+
+### Verification status
+- Source-level review completed for tenant scoping, FEFO, expiry exclusion, audit logging and permission gates.
+- Full lint/typecheck/test/build and a Vercel preview deployment remain the final verification gate for this slice before it is called production-ready.
+
 ## 2026-09-07 — Notifications, dashboard and platform-control boundary
 
 ### Queued / clarified on branch
