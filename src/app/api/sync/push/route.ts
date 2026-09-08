@@ -43,6 +43,8 @@ export async function POST(request: Request) {
   const results = [] as SyncPushResponse["results"];
 
   for (const operation of body.operations as SyncOperation[]) {
+    if (operation.userId !== context.userId) return errorResponse("SYNC_USER_MISMATCH", 403);
+
     const existing = await db.syncOperation.findUnique({ where: { operationId: operation.operationId } });
     if (existing) {
       if (existing.clinicId !== context.clinicId || existing.deviceId !== body.deviceId || existing.userId !== context.userId) return errorResponse("SYNC_OPERATION_OWNERSHIP_MISMATCH", 403);
