@@ -23,7 +23,8 @@ export type SyncOperation = {
 
 export type SyncOperationResult = {
   operationId: string;
-  status: Exclude<SyncOperationStatus, "PENDING">;
+  /** PENDING is returned for a retry that observes an operation already accepted but not completed. */
+  status: SyncOperationStatus;
   entityVersion?: number;
   serverReceivedAt: string;
   errorCode?: string;
