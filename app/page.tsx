@@ -22,6 +22,7 @@ const securityItems = [
 ];
 function ProductPreview() {
   return <div className={styles.previewStage}>
+    <div aria-hidden="true" style={{ position: "absolute", inset: "4% -3% 3% -5%", borderRadius: "34px", background: "radial-gradient(ellipse at 55% 48%, rgba(78,217,78,.18) 0%, rgba(78,217,78,.08) 38%, rgba(78,217,78,0) 72%)", filter: "blur(22px)", pointerEvents: "none" }} />
     <div className={styles.activityCard} aria-label="Patient checked in"><span className={styles.activityIcon}>✓</span><span><strong>Patient checked in</strong><small>Just now</small></span></div>
     <div className={`${styles.activityCard} ${styles.activityPayment}`} aria-label="Payment received"><span className={styles.activityIcon}>✓</span><span><strong>KES 12,500 payment received</strong><small>Accounts · just now</small></span></div>
     <div className={`${styles.activityCard} ${styles.activityAppointment}`} aria-label="Appointment confirmed"><span className={styles.activityIcon}>✓</span><span><strong>Appointment confirmed</strong><small>Today · 2:30 PM</small></span></div>
