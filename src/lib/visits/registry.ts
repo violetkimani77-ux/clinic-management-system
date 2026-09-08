@@ -1,4 +1,4 @@
-import { Prisma, VisitStatus } from "@prisma/client";
+import { VisitStatus } from "@prisma/client";
 import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { recordAuditEvent } from "@/lib/audit";
@@ -75,7 +75,7 @@ export async function createVisit(context: AuthContext, input: { patientId: stri
     });
 
     await recordAuditEvent(context, { action: "VISIT_CREATED", entityType: "Visit", entityId: visit.id, metadata: { patientId: visit.patientId } }, tx);
-    await recordSyncChange(tx, { clinicId: context.clinicId, entityType: "Visit", entityId: visit.id, operationType: "CREATE", payload: { id: visit.id, patientId: visit.patientId, status: visit.status, openedAt: visit.openedAt.toISOString(), closedAt: visit.closedAt?.toISOString() ?? null, notes: visit.notes } as Prisma.InputJsonValue });
+    await recordSyncChange(tx, { clinicId: context.clinicId, entityType: "Visit", entityId: visit.id, operationType: "CREATE", payload: { id: visit.id, patientId: visit.patientId, status: visit.status, openedAt: visit.openedAt.toISOString(), closedAt: visit.closedAt?.toISOString() ?? null, notes: visit.notes } });
     return visit;
   });
 }
@@ -101,7 +101,7 @@ export async function updateVisit(context: AuthContext, input: { visitId: string
     });
 
     await recordAuditEvent(context, { action: "VISIT_UPDATED", entityType: "Visit", entityId: visit.id, metadata: { previousStatus: current.status, nextStatus: visit.status } }, tx);
-    await recordSyncChange(tx, { clinicId: context.clinicId, entityType: "Visit", entityId: visit.id, operationType: "UPDATE", payload: { id: visit.id, patientId: visit.patientId, status: visit.status, openedAt: visit.openedAt.toISOString(), closedAt: visit.closedAt?.toISOString() ?? null, notes: visit.notes } as Prisma.InputJsonValue });
+    await recordSyncChange(tx, { clinicId: context.clinicId, entityType: "Visit", entityId: visit.id, operationType: "UPDATE", payload: { id: visit.id, patientId: visit.patientId, status: visit.status, openedAt: visit.openedAt.toISOString(), closedAt: visit.closedAt?.toISOString() ?? null, notes: visit.notes } });
     return visit;
   });
 }
