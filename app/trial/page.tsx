@@ -12,31 +12,17 @@ export default function TrialPage() {
           <span className={styles.brandName}><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span></span>
           <span className={styles.brandSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
         </Link>
-        <Link href="/dashboard" className={styles.dashboardLink}>Back to Dashboard</Link>
+        <Link href="/" className={styles.dashboardLink}>Back to Heri CMS</Link>
       </nav>
-
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>Heri CMS · Free trial</p>
           <h1>Start your 14-day free trial.</h1>
-          <p className={styles.intro}>
-            Create a secure clinic workspace and start evaluating Heri CMS without a credit card.
-          </p>
-          <div className={styles.trustRow} aria-label="Trial benefits">
-            <span><b aria-hidden="true">✓</b> No credit card</span>
-            <span><b aria-hidden="true">✓</b> Secure workspace</span>
-            <span><b aria-hidden="true">✓</b> Setup in minutes</span>
-          </div>
+          <p className={styles.intro}>Create a secure clinic workspace and start evaluating Heri CMS without a credit card.</p>
+          <div className={styles.trustRow} aria-label="Trial benefits"><span><b aria-hidden="true">✓</b> No credit card</span><span><b aria-hidden="true">✓</b> Secure workspace</span><span><b aria-hidden="true">✓</b> Setup in minutes</span></div>
         </div>
-
         <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div>
-              <p className={styles.cardKicker}>Create your workspace</p>
-              <h2>Clinic details</h2>
-            </div>
-            <span className={styles.step}>01</span>
-          </div>
+          <div className={styles.cardHeader}><div><p className={styles.cardKicker}>Create your workspace</p><h2>Clinic details</h2></div><span className={styles.step}>01</span></div>
           <form action="/api/trial" method="post" className={styles.form}>
             <label>Clinic name<input name="clinicName" required minLength={2} maxLength={120} /></label>
             <label>Administrator name<input name="administratorName" required minLength={2} maxLength={120} /></label>
