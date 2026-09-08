@@ -7,121 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserStatus {
-  INVITED
-  ACTIVE
-  SUSPENDED
-  DISABLED
-}
-
-enum RoleCode {
-  ADMIN
-  PHARMACY
-  ACCOUNTS
-}
-
-enum VisitStatus {
-  OPEN
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum PrescriptionStatus {
-  CREATED
-  SENT_TO_PHARMACY
-  PROCESSING
-  PARTIALLY_DISPENSED
-  DISPENSED
-  CANCELLED
-}
-
-enum InvoiceStatus {
-  DRAFT
-  ISSUED
-  PARTIALLY_PAID
-  PAID
-  VOID
-}
-
-enum PaymentMethod {
-  CASH
-  MPESA
-  CARD
-  BANK
-  OTHER
-}
-
-enum PaymentStatus {
-  PENDING
-  VERIFIED
-  FAILED
-  REVERSED
-}
-
-enum StockMovementType {
-  PURCHASE
-  DISPENSE
-  ADJUSTMENT
-  RETURN
-  EXPIRY
-  DISPOSAL
-}
-
-enum ConsentPurpose {
-  CLINICAL_CARE
-}
-
-enum ConsentStatus {
-  CONSENTED
-  REFUSED
-  NOT_REQUIRED
-  WITHDRAWN
-}
-
-enum ConsentMethod {
-  VERBAL
-  WRITTEN
-  ELECTRONIC
-  NOT_APPLICABLE
-}
-
-enum SubscriptionStatus {
-  TRIAL
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  EXPIRED
-}
-
-enum TenantDataStoreStatus {
-  SETUP
-  RESIDENCY_SELECTED
-  RESIDENCY_VALIDATED
-  PROVISIONING
-  MIGRATING
-  HEALTHY
-  DEGRADED
-  FAILED
-}
-
-enum TenantIsolationMode {
-  POOL
-  BRIDGE_DATABASE
-  SILO_DATABASE
-}
-
-enum TenantResidencyPolicy {
-  KENYA_ONLY
-  INTERNATIONAL
-}
-
-enum TransferAssessmentStatus {
-  NOT_REQUIRED
-  PENDING
-  APPROVED
-  REJECTED
-}
+enum UserStatus { INVITED ACTIVE SUSPENDED DISABLED }
+enum RoleCode { ADMIN PHARMACY ACCOUNTS }
+enum VisitStatus { OPEN IN_PROGRESS COMPLETED CANCELLED }
+enum PrescriptionStatus { CREATED SENT_TO_PHARMACY PROCESSING PARTIALLY_DISPENSED DISPENSED CANCELLED }
+enum InvoiceStatus { DRAFT ISSUED PARTIALLY_PAID PAID VOID }
+enum PaymentMethod { CASH MPESA CARD BANK OTHER }
+enum PaymentStatus { PENDING VERIFIED FAILED REVERSED }
+enum StockMovementType { PURCHASE DISPENSE ADJUSTMENT RETURN EXPIRY DISPOSAL }
+enum ConsentPurpose { CLINICAL_CARE }
+enum ConsentStatus { CONSENTED REFUSED NOT_REQUIRED WITHDRAWN }
+enum ConsentMethod { VERBAL WRITTEN ELECTRONIC NOT_APPLICABLE }
+enum SubscriptionStatus { TRIAL ACTIVE PAST_DUE CANCELED EXPIRED }
+enum TenantDataStoreStatus { SETUP RESIDENCY_SELECTED RESIDENCY_VALIDATED PROVISIONING MIGRATING HEALTHY DEGRADED FAILED }
+enum TenantIsolationMode { POOL BRIDGE_DATABASE SILO_DATABASE }
+enum TenantResidencyPolicy { KENYA_ONLY INTERNATIONAL }
+enum TransferAssessmentStatus { NOT_REQUIRED PENDING APPROVED REJECTED }
+enum DeviceStatus { ACTIVE REVOKED EXPIRED }
+enum SyncOperationType { CREATE UPDATE DELETE }
+enum SyncOperationStatus { PENDING PROCESSED REJECTED CONFLICT }
+enum SyncConflictStatus { OPEN RESOLVED REJECTED }
 
 model Clinic {
   id String @id @default(uuid())
@@ -459,33 +364,30 @@ model Expense {
 }
 
 model AuditSequence {
-  id              String   @id @default(uuid())
-  clinicId        String   @unique
-  currentSequence Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
+  id String @id @default(uuid())
+  clinicId String @unique
+  currentSequence Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
 }
 
 model AuditLog {
-  id           String   @id @default(uuid())
-  clinicId     String
-  userId       String?
-  sequence     Int
-  action       String
-  entityType   String
-  entityId     String?
-  metadata     Json?
-  ipAddress    String?
-  userAgent    String?
+  id String @id @default(uuid())
+  clinicId String
+  userId String?
+  sequence Int
+  action String
+  entityType String
+  entityId String?
+  metadata Json?
+  ipAddress String?
+  userAgent String?
   previousHash String?
-  entryHash    String
-  createdAt    DateTime @default(now())
-
+  entryHash String
+  createdAt DateTime @default(now())
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  user   User?  @relation(fields: [userId], references: [id], onDelete: Restrict)
-
+  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
   @@unique([clinicId, sequence])
   @@index([clinicId, createdAt])
   @@index([clinicId, entityType, entityId])
@@ -536,4 +438,90 @@ model TenantDataStore {
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   @@index([status])
   @@index([residencyPolicy, status])
+}
+
+model Device {
+  id String @id @default(uuid())
+  clinicId String
+  userId String
+  deviceId String
+  name String?
+  status DeviceStatus @default(ACTIVE)
+  lastSeenAt DateTime?
+  lastSyncAt DateTime?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([clinicId, deviceId])
+  @@index([clinicId, status])
+  @@index([userId, status])
+}
+
+model SyncOperation {
+  id String @id @default(uuid())
+  operationId String @unique
+  clinicId String
+  deviceId String
+  userId String
+  entityType String
+  entityId String
+  operationType SyncOperationType
+  status SyncOperationStatus @default(PENDING)
+  payload Json
+  expectedVersion Int?
+  entityVersion Int?
+  clientCreatedAt DateTime
+  serverReceivedAt DateTime @default(now())
+  processedAt DateTime?
+  result Json?
+  errorCode String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([clinicId, deviceId, createdAt])
+  @@index([clinicId, status, createdAt])
+  @@index([clinicId, entityType, entityId, createdAt])
+}
+
+model SyncCursor {
+  id String @id @default(uuid())
+  clinicId String
+  deviceId String
+  cursor String @default("0")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  @@unique([clinicId, deviceId])
+}
+
+model SyncChange {
+  sequence BigInt @id @default(autoincrement())
+  operationId String @unique
+  clinicId String
+  entityType String
+  entityId String
+  operationType SyncOperationType
+  payload Json
+  entityVersion Int
+  serverCreatedAt DateTime @default(now())
+  @@index([clinicId, sequence])
+  @@index([clinicId, entityType, entityId, sequence])
+}
+
+model SyncConflict {
+  id String @id @default(uuid())
+  operationId String
+  clinicId String
+  deviceId String
+  entityType String
+  entityId String
+  expectedVersion Int?
+  actualVersion Int?
+  clientPayload Json
+  serverPayload Json?
+  status SyncConflictStatus @default(OPEN)
+  resolution Json?
+  createdAt DateTime @default(now())
+  resolvedAt DateTime?
+  @@index([clinicId, status, createdAt])
+  @@index([clinicId, entityType, entityId])
+  @@index([deviceId, status])
 }
