@@ -16,7 +16,7 @@ const modules = [
   { title: "Accounts & reports", text: "Monitoring payments, collections, outstanding balances and operational reporting into a controlled workflow." },
 ];
 const securityItems = [
-  { benefit: "Protect staff sessions", feature: "Secure session cookies", detail: "Staff authentication uses HTTP-only session cookies with secure transport in production and same-site controls." },
+  { benefit: "Protect your clinic information", feature: "Data Security", detail: "Protect your clinic information through secure handling and controlled access." },
   { benefit: "Keep clinic context scoped", feature: "Clinic-scoped sessions", detail: "Successful staff authentication creates a clinic-scoped session so the workspace stays tied to the authenticated clinic context." },
   { benefit: "Respect staff responsibilities", feature: "Role-based workspaces", detail: "Authenticated dashboard context includes the staff role used to shape the operational workspace and access experience." },
   { benefit: "Keep the portal behind authentication", feature: "Protected workspace access", detail: "The dashboard is guarded by server-side authentication before operational metrics and clinic activity are loaded." },
