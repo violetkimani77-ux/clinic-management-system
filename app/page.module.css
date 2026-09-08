@@ -100,4 +100,46 @@
 .footerInner { max-width:1180px; margin:0 auto; padding:24px 28px; display:flex; justify-content:space-between; gap:20px; color:#748188; font-size:12px; }
 @media (max-width:1100px){ .hero{grid-template-columns:minmax(0,.82fr) minmax(500px,1.18fr);gap:34px}.previewBody{min-height:400px}.previewSidebar{width:auto} }
 @media (max-width:900px){ .hero,.security .sectionInner{grid-template-columns:1fr;gap:40px}.heroTitle{max-width:760px}.previewStage{padding:22px 0 48px}.productPreview{max-width:800px;margin:0 auto;transform:none}.activityCard{min-width:0;padding:10px 11px}.activityPayment{right:8px;top:0}.activityAppointment{left:8px;bottom:0}.activityCard:not(.activityPayment):not(.activityAppointment){right:50%;top:0}.cards{grid-template-columns:1fr 1fr}.security .sectionInner{gap:36px} }
-@media (max-width:640px){ .nav{padding:18px}.navActions{gap:6px}.navLink{display:none}.navActions .primaryButton{padding:10px 12px;font-size:12px}.hero{padding:52px 18px 70px}.heroTitle{font-size:clamp(38px,12vw,54px)}.heroText{font-size:16px}.previewStage{padding-bottom:42px}.activityCard{display:none}.previewBody{grid-template-columns:1fr}.previewSidebar{display:none}.previewMetrics{grid-template-columns:1fr 1fr}.previewContentGrid{grid-template-columns:1fr}.sectionInner{padding:58px 18px}.sectionTitle{font-size:32px}.footerInner{padding:20px 18px;flex-direction:column} }
+@media (max-width:640px){ .nav{padding:18px}.navActions{gap:6px}.navLink{display:none}.navActions .primaryButton{padding:10px 12px;font-size:12px}.hero{padding:52px 18px 70px}.heroTitle{font-size:clamp(38px,12vw,54px)}.heroText{font-size:16px}.previewStage{padding-bottom:42px}.activityCard{display:none}.previewBody{grid-template-columns:1fr}.previewSidebar{display:none}.previewMetrics{grid-template-columns:1fr 1fr}.previewContentGrid{grid-template-columns:1fr}.sectionInner{padding:58px 18px}.sectionTitle{font-size:32px}.footerInner{padding:20px 18px;flex-direction:column}
+}
+
+/* Hero dashboard readability pass: improve the rendered dashboard itself without changing its concept. */
+.productPreview { border-radius: 20px; box-shadow: 20px -16px 0 -11px rgba(78,217,78,.10), 0 34px 88px rgba(20,45,54,.18), 0 10px 28px rgba(20,45,54,.08); }
+.previewBrowserBar { height: 38px; gap: 11px; padding: 0 15px; font-size: 10px; }
+.browserDots { gap: 5px; }
+.browserDots i { width: 7px; height: 7px; }
+.previewSecure { padding: 4px 8px; }
+.previewBody { grid-template-columns: 158px minmax(0,1fr); min-height: 470px; }
+.previewSidebar { padding: 21px 14px 14px; }
+.previewLogoName { font-size: 15px; }
+.previewLogoSubtitle { font-size: 6px; }
+.previewClinic { margin: 20px 5px 15px; font-size: 8.5px; }
+.previewNav { gap: 4px; }
+.previewNav span { padding: 9px 9px; font-size: 10.5px; }
+.previewSidebarFooter { padding: 9px; font-size: 8.5px; }
+.previewMain { padding: 25px 25px 23px; }
+.previewTopbar div { gap: 5px; }
+.previewOverline { font-size: 8px; }
+.previewTopbar strong { font-size: 22px; }
+.previewAvatar { width: 29px; height: 29px; font-size: 9px; }
+.previewIntro { margin: 8px 0 18px; font-size: 10px; }
+.previewMetrics { gap: 9px; }
+.previewMetrics > div { padding: 13px 11px; border-radius: 11px; }
+.previewMetrics span { font-size: 8px; }
+.previewMetrics strong { margin-top: 6px; font-size: 17px; }
+.previewContentGrid { gap: 10px; margin-top: 11px; }
+.previewAttention, .previewGlance { padding: 13px; border-radius: 12px; }
+.previewSectionTitle { gap: 7px; font-size: 10px; }
+.previewSectionTitle span { min-width: 16px; height: 16px; font-size: 7.5px; }
+.previewAlert { grid-template-columns: 8px minmax(0,1fr) auto; gap: 7px; margin-top: 9px; padding-top: 9px; font-size: 8.5px; }
+.previewAlert b { font-size: 9px; }
+.previewMiniGrid { gap: 8px; margin-top: 10px; }
+.previewMiniGrid span { padding: 10px; font-size: 7.5px; }
+.previewMiniGrid b { font-size: 15px; }
+.activityCard { min-width: 198px; padding: 12px 14px; }
+.activityCard strong { font-size: 10.5px; }
+.activityCard small { font-size: 7.5px; }
+.activityIcon { width: 21px; height: 21px; font-size: 11px; }
+@media (max-width:1100px) { .previewBody { min-height: 440px; grid-template-columns: 150px minmax(0,1fr); } .previewMain { padding: 22px 21px 20px; } }
+@media (max-width:900px) { .previewBody { min-height: 470px; grid-template-columns: 160px minmax(0,1fr); } .previewMain { padding: 25px 24px 22px; } }
+@media (max-width:640px) { .previewBrowserBar { height: 36px; } .previewBody { grid-template-columns: 112px minmax(0,1fr); min-height: 400px; } .previewSidebar { padding: 15px 9px 10px; } .previewLogoName { font-size: 12px; } .previewLogoSubtitle { font-size: 5px; } .previewClinic { margin: 15px 4px 11px; font-size: 7px; } .previewNav span { padding: 7px 7px; font-size: 8px; } .previewSidebarFooter { padding: 7px; font-size: 7px; } .previewMain { padding: 17px 14px 15px; } .previewTopbar strong { font-size: 18px; } .previewIntro { margin-bottom: 13px; font-size: 8px; } .previewMetrics { grid-template-columns: repeat(2,1fr); gap: 7px; } .previewMetrics > div { padding: 9px; } .previewMetrics span { font-size: 7px; } .previewMetrics strong { font-size: 14px; } .previewContentGrid { grid-template-columns: 1fr; } .previewAlert { font-size: 7.5px; } .previewMiniGrid span { font-size: 7px; } .activityCard { min-width: 165px; padding: 9px 10px; } .activityCard strong { font-size: 9px; } .activityCard small { font-size: 6.5px; } .activityAppointment { left: -8px; } .activityPayment { right: -8px; } }
