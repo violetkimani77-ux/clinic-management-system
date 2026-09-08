@@ -11,6 +11,61 @@
 
 > **Release rule:** A successful Vercel build/deployment alone does not equal production readiness. Production readiness requires functional application flow, production database/configuration verification, security checks, secure sessions, tenant isolation, Kenya-first residency/privacy controls, data-export controls, payment-data integrity, backups/restore, observability, and validation evidence.
 
+## 0. Architecture foundations — locked before scale
+
+### 0.1 HeriCMS data ownership boundary
+- [x] HeriCMS is a patient-registry and clinic-operations platform, not the authoritative longitudinal clinical-record system
+- [x] Platform architecture must not assume HeriCMS stores a complete clinical record
+- [ ] Define the exact patient-registry/operational data boundary and prohibited clinical-data classes
+- [ ] Verify every module against that boundary before production launch
+- [ ] Ensure Platform Control does not become an unrestricted clinical-record viewer
+
+### 0.2 Canonical health-data interoperability
+- [ ] Define a canonical Heri domain model that is not tightly coupled to one external health-data standard
+- [ ] Patient registry mappings to FHIR Patient/Organization/Practitioner concepts
+- [ ] Visit/encounter mappings to FHIR Encounter concepts where applicable
+- [ ] Define OpenMRS interoperability mappings where useful
+- [ ] Define KHIS/DHIS2 reporting mappings and terminology/code mappings
+- [ ] Preserve stable Heri identifiers plus external-system identifiers/mapping records
+- [ ] Define terminology/versioning strategy so interoperability mappings can evolve without destructive schema changes
+- [ ] Test representative Heri records through FHIR/OpenMRS/KHIS mappings
+
+### 0.3 Tiered multi-tenancy and data sovereignty
+- [x] Shared-schema tenancy is the economical default for the initial clinic scale
+- [x] Tenant isolation is abstracted through tenant-aware datastore concepts rather than assuming one physical storage layout
+- [ ] Shared-schema implementation uses strict tenant scoping and database-level row isolation where appropriate
+- [ ] Define schema-per-tenant as the intermediate stronger-isolation tier
+- [ ] Define database-per-tenant as the dedicated sovereignty/enterprise tier
+- [ ] Define objective criteria for moving a tenant between pool/schema/database isolation modes
+- [ ] Ensure migrations, backups, restore, monitoring and support tooling work across all isolation modes
+- [ ] Ensure tenant/application code is storage-mode agnostic
+- [ ] Document data-sovereignty guarantees and limitations for each isolation tier
+- [ ] Test cross-tenant isolation independently for each supported isolation mode
+
+### 0.4 Offline-first and synchronization architecture
+- [ ] Treat offline-first as a core architecture decision, not a UI enhancement
+- [ ] Define device-local persistence for Heri-owned patient-registry/operational data
+- [ ] Define tenant- and user-scoped local storage boundaries
+- [ ] Define operation IDs and an offline outbox for every offline mutation
+- [ ] Define idempotent server-side sync processing
+- [ ] Define incremental pull/change cursors
+- [ ] Define optimistic versioning and conflict detection
+- [ ] Define domain-specific conflict-resolution policies
+- [ ] Define explicit conflict queues for records that cannot be safely merged
+- [ ] Define offline authentication/session/revocation rules
+- [ ] Define online-only operations, including irreversible/high-risk financial and administrative operations
+- [ ] Define sync retry, reconnect, duplicate, replay and out-of-order handling
+- [ ] Implement Patients/registry offline sync before expanding offline scope to additional modules
+
+### 0.5 Payments and billing architecture
+- [ ] Daraja integration boundary documented for verified payment events
+- [ ] Patient-payment flow separated from HeriCMS subscription billing
+- [ ] Clinic subscription billing supports STK Push with authoritative payment confirmation
+- [ ] Insurance co-pay collection represented as a separate payment/business flow if enabled
+- [ ] Payment identities/references are stable, unique and provenance-preserving
+- [ ] Payment integrations remain server-authorized and tenant-bound
+- [ ] Offline architecture never fabricates or finalizes authoritative payment settlement
+
 ## 1. Public product experience
 - [x] Public marketing landing page at `/`
 - [x] Heri CMS / Clinic Management System positioning
@@ -103,6 +158,7 @@
 - [ ] Secure connection-secret references
 - [ ] Migration/version tracking
 - [ ] Recurring datastore health checks
+- [ ] Storage-mode migration path between pool, schema-per-tenant and database-per-tenant
 
 ## 8. Heri CMS Platform Control
 
@@ -110,9 +166,9 @@
 - [ ] Separate platform control surface implemented
 - [ ] Platform Control is a privileged platform-operations boundary, separate from the clinic application/dashboard
 - [ ] Platform admins cannot be treated as ordinary clinic users with an implicit “super-admin” bypass
-- [ ] Platform metadata/operations are separated from clinic clinical data access
-- [ ] Platform Control does not automatically grant unrestricted patient-record access
-- [ ] Any break-glass clinical-data access requires explicit authorization, business justification, time-bounded access and audit evidence
+- [ ] Platform metadata/operations are separated from clinic patient-registry and operational data access
+- [ ] Platform Control does not automatically grant unrestricted patient-registry access
+- [ ] Any exceptional registry access requires explicit authorization, business justification, time-bounded access and audit evidence
 
 ### 8.2 Platform Control Panel information architecture
 - [ ] **Overview:** platform health, active clinics, trials, subscriptions/entitlements, datastore health, payment-data integration health and security alerts
@@ -129,7 +185,7 @@
 - [ ] Consistent global navigation for the platform-operations surface
 - [ ] Clear platform-admin identity, role and current session indicator
 - [ ] Search, filtering, sorting and pagination for clinic/tenant and operational lists
-- [ ] Clinic/tenant detail pages expose operational context without unnecessarily exposing clinical records
+- [ ] Clinic/tenant detail pages expose operational context without unnecessarily exposing patient-registry data
 - [ ] Role-based navigation and action visibility
 - [ ] Clear read-only vs actionable states
 - [ ] Explicit confirmation for destructive, irreversible, suspension, migration and emergency actions
@@ -187,6 +243,8 @@
 - [ ] Empty/loading/error states
 - [ ] Accessibility verification
 
+> **UI scope note:** The remaining clinic/dashboard UX work is intentionally deferred because it is being handled separately from this production-hardening track.
+
 ## 10. Core clinic workflows
 - [x] Core modules exist: Patients, Visits, Pharmacy, Accounts, Reports and Help
 - [ ] Patient workflow E2E
@@ -196,6 +254,7 @@
 - [ ] Reporting workflow E2E
 - [ ] Permission-boundary verification for every workflow
 - [ ] Sensitive operation audit verification
+- [ ] Verify each module stays within the HeriCMS patient-registry/operations data boundary
 
 ## 11. Production database and deployment configuration
 - [x] Successful Vercel deployment evidence exists for corrected trial implementation
@@ -223,6 +282,8 @@
 - [ ] Incident-response drill
 - [ ] Log retention/access controls
 - [ ] No secrets/passwords/unsafe patient data in logs
+- [ ] Payment-integration ingestion/reconciliation health monitoring
+- [ ] Offline sync failure/conflict monitoring once sync is implemented
 
 ## 13. Application security, XSS and abuse resistance
 - [ ] Security headers verified in production
@@ -261,6 +322,7 @@
 - [ ] Export/download audit events are tamper-evident and access-controlled
 - [ ] Authorized clinic administrators/auditors can review export/download history
 - [ ] Export/backup copies obey residency, retention and deletion controls
+- [ ] Interoperability exports use explicit FHIR/OpenMRS/KHIS mappings where applicable
 
 ## 15. M-Pesa/payment-data integration and immutable financial records
 
@@ -268,6 +330,7 @@
 
 ### 15.1 Source of truth and ingestion
 - [ ] Authoritative M-Pesa/payment source explicitly defined
+- [ ] **Daraja API integration contract documented for patient payments**
 - [ ] Integration API/event contract documented
 - [ ] Source event authentication/signature/checksum mechanism verified where provided
 - [ ] TLS and integration secrets verified
@@ -278,7 +341,25 @@
 - [ ] Failed/retried event handling
 - [ ] Reconciliation against authoritative payment source
 
-### 15.2 Immutable Accounts / financial ledger
+### 15.2 Clinic subscription billing
+- [ ] Clinic subscription billing is a separate payment domain from patient payments
+- [ ] **STK Push flow implemented for clinic subscription billing**
+- [ ] Subscription payment request has idempotent billing/reference identity
+- [ ] STK callback/result is authenticated and validated
+- [ ] Subscription entitlement changes only after authoritative payment confirmation
+- [ ] Duplicate/replayed callbacks cannot extend or alter entitlement incorrectly
+- [ ] Failed/expired/cancelled STK requests have deterministic states
+- [ ] Subscription billing reconciliation exists against the authoritative payment source
+- [ ] Subscription payment records are immutable/auditable
+
+### 15.3 Insurance co-pay collection
+- [ ] Insurance co-pay collection model defined if enabled
+- [ ] Coverage/claim/co-pay responsibility is separated from patient payment facts
+- [ ] Co-pay payment references can be linked to the relevant patient/account/encounter context without overwriting source facts
+- [ ] Insurer/payment-source reconciliation defined
+- [ ] Co-pay reversals/adjustments follow immutable financial-record rules
+
+### 15.4 Immutable Accounts / financial ledger
 - [ ] **Accounts financial records are immutable by clinic users and administrators**
 - [ ] No UI/API permits editing or deleting an original M-Pesa transaction fact
 - [ ] No client can alter transaction amount, status, transaction ID/reference, timestamp or payer reference
@@ -290,7 +371,7 @@
 - [ ] Any adjustment/reconciliation references the original transaction and records reason, actor/system, timestamp and evidence
 - [ ] Audit trail for financial records is tamper-evident and access-controlled
 
-### 15.3 Reversals and lifecycle
+### 15.5 Reversals and lifecycle
 - [ ] **M-Pesa reversal is represented as a reversal event/status, not deletion or alteration of the original transaction**
 - [ ] Original payment remains visible after reversal
 - [ ] Reversal clearly identifies the affected original transaction
@@ -301,7 +382,7 @@
 - [ ] Reconciliation detects missing, conflicting or unexpected reversals
 - [ ] UI clearly distinguishes original payment, reversal and current reconciled state
 
-### 15.4 Consultation and pharmacy payments
+### 15.6 Consultation and pharmacy payments
 - [ ] Consultation-fee M-Pesa payments represented from verified source data
 - [ ] Pharmacy/medicine M-Pesa payments represented from verified source data
 - [ ] Payment-to-patient/invoice/visit linkage is server-authorized
@@ -309,80 +390,69 @@
 - [ ] The Accounts view and admin dashboard consume the same verified payment dataset
 - [ ] No parallel/fabricated client-side payment source of truth
 
-### 15.5 Live updates
+### 15.7 Live updates
 - [ ] **Server-Sent Events (SSE) implemented as the initial live payment-update mechanism**
 - [ ] SSE authentication and tenant authorization verified
 - [ ] SSE stream cannot expose another clinic's payment events
 - [ ] **Polling fallback implemented** when SSE disconnects/is unavailable
 - [ ] Reconnect/replay behavior prevents missed or duplicated UI events
-- [ ] Live update events cause the client to refresh/reconcile against the authoritative Heri CMS record rather than trusting event payloads as permanent truth
-- [ ] Real-time notification is never the authoritative payment record
-- [ ] UI handles pending, successful, failed, cancelled, delayed and reversed states without inventing success
-- [ ] Ingestion lag and stale-data indicators are available where operationally necessary
-
-### 15.6 Monitoring and reconciliation
-- [ ] Alerts for ingestion failures
-- [ ] Alerts for ingestion lag/stale payment data
-- [ ] Alerts for duplicate/replay events
-- [ ] Alerts for integrity/authentication failures
-- [ ] Alerts for reconciliation mismatches
-- [ ] Operational reconciliation procedure and evidence retention
-- [ ] Payment-data access and reconciliation activity audited
-- [ ] Test fixtures cannot be mistaken for production payment data
+- [ ] Live update events cause the client to refresh/reconcile against the authoritative payment dataset
+- [ ] Payment events remain auditable regardless of live-delivery mechanism
 
 ## 16. Testing and release validation
-- [x] Current HEAD `af690c6` passed lint, typecheck, unit tests, build and Playwright E2E in GitHub Actions run #36
-- [ ] Re-run/record validation whenever release SHA changes
-- [ ] Tenant-isolation E2E suite
-- [ ] Production-like signup/login/expiry E2E
-- [ ] Full critical-workflow E2E
-- [ ] MFA E2E
-- [ ] Secure-session-cookie E2E/security assertions
-- [ ] Export/download E2E with audit assertions
-- [ ] XSS/security regression suite
-- [ ] M-Pesa/payment-data ingestion/reconciliation tests
-- [ ] Immutable Accounts mutation-attempt tests
-- [ ] M-Pesa reversal lifecycle tests
-- [ ] Duplicate/replay/out-of-order payment-event tests
-- [ ] SSE live-update tests
-- [ ] Polling fallback tests
-- [ ] Platform Control Panel E2E and authorization/security/audit tests
-- [ ] Verify no secrets/passwords/patient-sensitive data in test output
+- [x] Release candidate SHA `af690c6eb433729cbf8f6f2a2411255bca4f5c37` passed lint/typecheck/unit/build/Playwright in Actions run #36
+- [x] Successful Vercel deployment evidence for corrected trial implementation
+- [ ] Rerun CI evidence after subsequent tenant-architecture changes
+- [ ] Production-like signup/login/expiry flows
+- [ ] Critical clinic workflow E2E
+- [ ] Tenant isolation/cross-tenant denial E2E
+- [ ] MFA/authentication/security E2E
+- [ ] Secure cookie/session verification
+- [ ] Export/download authorization and isolation tests
+- [ ] XSS/security testing
+- [ ] Daraja patient-payment integration tests
+- [ ] Subscription STK Push tests
+- [ ] Insurance co-pay tests if enabled
+- [ ] Immutable financial mutation-attempt tests
+- [ ] Payment reversal tests
+- [ ] Duplicate/replay/out-of-order payment event tests
+- [ ] SSE and polling fallback tests
+- [ ] Offline outbox/sync/conflict tests once implemented
+- [ ] FHIR/OpenMRS/KHIS interoperability mapping tests
+- [ ] Platform Control E2E/authz/security/audit tests
+- [ ] No sensitive output in browser/API/log/test artifacts
 
-## 17. Legal, privacy and compliance operational readiness
-- [x] Kenya-first residency/privacy policy/research documented
-- [ ] Final legal/compliance review
-- [ ] Controller/processor responsibilities documented
-- [ ] Subprocessor register
+## 17. Legal, privacy and compliance
+- [x] Kenya-first residency/privacy policy research and architectural controls documented
+- [ ] Formal legal/privacy review and sign-off
+- [ ] Controller/processor responsibilities defined
+- [ ] Subprocessor inventory and contractual safeguards
 - [ ] Retention/deletion schedule
-- [ ] Data-subject request process
-- [ ] Incident/breach process
-- [ ] Cross-border transfer assessment
-- [ ] Evidence-retention policy
-- [ ] Customer-facing privacy/data-residency disclosures
-- [ ] Data export/download policy aligned with privacy/contractual obligations
-- [ ] Payment-data provenance/accuracy responsibilities documented with authoritative payment provider/system
-- [ ] Financial-record immutability and reversal policy documented
+- [ ] Data-subject/request handling procedures
+- [ ] Incident/breach procedures
+- [ ] Cross-border transfer assessment and controls
+- [ ] Evidence retention policy
+- [ ] Patient-registry export/disclosure policy
+- [ ] Payment-data provenance and accuracy responsibilities documented
+- [ ] Financial immutability/reversal policy documented
+- [ ] Daraja/payment-provider contractual and operational requirements verified
+- [ ] Insurance co-pay responsibilities documented if enabled
+- [ ] Interoperability/data-sharing responsibilities for KHIS/OpenMRS/FHIR integrations documented
 
 ## 18. Release gate
-Production release is blocked until all applicable critical controls have verified evidence:
-- [ ] Current release SHA passes typecheck, lint, unit tests, production build and critical E2E
-- [ ] Tenant isolation verified
-- [ ] Authentication/MFA/secure-session-cookie security verified
-- [ ] XSS/application-security controls verified
-- [ ] Production DB/config/secrets verified
-- [ ] Kenya residency and provider/backup geography verified
-- [ ] Backups and restore verified
-- [ ] Observability and incident response operational
-- [ ] Data export/download controls and audit trail verified
-- [ ] **Platform Control Panel architecture, privileged security boundary, authorization, auditability and critical UX tests verified**
-- [ ] **M-Pesa payment-data provenance, immutability, reversal handling, live updates and reconciliation verified** when payment visibility is enabled
-- [ ] Legal/compliance sign-off completed
-- [ ] Final production smoke test completed
+Production release remains blocked until all applicable critical evidence is complete, including:
+- production database/configuration, backups and restore evidence;
+- secure authentication/session controls;
+- verified tenant isolation and datastore lifecycle controls;
+- Kenya-first residency/privacy evidence;
+- export/download controls;
+- application security/XSS/abuse assessment;
+- observability and incident-response readiness;
+- Platform Control privileged boundary, authorization and auditability where applicable;
+- **Daraja/payment provenance, immutable financial records, reversals and reconciliation where payment visibility/billing is enabled**;
+- **offline-first synchronization/conflict controls for any workflow advertised as offline-capable**;
+- **interoperability mapping validation for supported FHIR/OpenMRS/KHIS integrations**;
+- legal/privacy/compliance sign-off;
+- final functional and security validation evidence.
 
-## Current known release evidence
-- **Release candidate SHA:** `af690c6eb433729cbf8f6f2a2411255bca4f5c37`
-- **GitHub Actions CI:** run #36 completed successfully
-- **CI:** lint, typecheck, unit tests and production build passed
-- **Playwright:** E2E job passed
-- **Vercel:** successful deployment evidence exists, but deployment success is not itself the production gate.
+> **Current strategic direction:** Start with shared-schema multi-tenancy for cost efficiency, while preserving a storage-mode abstraction that allows a tenant to move to schema-per-tenant or database-per-tenant when scale, contractual requirements or data-sovereignty expectations justify the operational cost. This decision is intentionally made before broad clinic onboarding.
