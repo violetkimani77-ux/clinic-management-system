@@ -1,23 +1,28 @@
-# Hali CMS Operations Runbook
+# Heri CMS Operations Runbook
 
 ## Scope
 
-This runbook covers routine release, migration, rollback, backup/restore, maintenance, and incident-response operations for Hali CMS.
+This runbook covers routine release, migration, rollback, backup/restore, maintenance, and incident-response operations for Heri CMS.
 
 ## Release checklist
 
 1. Confirm the intended commit is on `main` and CI is green.
 2. Run typecheck, lint, Jest, production build, and Playwright against the release candidate.
 3. Confirm production environment variables and deployment secrets are present; never copy secrets into source control or logs.
-4. Confirm the production database backup is current before schema changes.
-5. Deploy the release.
-6. Verify `/login`, `/trial`, and protected workspace access.
-7. Record deployment SHA, database migration result, and verification evidence.
+4. Confirm the production database backup is current before schema changes, and record the backup timestamp/reference in release evidence.
+5. Apply production database migrations using the protected production migration workflow.
+6. Deploy the application release.
+7. Verify `/login`, `/trial`, and protected workspace access using production-safe smoke tests.
+8. Record deployment SHA, database migration result, backup evidence, and verification evidence.
 
 ## Prisma migrations
 
 Production migrations use the committed `.github/workflows/migrate-production.yml` workflow and `prisma migrate deploy`.
 
+- The migration workflow is serialized with `cancel-in-progress: false` so concurrent schema changes cannot overlap.
+- Production credentials are scoped to the GitHub `production` environment.
+- The workflow uses `npm ci` and a pinned Prisma version; it does not run lifecycle scripts during dependency installation.
+- The workflow validates the Prisma schema before applying migrations.
 - Never use `prisma migrate dev` or destructive schema synchronization against production.
 - Run migrations before relying on newly deployed application behavior that requires the schema change.
 - If a migration fails, stop the release and investigate the migration error before retrying.
@@ -42,7 +47,23 @@ A restore drill should verify:
 - the restored database passes Prisma/application health checks;
 - tenant and residency metadata remain intact;
 - audit records remain internally consistent;
-- the application can authenticate and read clinic data.
+- the application can authenticate and read clinic data;
+- the restore point and recovery time meet the approved recovery objectives.
+
+Do not treat the existence of a backup configuration as proof that backups are working. Release evidence must identify the backup/restore system and the most recent successful backup or restore test.
+
+## Production environment configuration
+
+At minimum, production configuration must provide:
+
+- a production-only `DATABASE_URL` managed by the deployment/secret-management system;
+- authentication/session secrets stored outside source control;
+- payment/integration credentials stored outside source control when integrations are enabled;
+- no development or test credentials in the production environment;
+- production domain/alias configuration and HTTPS;
+- sensitive routes configured so private responses are not unintentionally cached or publicly shared.
+
+Never print environment variables, database URLs, session tokens, passwords, payment credentials, or patient data in logs or release evidence.
 
 ## Maintenance
 
@@ -79,4 +100,4 @@ Alert on:
 
 ## Data residency
 
-Hali CMS is Kenya-first. Production operators must verify actual database, backup/DR, provider, and subprocessors' processing geography against the clinic's selected residency policy before activating or migrating a datastore. Do not mark a datastore healthy solely because its metadata says `HEALTHY`.
+Heri CMS is Kenya-first. Production operators must verify actual database, backup/DR, provider, and subprocessors' processing geography against the clinic's selected residency policy before activating or migrating a datastore. Do not mark a datastore healthy solely because its metadata says `HEALTHY`.
