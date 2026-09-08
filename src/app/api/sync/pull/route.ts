@@ -47,7 +47,6 @@ export async function POST(request: Request) {
 
   const response: SyncPullResponse = {
     protocolVersion: SYNC_PROTOCOL_VERSION,
-    cursor,
     nextCursor: changes.length ? changes[changes.length - 1].sequence.toString() : cursor,
     hasMore: changes.length === limit,
     changes: changes.map((change) => ({
