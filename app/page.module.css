@@ -2,7 +2,7 @@
 .nav { max-width: 1180px; margin: 0 auto; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; color: #0f4c5c; text-decoration: none; }
 .brandName { font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -0.025em; }
-.brandHeri { color: #36CF36; }
+.brandHeri { color: #4ED94E; }
 .brandCms { color: #0f4c5c; }
 .brandSubtitle { color: #000; font-size: 9px; font-weight: 700; line-height: 1.1; letter-spacing: .12em; }
 .navActions { display: flex; align-items: center; gap: 12px; }
@@ -11,22 +11,68 @@
 .navLink:hover { color: #0f4c5c; }
 .primaryButton { background: #0f4c5c; color: #fff; padding: 12px 18px; box-shadow: 0 8px 22px rgba(15,76,92,.16); }
 .primaryButton:hover, .secondaryButton:hover { transform: translateY(-1px); }
-.hero { max-width: 1180px; margin: 0 auto; padding: 74px 28px 92px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(320px,.85fr); gap: 70px; align-items: center; }
+.hero { max-width: 1180px; margin: 0 auto; padding: 74px 28px 92px; display: grid; grid-template-columns: minmax(0,.78fr) minmax(560px,1.22fr); gap: 48px; align-items: center; }
+.heroCopy { position: relative; z-index: 2; }
 .eyebrow { margin: 0 0 18px; color: #6b8f71; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.heroTitle { max-width: 720px; margin: 0; color: #0b2633; font-size: clamp(42px,6vw,72px); line-height: .98; letter-spacing: -.055em; }
-.heroText { max-width: 650px; margin: 26px 0 0; color: #66757d; font-size: 18px; line-height: 1.7; }
+.heroTitle { max-width: 650px; margin: 0; color: #0b2633; font-size: clamp(42px,5.2vw,68px); line-height: .98; letter-spacing: -.055em; }
+.heroText { max-width: 600px; margin: 26px 0 0; color: #66757d; font-size: 18px; line-height: 1.7; }
 .heroActions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
 .secondaryButton { border: 1px solid #d5ded9; background: #fff; color: #0f4c5c; padding: 11px 17px; }
-.heroPanel { position: relative; padding: 26px; border: 1px solid #dce3df; border-radius: 24px; background: #fff; box-shadow: 0 24px 70px rgba(36,50,58,.1); }
-.panelHeader { display:flex; justify-content:space-between; align-items:center; padding-bottom:18px; border-bottom:1px solid #edf0ee; }
-.panelLabel { color:#53636b; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
-.status { display:inline-flex; align-items:center; gap:7px; color:#3f7d5a; font-size:12px; font-weight:800; }
-.statusDot { width:8px; height:8px; border-radius:50%; background:#3f7d5a; }
-.metricGrid { margin-top:22px; display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-.metric { padding:18px; border-radius:16px; background:#f7f8f5; }
-.metricValue { display:block; color:#0f4c5c; font-size:26px; font-weight:800; }
-.metricLabel { display:block; margin-top:4px; color:#748188; font-size:12px; }
-.panelNote { margin:18px 0 0; padding:13px 15px; border-left:3px solid #c49a5a; background:#fbf7ef; color:#6b655c; font-size:13px; line-height:1.5; }
+.trustIndicators { margin-top: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; color: #718087; font-size: 11px; font-weight: 700; letter-spacing: -.005em; }
+.trustIndicators span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.trustIndicators b { color: #4ED94E; font-size: 13px; line-height: 1; }
+.previewStage { position: relative; min-width: 0; width: 100%; padding: 28px 18px 24px 0; }
+.productPreview { position: relative; z-index: 1; width: 100%; min-width: 0; border: 1px solid #d7e0dc; border-radius: 22px; background: #fff; box-shadow: 24px -18px 0 -12px rgba(78,217,78,.12), 0 38px 100px rgba(20,45,54,.20), 0 12px 30px rgba(20,45,54,.10); overflow: hidden; transform: perspective(1600px) rotateY(-1.5deg) scale(1.025); transform-origin: center right; }
+.productPreview::before { content: ""; position: absolute; top: 0; right: 0; width: 38%; height: 4px; background: #4ED94E; z-index: 2; }
+.productPreview::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 30%, transparent 70%, rgba(15,76,92,.025)); }
+.activityCard { position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 11px 13px; border: 1px solid rgba(255,255,255,.72); border-radius: 13px; background: linear-gradient(135deg, rgba(255,255,255,.68), rgba(247,251,249,.34)); box-shadow: inset 0 1px 0 rgba(255,255,255,.92), inset 0 -1px 0 rgba(15,76,92,.05), 0 20px 48px rgba(20,45,54,.16), 0 6px 16px rgba(20,45,54,.08); backdrop-filter: blur(20px) saturate(135%); -webkit-backdrop-filter: blur(20px) saturate(135%); color: #183440; overflow: hidden; }
+.activityCard::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, rgba(255,255,255,.55), rgba(255,255,255,.08) 42%, rgba(78,217,78,.05) 100%); }
+.activityCard::after { content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 1px; background: rgba(255,255,255,.95); opacity: .85; }
+.activityCard > * { position: relative; z-index: 1; }
+.activityCard strong { display: block; font-size: 10px; line-height: 1.3; font-weight: 800; }
+.activityCard small { display: block; margin-top: 3px; color: #849096; font-size: 7px; line-height: 1.2; }
+.activityIcon { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.72); border-radius: 50%; background: rgba(78,217,78,.14); color: #4ED94E; font-size: 11px; font-weight: 900; box-shadow: inset 0 1px 2px rgba(255,255,255,.7); }
+.activityPayment { right: -4px; top: 10px; }
+.activityAppointment { left: -18px; bottom: 6px; }
+.activityCard:not(.activityPayment):not(.activityAppointment) { right: 48%; top: -2px; transform: translateX(50%); }
+.previewBrowserBar { height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 13px; border-bottom: 1px solid #e7ecea; background: #fafbfa; color: #89949a; font-size: 9px; }
+.browserDots { display: inline-flex; gap: 4px; }
+.browserDots i { width: 6px; height: 6px; border-radius: 50%; background: #d5ddda; }
+.previewWindowTitle { flex: 1; text-align: center; font-weight: 800; color: #31505a; letter-spacing: .01em; }
+.previewSecure { padding: 4px 7px; border: 1px solid rgba(78,217,78,.28); border-radius: 99px; color: #267b2c; background: rgba(78,217,78,.09); font-weight: 700; }
+.previewBody { display: grid; grid-template-columns: 145px minmax(0,1fr); min-height: 435px; }
+.previewSidebar { position: relative; display: flex; flex-direction: column; padding: 18px 12px 12px; background: #0f4c5c; color: #dbe9eb; }
+.previewLogo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; color: #fff; }
+.previewLogoName { font-size: 14px; font-weight: 800; line-height: 1; letter-spacing: -.025em; }
+.previewLogoCms { color: #fff; }
+.previewLogo .brandHeri { color: #4ED94E; }
+.previewLogoSubtitle { color: #9fc0c6; font-size: 5.5px; font-weight: 800; letter-spacing: .105em; }
+.previewClinic { margin: 18px 5px 14px; color: #9fc0c6; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.previewNav { display: grid; gap: 3px; }
+.previewNav span { padding: 8px 8px; border-radius: 7px; color: #b8d0d4; font-size: 10px; font-weight: 600; }
+.previewNavActive { background: rgba(255,255,255,.1); color: #fff !important; }
+.previewSidebarFooter { margin-top: auto; padding: 8px; color: #86aeb5; font-size: 8px; border-top: 1px solid rgba(255,255,255,.1); }
+.previewMain { min-width: 0; padding: 21px 22px 20px; background: #f8faf9; }
+.previewTopbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.previewTopbar div { display: grid; gap: 4px; }
+.previewOverline { color: #7d8c92; font-size: 7px; font-weight: 800; letter-spacing: .12em; }
+.previewTopbar strong { color: #183440; font-size: 20px; letter-spacing: -.035em; }
+.previewAvatar { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; background: rgba(78,217,78,.13); color: #267b2c; font-size: 8px; font-weight: 800; }
+.previewIntro { margin: 7px 0 16px; color: #7b888e; font-size: 9px; line-height: 1.4; }
+.previewMetrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.previewMetrics > div { min-width: 0; padding: 11px 10px; border: 1px solid #e3e9e6; border-radius: 10px; background: #fff; }
+.previewMetrics span { display: block; color: #849096; font-size: 7px; font-weight: 700; }
+.previewMetrics strong { display: block; margin-top: 5px; color: #183d4a; font-size: 15px; letter-spacing: -.02em; white-space: nowrap; }
+.previewContentGrid { display: grid; grid-template-columns: 1.08fr .92fr; gap: 9px; margin-top: 10px; }
+.previewAttention, .previewGlance { min-width: 0; padding: 12px; border: 1px solid #e3e9e6; border-radius: 11px; background: #fff; }
+.previewSectionTitle { display: flex; align-items: center; gap: 6px; color: #26424c; font-size: 9px; font-weight: 800; }
+.previewSectionTitle span { display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 99px; background: #eef3f0; color: #668078; font-size: 7px; }
+.previewAlert { display: grid; grid-template-columns: 7px minmax(0,1fr) auto; gap: 6px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eef1ef; color: #637278; font-size: 7px; }
+.previewAlert b { color: #c49a5a; font-size: 8px; }
+.previewAlert em { color: #0f4c5c; font-style: normal; font-weight: 800; }
+.previewMiniGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 9px; }
+.previewMiniGrid span { display: grid; gap: 3px; padding: 9px; border-radius: 8px; background: #f7f9f8; color: #849096; font-size: 6px; }
+.previewMiniGrid b { color: #1b4a58; font-size: 14px; }
 .section { background:#fff; border-top:1px solid #e8ecea; }
 .sectionInner { max-width:1180px; margin:0 auto; padding:76px 28px; }
 .sectionIntro { max-width:680px; margin-bottom:36px; }
@@ -50,5 +96,6 @@
 .ctaActions { justify-content: center; }
 .footer { border-top:1px solid #e0e6e3; background:#f7f8f5; }
 .footerInner { max-width:1180px; margin:0 auto; padding:24px 28px; display:flex; justify-content:space-between; gap:20px; color:#748188; font-size:12px; }
-@media (max-width:900px){ .hero,.security .sectionInner{grid-template-columns:1fr;gap:40px}.cards{grid-template-columns:1fr 1fr} }
-@media (max-width:640px){ .nav{padding:18px}.navLink{display:none}.hero{padding:48px 18px 64px}.sectionInner{padding:58px 18px}.cards{grid-template-columns:1fr}.heroPanel{padding:20px}.footerInner{padding:20px 18px;flex-direction:column} }
+@media (max-width:1100px){ .hero{grid-template-columns:minmax(0,.82fr) minmax(500px,1.18fr);gap:34px}.previewBody{min-height:400px}.previewSidebar{width:auto} }
+@media (max-width:900px){ .hero,.security .sectionInner{grid-template-columns:1fr;gap:40px}.heroTitle{max-width:760px}.previewStage{padding:22px 0 48px}.productPreview{max-width:800px;margin:0 auto;transform:none}.activityCard{min-width:0;padding:10px 11px}.activityPayment{right:8px;top:0}.activityAppointment{left:8px;bottom:0}.activityCard:not(.activityPayment):not(.activityAppointment){right:50%;top:0}.cards{grid-template-columns:1fr 1fr} }
+@media (max-width:640px){ .nav{padding:18px}.navLink{display:none}.hero{padding:48px 18px 64px}.sectionInner{padding:58px 18px}.cards{grid-template-columns:1fr}.heroPanel{padding:20px}.trustIndicators{gap:7px 11px;font-size:10px}.previewStage{padding:18px 0 46px}.productPreview{border-radius:17px}.previewBody{grid-template-columns:92px;min-height:0}.previewSidebar{display:none}.previewMain{padding:15px}.previewMetrics{grid-template-columns:1fr 1fr}.previewContentGrid{grid-template-columns:1fr}.previewMetrics strong{font-size:13px}.activityCard{position:absolute;max-width:155px;font-size:8px}.activityCard strong{font-size:8px}.activityCard small{font-size:6px}.activityPayment{right:0;top:0}.activityAppointment{left:0;bottom:0}.activityCard:not(.activityPayment):not(.activityAppointment){right:50%;top:-1px}.footerInner{padding:20px 18px;flex-direction:column} }

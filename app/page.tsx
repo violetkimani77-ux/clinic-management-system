@@ -1,6 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 import styles from "./page.module.css";
+import landingTheme from "./landing-theme.module.css";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-landing",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "Heri CMS | Clinic Management System",
@@ -21,9 +30,78 @@ const securityItems = [
   { benefit: "Keep data where your clinic expects it", feature: "Kenya-first data residency", detail: "Build around Kenya-based data storage with controlled cross-border processing when approved and required safeguards are in place." },
 ];
 
+function ProductPreview() {
+  return (
+    <div className={styles.previewStage}>
+      <div className={styles.activityCard} aria-label="Patient checked in">
+        <span className={styles.activityIcon}>✓</span>
+        <span><strong>Patient checked in</strong><small>Just now</small></span>
+      </div>
+      <div className={`${styles.activityCard} ${styles.activityPayment}`} aria-label="Payment received">
+        <span className={styles.activityIcon}>✓</span>
+        <span><strong>KES 12,500 payment received</strong><small>Accounts · just now</small></span>
+      </div>
+      <div className={`${styles.activityCard} ${styles.activityAppointment}`} aria-label="Appointment confirmed">
+        <span className={styles.activityIcon}>✓</span>
+        <span><strong>Appointment confirmed</strong><small>Today · 2:30 PM</small></span>
+      </div>
+      <div className={styles.productPreview} aria-label="Heri CMS dashboard preview">
+        <div className={styles.previewBrowserBar}>
+          <span className={styles.browserDots} aria-hidden="true"><i /><i /><i /></span>
+          <span className={styles.previewWindowTitle}>Heri CMS</span>
+          <span className={styles.previewSecure}>Secure workspace</span>
+        </div>
+        <div className={styles.previewBody}>
+          <aside className={styles.previewSidebar}>
+            <div className={styles.previewLogo}>
+              <span className={styles.previewLogoName}><span className={styles.brandHeri}>Heri</span><span className={styles.previewLogoCms}> CMS</span></span>
+              <span className={styles.previewLogoSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
+            </div>
+            <div className={styles.previewClinic}>Mwangaza Clinic</div>
+            <nav className={styles.previewNav} aria-label="Dashboard preview navigation">
+              <span className={styles.previewNavActive}>Overview</span>
+              <span>Patients</span>
+              <span>Visits</span>
+              <span>Pharmacy</span>
+              <span>Accounts</span>
+              <span>Reports</span>
+            </nav>
+            <div className={styles.previewSidebarFooter}>Admin workspace</div>
+          </aside>
+          <div className={styles.previewMain}>
+            <div className={styles.previewTopbar}>
+              <div><span className={styles.previewOverline}>ADMIN WORKSPACE</span><strong>Dashboard</strong></div>
+              <span className={styles.previewAvatar}>AK</span>
+            </div>
+            <p className={styles.previewIntro}>Clinic activity and operational items that need attention.</p>
+            <div className={styles.previewMetrics}>
+              <div><span>Patients today</span><strong>24</strong></div>
+              <div><span>Visits today</span><strong>18</strong></div>
+              <div><span>Collected today</span><strong>KES 48.2k</strong></div>
+              <div><span>Outstanding</span><strong>KES 126k</strong></div>
+            </div>
+            <div className={styles.previewContentGrid}>
+              <div className={styles.previewAttention}>
+                <div className={styles.previewSectionTitle}>Needs attention <span>4</span></div>
+                <div className={styles.previewAlert}><b>●</b><span>3 medicines below reorder level</span><em>View →</em></div>
+                <div className={styles.previewAlert}><b>●</b><span>2 batches expiring within 30 days</span><em>View →</em></div>
+                <div className={styles.previewAlert}><b>●</b><span>KES 126,400 outstanding</span><em>View →</em></div>
+              </div>
+              <div className={styles.previewGlance}>
+                <div className={styles.previewSectionTitle}>Clinic at a glance</div>
+                <div className={styles.previewMiniGrid}><span><b>842</b>Active patients</span><span><b>12</b>Registered today</span><span><b>15</b>Completed visits</span><span><b>3</b>Pending visits</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${landingTheme.theme} ${manrope.variable}`}>
       <nav className={styles.nav} aria-label="Public navigation">
         <Link href="/" className={styles.brand} aria-label="Heri CMS — Clinic Management System">
           <span className={styles.brandName}><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span></span>
@@ -38,27 +116,20 @@ export default function HomePage() {
       </nav>
 
       <section className={styles.hero}>
-        <div>
+        <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>Heri CMS · Clinic Management System</p>
           <h1 className={styles.heroTitle}>One secure platform for your clinic operations</h1>
           <p className={styles.heroText}>A focused management platform for clinics that need dependable patient, visit, pharmacy, accounts and reporting workflows without sacrificing security or operational control.</p>
           <div className={styles.heroActions}>
             <Link href="/trial" className={styles.primaryButton}>Start Your 4-Day Free Trial</Link>
           </div>
-        </div>
-        <div className={styles.heroPanel} aria-label="Platform overview">
-          <div className={styles.panelHeader}>
-            <span className={styles.panelLabel}>Clinic workspace</span>
-            <span className={styles.status}><span className={styles.statusDot} aria-hidden="true" />Secure access</span>
+          <div className={styles.trustIndicators} aria-label="Trial benefits">
+            <span><b aria-hidden="true">✓</b> No credit card</span>
+            <span><b aria-hidden="true">✓</b> Setup in minutes</span>
+            <span><b aria-hidden="true">✓</b> Secure &amp; private</span>
           </div>
-          <div className={styles.metricGrid}>
-            <div className={styles.metric}><span className={styles.metricValue}>Patients</span><span className={styles.metricLabel}>Centralized records</span></div>
-            <div className={styles.metric}><span className={styles.metricValue}>Visits</span><span className={styles.metricLabel}>Daily care workflow</span></div>
-            <div className={styles.metric}><span className={styles.metricValue}>Pharmacy</span><span className={styles.metricLabel}>Inventory visibility</span></div>
-            <div className={styles.metric}><span className={styles.metricValue}>Accounts</span><span className={styles.metricLabel}>Financial operations</span></div>
-          </div>
-          <p className={styles.panelNote}>Designed around clear roles, controlled access and clinic-level data boundaries.</p>
         </div>
+        <ProductPreview />
       </section>
 
       <section id="capabilities" className={styles.section}>
@@ -74,7 +145,7 @@ export default function HomePage() {
 
       <section id="security" className={`${styles.section} ${styles.security}`}>
         <div className={styles.sectionInner}>
-          <div><p className={styles.sectionKicker}>Security by design</p><h2 className={styles.sectionTitle}>Protection that helps your clinic stay secure, controlled and accountable.</h2><p className={styles.sectionText}>Heri CMS combines practical security controls with clinic operations, helping protect sensitive information while making access easier to manage as your team grows.</p></div>
+          <div><p className={styles.sectionKicker}>Security by design</p><h2 className={styles.sectionTitle}>Protection that helps your data stay secure, controlled and accountable.</h2><p className={styles.sectionText}>Heri CMS combines practical security controls with clinic operations, helping protect sensitive information while making access easier to manage as your team grows.</p></div>
           <div className={styles.securityList}>{securityItems.map((item, index) => <div key={item.feature} className={styles.securityItem}><span aria-hidden="true">0{index + 1}</span><div><strong>{item.benefit}</strong><h3>{item.feature}</h3><p>{item.detail}</p></div></div>)}</div>
         </div>
       </section>
