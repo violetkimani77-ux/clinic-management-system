@@ -1,27 +1,52 @@
 import Link from "next/link";
+import { Manrope } from "next/font/google";
 import styles from "./page.module.css";
+
+const manrope = Manrope({ subsets: ["latin"], display: "swap", variable: "--font-trial", weight: ["400", "500", "600", "700", "800"] });
 
 export default function TrialPage() {
   return (
-    <main className={styles.page}>
-      <section className={styles.card}>
-        <Link href="/" className={styles.brand} aria-label="Heri CMS">
-          <span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span>
+    <main className={`${styles.page} ${manrope.variable}`}>
+      <nav className={styles.nav} aria-label="Trial navigation">
+        <Link href="/" className={styles.brand} aria-label="Heri CMS — Clinic Management System">
+          <span className={styles.brandName}><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span></span>
+          <span className={styles.brandSubtitle}>CLINIC MANAGEMENT SYSTEM</span>
         </Link>
-        <p className={styles.eyebrow}>Clinic Management System</p>
-        <h1>Start Your 4-Day Free Trial</h1>
-        <p className={styles.intro}>
-          Create a secure clinic workspace and start evaluating Heri CMS without a credit card.
-        </p>
-        <form action="/api/trial" method="post" className={styles.form}>
-          <label>Clinic name<input name="clinicName" required minLength={2} maxLength={120} /></label>
-          <label>Administrator name<input name="administratorName" required minLength={2} maxLength={120} /></label>
-          <label>Administrator email<input name="email" type="email" required maxLength={254} autoComplete="email" /></label>
-          <label>Password<input name="password" type="password" required minLength={12} maxLength={128} autoComplete="new-password" /></label>
-          <button type="submit">Create Trial Workspace</button>
-        </form>
-        <p className={styles.note}>Your password is securely hashed and is never displayed after signup.</p>
-        <Link href="/login" className={styles.login}>Already have access? Sign in</Link>
+        <Link href="/dashboard" className={styles.dashboardLink}>Back to Dashboard</Link>
+      </nav>
+
+      <section className={styles.hero}>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>Heri CMS · Free trial</p>
+          <h1>Start your 4-day free trial.</h1>
+          <p className={styles.intro}>
+            Create a secure clinic workspace and start evaluating Heri CMS without a credit card.
+          </p>
+          <div className={styles.trustRow} aria-label="Trial benefits">
+            <span><b aria-hidden="true">✓</b> No credit card</span>
+            <span><b aria-hidden="true">✓</b> Secure workspace</span>
+            <span><b aria-hidden="true">✓</b> Setup in minutes</span>
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
+              <p className={styles.cardKicker}>Create your workspace</p>
+              <h2>Clinic details</h2>
+            </div>
+            <span className={styles.step}>01</span>
+          </div>
+          <form action="/api/trial" method="post" className={styles.form}>
+            <label>Clinic name<input name="clinicName" required minLength={2} maxLength={120} /></label>
+            <label>Administrator name<input name="administratorName" required minLength={2} maxLength={120} /></label>
+            <label>Administrator email<input name="email" type="email" required maxLength={254} autoComplete="email" /></label>
+            <label>Password<input name="password" type="password" required minLength={12} maxLength={128} autoComplete="new-password" /></label>
+            <button type="submit">Create Trial Workspace</button>
+          </form>
+          <p className={styles.note}>Your password is securely hashed and is never displayed after signup.</p>
+          <Link href="/login" className={styles.login}>Already have access? Sign in →</Link>
+        </div>
       </section>
     </main>
   );
