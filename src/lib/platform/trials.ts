@@ -5,7 +5,7 @@ import { Prisma, SubscriptionStatus, TenantDataStoreStatus, TenantIsolationMode,
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 
-const TRIAL_DURATION_MS = 4 * 24 * 60 * 60 * 1000;
+const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
 const TRIAL_WINDOW_MS = 60 * 60 * 1000;
 const TRIAL_ATTEMPT_LIMIT = 5;
 
@@ -137,7 +137,7 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
         status: SubscriptionStatus.TRIAL,
         activatedAt: now,
         currentPeriodEnd: trialEndsAt,
-        notes: "Self-service 4-day trial",
+        notes: "Self-service 14-day trial",
       },
     });
 
