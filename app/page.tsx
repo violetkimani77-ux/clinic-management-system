@@ -22,11 +22,11 @@ const securityItems = [
 ];
 function ProductPreview() {
   return <div className={styles.previewStage}>
-    <div aria-hidden="true" style={{ position: "absolute", inset: "4% -3% 3% -5%", borderRadius: "34px", background: "radial-gradient(ellipse at 55% 48%, rgba(78,217,78,.18) 0%, rgba(78,217,78,.08) 38%, rgba(78,217,78,0) 72%)", filter: "blur(22px)", pointerEvents: "none" }} />
+    <div aria-hidden="true" style={{ position: "absolute", inset: "0% -8% -2% -10%", zIndex: 0, borderRadius: "42px", background: "radial-gradient(ellipse at 54% 48%, rgba(78,217,78,.30) 0%, rgba(78,217,78,.16) 34%, rgba(78,217,78,.05) 58%, rgba(78,217,78,0) 78%)", filter: "blur(30px)", pointerEvents: "none" }} />
     <div className={styles.activityCard} aria-label="Patient checked in"><span className={styles.activityIcon}>✓</span><span><strong>Patient checked in</strong><small>Just now</small></span></div>
     <div className={`${styles.activityCard} ${styles.activityPayment}`} aria-label="Payment received"><span className={styles.activityIcon}>✓</span><span><strong>KES 12,500 payment received</strong><small>Accounts · just now</small></span></div>
     <div className={`${styles.activityCard} ${styles.activityAppointment}`} aria-label="Appointment confirmed"><span className={styles.activityIcon}>✓</span><span><strong>Appointment confirmed</strong><small>Today · 2:30 PM</small></span></div>
-    <div className={styles.productPreview} aria-label="Heri CMS dashboard preview">
+    <div className={styles.productPreview} aria-label="Heri CMS dashboard preview" style={{ zIndex: 1, borderColor: "rgba(11,38,51,.16)", boxShadow: "0 0 0 6px rgba(78,217,78,.045), 0 34px 86px rgba(7,22,43,.20), 0 12px 30px rgba(20,45,54,.10)" }}>
       <div className={styles.previewBrowserBar}><span className={styles.browserDots} aria-hidden="true"><i /><i /><i /></span><span className={styles.previewWindowTitle}>Heri CMS</span><span className={styles.previewSecure}>Secure workspace</span></div>
       <div className={styles.previewBody}>
         <aside className={styles.previewSidebar}><div className={styles.previewLogo}><span className={styles.previewLogoName}><span className={styles.brandHeri}>Heri</span><span className={styles.previewLogoCms}> CMS</span></span><span className={styles.previewLogoSubtitle}>CLINIC MANAGEMENT SYSTEM</span></div><div className={styles.previewClinic}>Mwangaza Clinic</div><nav className={styles.previewNav} aria-label="Dashboard preview navigation"><span className={styles.previewNavActive}>Overview</span><span>Patients</span><span>Visits</span><span>Pharmacy</span><span>Accounts</span><span>Reports</span></nav><div className={styles.previewSidebarFooter}>Admin workspace</div></aside>
