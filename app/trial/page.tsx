@@ -18,7 +18,7 @@ export default function TrialPage() {
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>Heri CMS · Free trial</p>
-          <h1>Start your 4-day free trial.</h1>
+          <h1>Start your 14-day free trial.</h1>
           <p className={styles.intro}>
             Create a secure clinic workspace and start evaluating Heri CMS without a credit card.
           </p>
