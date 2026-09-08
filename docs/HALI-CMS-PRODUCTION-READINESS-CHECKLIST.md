@@ -105,18 +105,78 @@
 - [ ] Recurring datastore health checks
 
 ## 8. Heri CMS Platform Control
-- [ ] Separate platform control surface implemented
-- [ ] Platform administration authentication/MFA/RBAC
-- [ ] Clinics/tenants management
-- [ ] Provisioning controls
-- [ ] Data residency controls
-- [ ] Datastore controls
-- [ ] Security/audit controls
-- [ ] Maintenance controls
-- [ ] Platform health monitoring
-- [ ] Platform-admin audit trail
 
-> The Platform Control surface is not currently an existing UI and must not be represented as available until implemented.
+### 8.1 Platform Control Panel purpose and boundary
+- [ ] Separate platform control surface implemented
+- [ ] Platform Control is a privileged platform-operations boundary, separate from the clinic application/dashboard
+- [ ] Platform admins cannot be treated as ordinary clinic users with an implicit “super-admin” bypass
+- [ ] Platform metadata/operations are separated from clinic clinical data access
+- [ ] Platform Control does not automatically grant unrestricted patient-record access
+- [ ] Any break-glass clinical-data access requires explicit authorization, business justification, time-bounded access and audit evidence
+
+### 8.2 Platform Control Panel information architecture
+- [ ] **Overview:** platform health, active clinics, trials, subscriptions/entitlements, datastore health, payment-data integration health and security alerts
+- [ ] **Clinics / Tenants:** directory, clinic profile, subscription/entitlement, users/memberships, datastore, residency and audit history
+- [ ] **Provisioning:** new tenant, datastore provisioning, residency validation, migration status and provisioning failures
+- [ ] **Data Residency:** Kenya residency status, database location, backup location, provider/subprocessor location and transfer assessments
+- [ ] **Datastores:** pool/bridge/silo inventory, health, capacity, migration/version state and lifecycle operations
+- [ ] **Security & Audit:** authentication events, administrative actions, tenant access, export/download events, security incidents and immutable audit records
+- [ ] **Payment Integration:** integration health, event ingestion, reconciliation, failed events, reversals and data freshness
+- [ ] **Maintenance:** maintenance windows, tenant suspension, migration operations and emergency controls
+- [ ] **Platform Health:** application, database, datastore, background-job and payment-integration health with actionable alerts
+
+### 8.3 Platform Control Panel UX and interaction design
+- [ ] Consistent global navigation for the platform-operations surface
+- [ ] Clear platform-admin identity, role and current session indicator
+- [ ] Search, filtering, sorting and pagination for clinic/tenant and operational lists
+- [ ] Clinic/tenant detail pages expose operational context without unnecessarily exposing clinical records
+- [ ] Role-based navigation and action visibility
+- [ ] Clear read-only vs actionable states
+- [ ] Explicit confirmation for destructive, irreversible, suspension, migration and emergency actions
+- [ ] High-risk actions require step-up authentication where appropriate
+- [ ] Dangerous actions identify affected tenant(s), expected impact and rollback/recovery implications before confirmation
+- [ ] Empty, loading, error, degraded-service and permission-denied states designed and tested
+- [ ] Responsive behavior appropriate for operational use, while prioritizing safe desktop workflows for high-risk actions
+- [ ] Accessibility: keyboard navigation, focus management, labels, contrast, status messaging and screen-reader semantics
+- [ ] Sensitive values are minimized, masked or omitted unless operationally necessary
+- [ ] Financial records shown in Platform Control use the same authoritative, immutable payment dataset as Accounts
+
+### 8.4 Platform Control security architecture
+- [ ] Platform administration authentication with MFA enforced
+- [ ] Separate platform-admin authorization model from clinic RBAC
+- [ ] Least-privilege platform roles defined
+- [ ] Step-up authentication for dangerous operations
+- [ ] Secure session expiry, rotation and revocation for platform-admin sessions
+- [ ] Platform-admin sessions use secure cookie/session controls
+- [ ] Cross-tenant data leakage prevention tested
+- [ ] Tenant impersonation is disabled by default; if ever enabled, it requires explicit authorization, strong visual indication, time limit and complete audit trail
+- [ ] Destructive/irreversible operations are protected against accidental or replayed execution
+- [ ] Emergency/break-glass controls are restricted, justified, time-bounded and audited
+
+### 8.5 Platform Control auditability and operations
+- [ ] Every provisioning, suspension, migration, residency, maintenance and security-sensitive administrative action produces an audit event
+- [ ] Audit records include actor, role, tenant/scope, action, timestamp, outcome and relevant target/reference
+- [ ] Audit records are tamper-evident and access-controlled
+- [ ] Platform admins can review audit history without editing or deleting audit evidence
+- [ ] Security alerts have ownership, severity, status and resolution/evidence workflow
+- [ ] Operational failures expose actionable diagnostics without leaking secrets or patient-sensitive data
+- [ ] Platform health checks and alerts have documented response procedures
+- [ ] Platform Control actions have authorization and negative-path tests, not only happy-path tests
+
+### 8.6 Platform Control Panel release tests
+- [ ] Platform-admin login/MFA E2E
+- [ ] Platform-role authorization matrix E2E
+- [ ] Cross-tenant access-denial tests
+- [ ] Provisioning/lifecycle action tests
+- [ ] Residency/datastore control tests
+- [ ] Maintenance/suspension authorization tests
+- [ ] Audit-event completeness tests
+- [ ] High-risk action confirmation/step-up tests
+- [ ] Break-glass controls tested if implemented
+- [ ] Sensitive-data minimization and no-secret-leak tests
+- [ ] Accessibility and responsive UX verification
+
+> The Platform Control surface is not currently an existing UI and must not be represented as available until implemented and verified.
 
 ## 9. Clinic application / dashboard UX
 - [x] Missing-user placeholder normalized to `User`
@@ -286,6 +346,7 @@
 - [ ] Duplicate/replay/out-of-order payment-event tests
 - [ ] SSE live-update tests
 - [ ] Polling fallback tests
+- [ ] Platform Control Panel E2E and authorization/security/audit tests
 - [ ] Verify no secrets/passwords/patient-sensitive data in test output
 
 ## 17. Legal, privacy and compliance operational readiness
@@ -314,6 +375,7 @@ Production release is blocked until all applicable critical controls have verifi
 - [ ] Backups and restore verified
 - [ ] Observability and incident response operational
 - [ ] Data export/download controls and audit trail verified
+- [ ] **Platform Control Panel architecture, privileged security boundary, authorization, auditability and critical UX tests verified**
 - [ ] **M-Pesa payment-data provenance, immutability, reversal handling, live updates and reconciliation verified** when payment visibility is enabled
 - [ ] Legal/compliance sign-off completed
 - [ ] Final production smoke test completed
