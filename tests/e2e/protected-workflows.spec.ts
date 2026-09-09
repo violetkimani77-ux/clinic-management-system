@@ -38,7 +38,7 @@ test.describe("protected clinical workspace", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
 
     await page.goto("/patients");
-    await expect(page.getByRole("heading", { name: "Patients" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Patients", exact: true })).toBeVisible();
     await page.getByText("Register a new patient").click();
     await page.getByLabel(/First name/).fill(firstName);
     await page.getByLabel(/Last name/).fill(lastName);
@@ -66,11 +66,11 @@ test.describe("protected clinical workspace", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
 
     await page.goto("/patients");
-    await expect(page.getByRole("heading", { name: "Patients" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Patients", exact: true })).toBeVisible();
     await expect(page.getByRole("search", { name: "Search patients" })).toBeVisible();
 
     await page.goto("/visits");
-    await expect(page.getByRole("heading", { name: "Visits" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Today's visits" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Visits", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Today's visits", exact: true })).toBeVisible();
   });
 });
