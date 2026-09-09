@@ -13,9 +13,9 @@ export default function TrialSuccessPage() {
         <Link href="/" className={styles.brand} aria-label="Heri CMS"><span className={styles.brandHeri}>Heri</span><span className={styles.brandCms}> CMS</span></Link>
         <p className={styles.eyebrow}>Trial workspace created</p>
         <h1>Your 14-day trial is ready.</h1>
-        <p className={styles.intro}>Your clinic workspace and administrator account have been created. Sign in to the CMS Portal using the administrator email and password you chose.</p>
-        <p className={styles.note}>Use the administrator email you entered during signup to sign in.</p>
-        <Link href="/login" className={styles.login}>Enter CMS Portal</Link>
+        <p className={styles.intro}>Your clinic workspace and administrator account have been created. Sign in to continue setting up your team.</p>
+        <p className={styles.note}>Next, you can invite up to two Pharmacy users and two Accounts & Billing users. You can also skip team setup and return to it later.</p>
+        <Link href="/login?next=/setup" className={styles.login}>Sign in & Set Up Team →</Link>
       </section>
     </main>
   );
