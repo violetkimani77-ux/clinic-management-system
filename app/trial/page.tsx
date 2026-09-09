@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Manrope } from "next/font/google";
 import styles from "./page.module.css";
+import TrialForm from "./trial-form";
 
 export const metadata: Metadata = {
   title: "Start Your 14-Day Free Trial",
-  description:
-    "Create a secure clinic workspace and evaluate Heri CMS for patient care, visits, pharmacy, accounts and reporting workflows.",
-  alternates: {
-    canonical: "/trial",
-  },
+  description: "Create a secure clinic workspace and evaluate Heri CMS for patient care, visits, pharmacy, accounts and reporting workflows.",
+  alternates: { canonical: "/trial" },
 };
 
 const manrope = Manrope({ subsets: ["latin"], display: "swap", variable: "--font-trial", weight: ["400", "500", "600", "700", "800"] });
@@ -33,13 +31,7 @@ export default function TrialPage() {
         </div>
         <div className={styles.card}>
           <div className={styles.cardHeader}><div><p className={styles.cardKicker}>Create your workspace</p><h2>Clinic details</h2></div><span className={styles.step}>01</span></div>
-          <form action="/api/trial" method="post" className={styles.form}>
-            <label>Clinic name<input name="clinicName" required minLength={2} maxLength={120} /></label>
-            <label>Administrator name<input name="administratorName" required minLength={2} maxLength={120} /></label>
-            <label>Administrator email<input name="email" type="email" required maxLength={254} autoComplete="email" /></label>
-            <label>Password<input name="password" type="password" required minLength={12} maxLength={128} autoComplete="new-password" /></label>
-            <button type="submit">Create Trial Workspace</button>
-          </form>
+          <TrialForm />
           <p className={styles.note}>Your password is securely hashed and is never displayed after signup.</p>
           <Link href="/login" className={styles.login}>Already have access? Sign in →</Link>
         </div>
