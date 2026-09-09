@@ -14,8 +14,15 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <main className="auth-page">
-      <nav aria-label="Public navigation" style={{ width: "100%", maxWidth: 1120, padding: "22px 28px 0" }}>
-        <Link href="/" style={{ color: "inherit", textDecoration: "none", fontWeight: 800 }}>← Back to Heri CMS</Link>
+      <nav className="auth-nav" aria-label="Public navigation">
+        <Link href="/" className="auth-brand" aria-label="Heri CMS — Clinic Management System">
+          <span className="auth-brand-name"><span className="auth-brand-heri">Heri</span><span className="auth-brand-cms"> CMS</span></span>
+          <span className="auth-brand-subtitle">CLINIC MANAGEMENT SYSTEM</span>
+        </Link>
+        <div className="auth-nav-actions">
+          <Link href="/trial" className="auth-nav-link">Free trial</Link>
+          <Link href="/" className="auth-nav-back">Back to Heri CMS</Link>
+        </div>
       </nav>
       <section className="auth-shell" aria-labelledby="login-title">
         <div className="auth-intro">
