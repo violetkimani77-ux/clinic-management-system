@@ -17,7 +17,17 @@ export async function dispensePrescriptionAction(formData: FormData) {
 
   if (!prescriptionId) throw new Error("PRESCRIPTION_ID_REQUIRED");
 
-  await dispensePrescription(context, prescriptionId);
+  try {
+    await dispensePrescription(context, prescriptionId);
+  } catch (error) {
+    console.error("Pharmacy dispensing failed", {
+      clinicId: context.clinicId,
+      userId: context.userId,
+      prescriptionId,
+      error,
+    });
+    throw error;
+  }
 
   revalidatePath("/pharmacy");
   revalidatePath("/dashboard");
