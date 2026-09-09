@@ -16,7 +16,7 @@ test.describe("production readiness - public access boundaries", () => {
   test("rejects invalid staff credentials without creating a session", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email address").fill("nobody@example.invalid");
-    await page.getByLabel("Password").fill("definitely-not-valid");
+    await page.getByRole("textbox", { name: "Password" }).fill("definitely-not-valid");
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(page.getByRole("alert")).toContainText("Invalid email or password");
