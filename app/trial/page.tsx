@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Manrope } from "next/font/google";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Start Your 14-Day Free Trial",
+  description:
+    "Create a secure clinic workspace and evaluate Heri CMS for patient care, visits, pharmacy, accounts and reporting workflows.",
+  alternates: {
+    canonical: "/trial",
+  },
+};
 
 const manrope = Manrope({ subsets: ["latin"], display: "swap", variable: "--font-trial", weight: ["400", "500", "600", "700", "800"] });
 
