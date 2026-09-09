@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 const staffEmail = process.env.E2E_STAFF_EMAIL;
@@ -14,7 +14,7 @@ function requireStaffCredentials() {
   test.skip(true, "Set E2E_STAFF_EMAIL and E2E_STAFF_PASSWORD for authenticated workflow tests.");
 }
 
-async function signIn(page: Parameters<typeof test>[0] extends never ? never : any) {
+async function signIn(page: Page) {
   await page.goto("/login");
   await page.getByLabel("Email address").fill(staffEmail!);
   await page.getByRole("textbox", { name: "Password" }).fill(staffPassword!);
@@ -22,7 +22,7 @@ async function signIn(page: Parameters<typeof test>[0] extends never ? never : a
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
-async function sessionIdForPage(page: any) {
+async function sessionIdForPage(page: Page) {
   const cookie = (await page.context().cookies()).find((item: { name: string }) => item.name === "cms_session");
   expect(cookie?.value).toBeTruthy();
   const tokenHash = createHash("sha256").update(cookie!.value).digest("hex");
