@@ -66,7 +66,7 @@ export default function NotFound() {
             textTransform: "uppercase",
           }}
         >
-          Heri CMS · Clinic Management System
+          Hali CMS · Clinic Management System
         </p>
 
         <p
@@ -134,7 +134,7 @@ export default function NotFound() {
               boxShadow: "0 12px 26px rgba(7,22,43,.16)",
             }}
           >
-            Return to Heri CMS
+            Return to Hali CMS
           </Link>
         </div>
       </section>
