@@ -13,9 +13,21 @@ test.describe("production readiness - public access boundaries", () => {
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
-  test("does not expose protected patient data to unauthenticated users", async ({ page }) => {
-    const response = await page.request.get("/api/patients");
-    expect(response.status()).toBeGreaterThanOrEqual(300);
-    expect(response.status()).toBeLessThan(500);
+  test("rejects invalid staff credentials without creating a session", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email address").fill("nobody@example.invalid");
+    await page.getByLabel("Password").fill("definitely-not-valid");
+    await page.getByRole("button", { name: "Sign in" }).click();
+
+    await expect(page.getByRole("alert")).toContainText("Invalid email or password");
+    await expect(page).toHaveURL(/\/login/);
+
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test("does not expose a protected patient profile to unauthenticated users", async ({ page }) => {
+    await page.goto("/patients/not-a-real-patient-id");
+    await expect(page).toHaveURL(/\/login(?:\?.*)?$/);
   });
 });
