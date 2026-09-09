@@ -1,4 +1,12 @@
-import { PrismaClient, RoleCode, UserStatus } from "@prisma/client";
+import {
+  PrismaClient,
+  RoleCode,
+  TenantDataStoreStatus,
+  TenantIsolationMode,
+  TenantResidencyPolicy,
+  TransferAssessmentStatus,
+  UserStatus,
+} from "@prisma/client";
 import { randomBytes, scrypt as nodeScrypt } from "node:crypto";
 import { promisify } from "node:util";
 
@@ -62,6 +70,33 @@ async function hashPassword(password) {
 
 async function main() {
   const clinic = await prisma.clinic.upsert({ where: { code: DEFAULT_CLINIC.code }, update: { name: DEFAULT_CLINIC.name }, create: DEFAULT_CLINIC });
+  const now = new Date();
+
+  await prisma.tenantDataStore.upsert({
+    where: { clinicId: clinic.id },
+    update: {
+      isolationMode: TenantIsolationMode.POOL,
+      status: TenantDataStoreStatus.HEALTHY,
+      residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
+      transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
+      country: "KE",
+      backupCountry: "KE",
+      provisionedAt: now,
+      lastHealthCheckAt: now,
+    },
+    create: {
+      clinicId: clinic.id,
+      isolationMode: TenantIsolationMode.POOL,
+      status: TenantDataStoreStatus.HEALTHY,
+      residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
+      transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
+      country: "KE",
+      backupCountry: "KE",
+      provisionedAt: now,
+      lastHealthCheckAt: now,
+    },
+  });
+
   const roles = {};
   for (const [code, name] of [[RoleCode.ADMIN, "Administrator"], [RoleCode.PHARMACY, "Pharmacy"], [RoleCode.ACCOUNTS, "Accounts"]]) {
     roles[code] = await prisma.role.upsert({ where: { code }, update: { name }, create: { code, name } });
