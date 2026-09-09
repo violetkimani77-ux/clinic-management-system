@@ -34,8 +34,8 @@ async function teamCounts(clinicId: string) {
     GROUP BY r."code"
   `;
   return {
-    PHARMACY: Number(rows.find((row) => row.role === "PHARMACY")?.count ?? 0n) + Number(pending.find((row) => row.role === "PHARMACY")?.count ?? 0n),
-    ACCOUNTS: Number(rows.find((row) => row.role === "ACCOUNTS")?.count ?? 0n) + Number(pending.find((row) => row.role === "ACCOUNTS")?.count ?? 0n),
+    PHARMACY: Number(rows.find((row) => row.role === "PHARMACY")?.count ?? 0) + Number(pending.find((row) => row.role === "PHARMACY")?.count ?? 0),
+    ACCOUNTS: Number(rows.find((row) => row.role === "ACCOUNTS")?.count ?? 0) + Number(pending.find((row) => row.role === "ACCOUNTS")?.count ?? 0),
   };
 }
 
