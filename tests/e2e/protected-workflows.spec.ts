@@ -184,7 +184,11 @@ test.describe("protected clinical workspace", () => {
     const prescriptionRow = page.locator("tbody tr").filter({ hasText: `${firstName} Prescription` });
     await expect(prescriptionRow).toContainText("SENT TO PHARMACY");
     await prescriptionRow.getByRole("button", { name: "Dispense" }).click();
-    await expect(page).toHaveURL(/\/pharmacy$/);
+
+    // The dispense action redirects back to the same route, so the URL alone cannot prove completion.
+    // The pharmacy queue only renders SENT_TO_PHARMACY/PROCESSING prescriptions; waiting for this row to
+    // disappear proves the server action and revalidation have completed before we inspect the database.
+    await expect(prescriptionRow).toHaveCount(0);
 
     const dispensedPrescription = await prisma.prescription.findUnique({
       where: { id: createdPrescription!.id },
