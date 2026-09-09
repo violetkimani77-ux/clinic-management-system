@@ -89,6 +89,84 @@ test.describe("protected clinical workspace", () => {
     await expect(page.getByRole("heading", { name: "Today's visits", exact: true })).toBeVisible();
   });
 
+  test("authenticated staff can create a prescription, send it to Pharmacy, and produce an audit event", async ({ page }) => {
+    requireStaffCredentials();
+
+    const uniqueId = Date.now().toString();
+    const firstName = `RxE2E${uniqueId}`;
+    const medicineName = "E2E Production Paracetamol";
+    const clinic = await prisma.clinic.findUnique({ where: { code: "DEMO-CLINIC" }, select: { id: true } });
+    expect(clinic?.id).toBeTruthy();
+
+    const existingMedicine = await prisma.medicine.findFirst({
+      where: { clinicId: clinic!.id, name: medicineName },
+      select: { id: true },
+    });
+    const medicine = existingMedicine
+      ? existingMedicine
+      : await prisma.medicine.create({
+          data: {
+            clinicId: clinic!.id,
+            name: medicineName,
+            strength: "500mg",
+            form: "Tablet",
+            active: true,
+          },
+          select: { id: true },
+        });
+
+    await signIn(page);
+
+    await page.goto("/patients");
+    await page.getByText("Register a new patient").click();
+    await page.getByLabel(/First name/).fill(firstName);
+    await page.getByLabel(/Last name/).fill("Prescription");
+    await page.getByLabel("Phone").fill(`0711${uniqueId.slice(-6)}`);
+    await page.getByRole("button", { name: "Register patient" }).click();
+    await page.getByRole("link", { name: `${firstName} Prescription` }).click();
+    await page.getByRole("button", { name: "Start new visit" }).click();
+    await expect(page).toHaveURL(/\/visits\/[^/]+$/);
+
+    const visitId = new URL(page.url()).pathname.split("/").pop()!;
+    await page.getByLabel("Medicine").selectOption(medicine.id);
+    await page.getByLabel("Quantity").fill("10");
+    await page.getByLabel("Dosage").fill("1 tablet");
+    await page.getByLabel("Frequency").fill("twice daily");
+    await page.getByLabel("Duration").fill("5 days");
+    await page.getByRole("button", { name: "Create Prescription" }).click();
+
+    await expect(page.getByText("CREATED", { exact: true })).toBeVisible();
+    const createdPrescription = await prisma.prescription.findFirst({
+      where: { clinicId: clinic!.id, visitId },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, status: true },
+    });
+    expect(createdPrescription?.status).toBe("CREATED");
+
+    await page.getByRole("button", { name: "Send to Pharmacy" }).click();
+    await expect(page.getByText("SENT TO PHARMACY", { exact: true })).toBeVisible();
+
+    const prescription = await prisma.prescription.findUnique({
+      where: { id: createdPrescription!.id },
+      select: { status: true },
+    });
+    expect(prescription?.status).toBe("SENT_TO_PHARMACY");
+
+    const auditEvent = await prisma.auditLog.findFirst({
+      where: {
+        clinicId: clinic!.id,
+        action: "PRESCRIPTION_SENT_TO_PHARMACY",
+        entityType: "Prescription",
+        entityId: createdPrescription!.id,
+      },
+      orderBy: { sequence: "desc" },
+      select: { id: true, userId: true, metadata: true },
+    });
+    expect(auditEvent?.id).toBeTruthy();
+    expect(auditEvent?.userId).toBeTruthy();
+    expect(auditEvent?.metadata).toEqual({ patientId: expect.any(String), visitId });
+  });
+
   test("rejects an expired session", async ({ page }) => {
     requireStaffCredentials();
     await signIn(page);
