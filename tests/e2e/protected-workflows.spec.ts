@@ -67,7 +67,7 @@ test.describe("protected clinical workspace", () => {
 
     await page.goto("/patients");
     await expect(page.getByRole("heading", { name: "Patients", exact: true })).toBeVisible();
-    await expect(page.getByRole("search", { name: "Search patients" })).toBeVisible();
+    await expect(page.getByLabel("Search patients")).toBeVisible();
 
     await page.goto("/visits");
     await expect(page.getByRole("heading", { name: "Visits", exact: true })).toBeVisible();
