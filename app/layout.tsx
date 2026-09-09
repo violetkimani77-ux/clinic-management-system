@@ -25,12 +25,8 @@ export const metadata: Metadata = {
     "clinic reporting",
     "Heri CMS",
   ],
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
-    url: "/",
     siteName: "Heri CMS",
     title: "Heri CMS | Clinic Management System",
     description:
@@ -51,10 +47,6 @@ export const metadata: Metadata = {
     description:
       "A secure clinic management system for patient care, visits, pharmacy, accounts and reporting workflows.",
     images: ["/opengraph-image"],
-  },
-  robots: {
-    index: true,
-    follow: true,
   },
 };
 
