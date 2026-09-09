@@ -92,7 +92,7 @@ jobs:
         run: npx --yes prisma@6.19.3 db seed
 
       - name: Install pinned Playwright test runner
-        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+        run: npm install --no-save --package-lock=false --legacy-peer-deps @playwright/test@1.55.0
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
