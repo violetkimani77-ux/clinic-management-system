@@ -33,7 +33,6 @@ export default function TrialPage() {
           <div className={styles.cardHeader}><div><p className={styles.cardKicker}>Create your workspace</p><h2>Clinic details</h2></div><span className={styles.step}>01</span></div>
           <TrialForm />
           <p className={styles.note}>Your password is securely hashed and is never displayed after signup.</p>
-          <Link href="/login" className={styles.login}>Already have access? Sign in →</Link>
         </div>
       </section>
     </main>
