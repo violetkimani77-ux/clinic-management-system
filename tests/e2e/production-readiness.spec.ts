@@ -19,7 +19,7 @@ test.describe("production readiness - public access boundaries", () => {
     await page.getByRole("textbox", { name: "Password" }).fill("definitely-not-valid");
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page.getByRole("alert")).toContainText("Invalid email or password");
+    await expect(page.locator("p.form-error")).toContainText("Unable to sign in. Check your email and password.");
     await expect(page).toHaveURL(/\/login/);
 
     await page.goto("/dashboard");
