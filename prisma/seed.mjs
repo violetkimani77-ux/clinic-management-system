@@ -60,10 +60,16 @@ const PERMISSION_DESCRIPTIONS = {
 };
 
 const DEFAULT_CLINIC = { code: "DEMO-CLINIC", name: "Demo Clinic" };
+const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? process.env.E2E_STAFF_PASSWORD;
+
+if (!adminPassword) {
+  throw new Error("SEED_ADMIN_PASSWORD or E2E_STAFF_PASSWORD must be configured before seeding.");
+}
+
 const DEFAULT_ADMIN = {
   email: "admin@demo-clinic.local",
   name: "Clinic Administrator",
-  password: process.env.E2E_STAFF_PASSWORD ?? "ChangeMe123!",
+  password: adminPassword,
 };
 
 async function hashPassword(password) {
@@ -131,7 +137,7 @@ async function main() {
   });
   console.log(`Seeded clinic: ${clinic.code}`);
   console.log(`Seeded admin: ${DEFAULT_ADMIN.email}`);
-  console.log("Admin password configured from E2E_STAFF_PASSWORD when provided.");
+  console.log("Admin password supplied through an environment secret.");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; }).finally(async () => { await prisma.$disconnect(); });
