@@ -25,10 +25,100 @@ a {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px 20px;
+  padding: 24px 20px 20px;
   background:
-    radial-gradient(circle at 15% 15%, rgba(24, 78, 119, 0.08), transparent 34%),
-    linear-gradient(135deg, #f7f9fb 0%, #eef3f6 100%);
+    radial-gradient(circle at 15% 15%, rgba(78, 217, 78, 0.08), transparent 32%),
+    radial-gradient(circle at 85% 80%, rgba(11, 31, 58, 0.06), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f7f8f5 100%);
+}
+
+.auth-nav {
+  width: min(100%, 1120px);
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto 22px;
+}
+
+.auth-brand {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.auth-brand-name {
+  font-size: 27px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.auth-brand-heri {
+  color: #4ed94e;
+}
+
+.auth-brand-cms {
+  color: #0b1f3a;
+}
+
+.auth-brand-subtitle {
+  color: #0b1f3a;
+  font-size: 7px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.auth-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-nav-link,
+.auth-nav-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.auth-nav-link {
+  border: 1px solid rgba(11, 31, 58, 0.12);
+  background: rgba(255, 255, 255, 0.84);
+  color: #0b1f3a;
+  box-shadow: 0 6px 18px rgba(7, 22, 43, 0.05);
+}
+
+.auth-nav-back {
+  border: 1px solid rgba(11, 31, 58, 0.16);
+  background: rgba(255, 255, 255, 0.9);
+  color: #0b1f3a;
+  box-shadow: 0 6px 18px rgba(7, 22, 43, 0.06);
+}
+
+.auth-nav-link:hover,
+.auth-nav-back:hover {
+  transform: translateY(-1px);
+  border-color: rgba(78, 217, 78, 0.55);
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(7, 22, 43, 0.09);
+}
+
+.auth-nav-link:focus-visible,
+.auth-nav-back:focus-visible {
+  outline: 3px solid rgba(78, 217, 78, 0.28);
+  outline-offset: 3px;
 }
 
 .auth-shell {
@@ -47,7 +137,7 @@ a {
   flex-direction: column;
   justify-content: center;
   padding: 64px;
-  background: #173f56;
+  background: #0b1f3a;
   color: #ffffff;
 }
 
@@ -58,7 +148,7 @@ a {
   align-items: center;
   margin-bottom: 36px;
   padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 14px;
   font-size: 22px;
   font-weight: 800;
@@ -67,7 +157,7 @@ a {
 
 .brand-heri,
 .brandHeri {
-  color: #36CF36;
+  color: #4ed94e;
 }
 
 .brand-cms,
@@ -236,7 +326,7 @@ a {
   margin-top: 2px;
   border: 0;
   border-radius: 10px;
-  background: #173f56;
+  background: #0b1f3a;
   color: #ffffff;
   font: inherit;
   font-weight: 800;
@@ -245,7 +335,7 @@ a {
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: #215a78;
+  background: #173f56;
   transform: translateY(-1px);
 }
 
@@ -294,7 +384,7 @@ a {
 }
 
 .auth-switch a:hover {
-  color: #173f56;
+  color: #0b1f3a;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -313,6 +403,30 @@ a {
 @media (max-width: 760px) {
   .auth-page {
     padding: 16px 16px 18px;
+  }
+
+  .auth-nav {
+    min-height: 56px;
+    margin-bottom: 14px;
+  }
+
+  .auth-nav-actions {
+    gap: 7px;
+  }
+
+  .auth-nav-link,
+  .auth-nav-back {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  .auth-brand-name {
+    font-size: 24px;
+  }
+
+  .auth-brand-subtitle {
+    font-size: 6px;
   }
 
   .auth-shell {
@@ -346,10 +460,34 @@ a {
   }
 }
 
+@media (max-width: 480px) {
+  .auth-nav {
+    align-items: flex-start;
+  }
+
+  .auth-nav-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .auth-nav-link,
+  .auth-nav-back {
+    min-height: 36px;
+  }
+}
+
 @media (max-width: 420px) {
   .auth-panel,
   .auth-intro {
     padding-left: 20px;
     padding-right: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-nav-link,
+  .auth-nav-back,
+  .auth-submit {
+    transition: none;
   }
 }
