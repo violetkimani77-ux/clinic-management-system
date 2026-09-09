@@ -33,7 +33,7 @@ test.describe("protected clinical workspace", () => {
 
     await page.goto("/login");
     await page.getByLabel("Email address").fill(staffEmail!);
-    await page.getByLabel("Password").fill(staffPassword!);
+    await page.getByRole("textbox", { name: "Password" }).fill(staffPassword!);
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 
@@ -60,7 +60,7 @@ test.describe("protected clinical workspace", () => {
 
     await page.goto("/login");
     await page.getByLabel("Email address").fill(staffEmail!);
-    await page.getByLabel("Password").fill(staffPassword!);
+    await page.getByRole("textbox", { name: "Password" }).fill(staffPassword!);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(page).toHaveURL(/\/dashboard$/);
