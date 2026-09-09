@@ -143,3 +143,32 @@
 @media (max-width:1100px) { .previewBody { min-height: 440px; grid-template-columns: 150px minmax(0,1fr); } .previewMain { padding: 22px 21px 20px; } }
 @media (max-width:900px) { .previewBody { min-height: 470px; grid-template-columns: 160px minmax(0,1fr); } .previewMain { padding: 25px 24px 22px; } }
 @media (max-width:640px) { .previewBrowserBar { height: 36px; } .previewBody { grid-template-columns: 112px minmax(0,1fr); min-height: 400px; } .previewSidebar { padding: 15px 9px 10px; } .previewLogoName { font-size: 12px; } .previewLogoSubtitle { font-size: 5px; } .previewClinic { margin: 15px 4px 11px; font-size: 7px; } .previewNav span { padding: 7px 7px; font-size: 8px; } .previewSidebarFooter { padding: 7px; font-size: 7px; } .previewMain { padding: 17px 14px 15px; } .previewTopbar strong { font-size: 18px; } .previewIntro { margin-bottom: 13px; font-size: 8px; } .previewMetrics { grid-template-columns: repeat(2,1fr); gap: 7px; } .previewMetrics > div { padding: 9px; } .previewMetrics span { font-size: 7px; } .previewMetrics strong { font-size: 14px; } .previewContentGrid { grid-template-columns: 1fr; } .previewAlert { font-size: 7.5px; } .previewMiniGrid span { font-size: 7px; } .activityCard { min-width: 165px; padding: 9px 10px; } .activityCard strong { font-size: 9px; } .activityCard small { font-size: 6.5px; } .activityAppointment { left: -8px; } .activityPayment { right: -8px; } }
+
+/* Accessibility + interaction QA: make keyboard focus clear and respect reduced motion. */
+.page a:focus-visible {
+  outline: 3px solid #4ED94E;
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+.page .heroActions .primaryButton:focus-visible,
+.page .ctaActions .primaryButton:focus-visible {
+  outline-color: #07162B;
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .primaryButton:hover,
+  .secondaryButton:hover {
+    transform: none;
+  }
+}
