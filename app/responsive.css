@@ -1,328 +1,81 @@
-/* Landing-page responsive pass. Keep the existing desktop composition intact and adapt the public page at tablet/mobile widths. */
+/* Landing-page responsive QA pass. The page uses CSS Modules, so module class selectors are matched by stable class-name fragments. */
 
 @media (max-width: 1024px) {
-  nav[aria-label="Public navigation"] {
-    padding-inline: 22px;
-  }
-
-  nav[aria-label="Public navigation"] .navActions {
-    gap: 6px;
-  }
-
-  nav[aria-label="Public navigation"] .navLink {
-    padding-inline: 8px;
-    font-size: 13px;
-  }
-
-  section[aria-label="Heri CMS dashboard preview"] {
-    max-width: 900px;
-    margin-inline: auto;
-  }
-
-  #showcase > div {
-    padding-inline: 22px;
-  }
+  nav[aria-label="Public navigation"] { padding-inline: 22px; }
+  nav[aria-label="Public navigation"] [class*="navActions"] { gap: 6px; }
+  nav[aria-label="Public navigation"] [class*="navLink"] { padding-inline: 8px; font-size: 13px; }
+  [aria-label="Heri CMS dashboard preview"] { max-width: 900px; margin-inline: auto; }
+  #showcase > div { padding-inline: 22px; }
 }
 
 @media (max-width: 900px) {
-  nav[aria-label="Public navigation"] {
-    align-items: flex-start;
-    padding-block: 18px;
-  }
-
-  nav[aria-label="Public navigation"] .navActions .navLink {
-    display: none;
-  }
-
-  nav[aria-label="Public navigation"] .navActions .primaryButton {
-    padding: 10px 14px;
-    font-size: 12px;
-  }
-
-  /* Keep the hero dashboard prominent without letting it force horizontal scrolling. */
-  [aria-label="Heri CMS dashboard preview"] {
-    width: 100%;
-    max-width: 820px;
-    margin-inline: auto;
-    transform: none !important;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMetrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  #how-it-works > div,
-  #security > div,
-  #trial > div,
-  #showcase > div {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  #showcase > div > div {
-    min-width: 0;
-  }
-
-  #trial .ctaActions {
-    justify-content: flex-start;
-  }
-
-  footer .footerInner {
-    align-items: flex-start;
-  }
+  nav[aria-label="Public navigation"] { align-items: flex-start; padding-block: 18px; }
+  nav[aria-label="Public navigation"] [class*="navActions"] [class*="navLink"] { display: none; }
+  nav[aria-label="Public navigation"] [class*="navActions"] [class*="primaryButton"] { padding: 10px 14px; font-size: 12px; }
+  [aria-label="Heri CMS dashboard preview"] { width: 100%; max-width: 820px; margin-inline: auto; transform: none !important; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMetrics"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #how-it-works > div, #security > div, #trial > div, #showcase > div { width: 100%; box-sizing: border-box; }
+  #showcase > div > div { min-width: 0; }
+  #trial [class*="ctaActions"] { justify-content: flex-start; }
+  footer [class*="footerInner"] { align-items: flex-start; }
 }
 
 @media (max-width: 640px) {
-  nav[aria-label="Public navigation"] {
-    padding: 16px 18px;
-    gap: 12px;
-  }
+  nav[aria-label="Public navigation"] { padding: 16px 18px; gap: 12px; }
+  nav[aria-label="Public navigation"] [class*="brandName"] { font-size: 20px; }
+  nav[aria-label="Public navigation"] [class*="brandSubtitle"] { font-size: 8px; }
+  nav[aria-label="Public navigation"] [class*="navActions"] [class*="primaryButton"] { min-height: 40px; padding: 9px 12px; font-size: 11px; white-space: nowrap; }
+  [class*="heroTitle"] { max-width: none; font-size: clamp(36px, 11.5vw, 52px); }
+  [class*="heroText"] { font-size: 16px; line-height: 1.65; }
+  [class*="heroActions"], #trial [class*="ctaActions"] { width: 100%; }
+  [class*="heroActions"] [class*="primaryButton"], #trial [class*="ctaActions"] [class*="primaryButton"] { width: 100%; min-height: 50px; padding: 14px 20px; font-size: 14px; box-sizing: border-box; }
+  [class*="trustIndicators"] { gap: 8px 12px; line-height: 1.35; }
+  [class*="trustIndicators"] span { white-space: normal; }
 
-  nav[aria-label="Public navigation"] .brandName {
-    font-size: 20px;
-  }
+  [aria-label="Heri CMS dashboard preview"] { border-radius: 16px !important; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewBrowserBar"] { min-height: 34px; padding-inline: 10px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewSecure"] { display: none; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewBody"] { grid-template-columns: 96px minmax(0, 1fr); min-height: 360px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewSidebar"] { padding: 13px 7px 9px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewLogoName"] { font-size: 11px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewLogoSubtitle"] { font-size: 4px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewClinic"] { margin: 12px 3px 8px; font-size: 6px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewNav"] span { padding: 6px 5px; font-size: 7px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewSidebarFooter"] { padding: 6px 5px; font-size: 6px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMain"] { padding: 14px 11px 12px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewTopbar"] strong { font-size: 17px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewIntro"] { margin: 6px 0 11px; font-size: 7px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMetrics"] { gap: 6px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMetrics"] > div { padding: 8px; border-radius: 8px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMetrics"] span { font-size: 6px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMetrics"] strong { margin-top: 4px; font-size: 12px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewContentGrid"] { grid-template-columns: 1fr; gap: 6px; margin-top: 7px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewAttention"], [aria-label="Heri CMS dashboard preview"] [class*="previewGlance"] { padding: 9px; border-radius: 9px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewSectionTitle"] { font-size: 8px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewAlert"] { gap: 5px; margin-top: 7px; padding-top: 7px; font-size: 6.5px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMiniGrid"] { gap: 5px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMiniGrid"] span { padding: 7px; font-size: 5.5px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMiniGrid"] b { font-size: 12px; }
 
-  nav[aria-label="Public navigation"] .brandSubtitle {
-    font-size: 8px;
-  }
-
-  nav[aria-label="Public navigation"] .navActions .primaryButton {
-    min-height: 40px;
-    padding: 9px 12px;
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  /* Hero */
-  .heroTitle {
-    max-width: none;
-    font-size: clamp(36px, 11.5vw, 52px);
-  }
-
-  .heroText {
-    font-size: 16px;
-    line-height: 1.65;
-  }
-
-  .heroActions,
-  #trial .ctaActions {
-    width: 100%;
-  }
-
-  .heroActions .primaryButton,
-  #trial .ctaActions .primaryButton {
-    width: 100%;
-    min-height: 50px;
-    padding: 14px 20px;
-    font-size: 14px;
-  }
-
-  .trustIndicators {
-    gap: 8px 12px;
-    line-height: 1.35;
-  }
-
-  /* Dashboard preview */
-  [aria-label="Heri CMS dashboard preview"] {
-    border-radius: 16px !important;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewBrowserBar {
-    min-height: 34px;
-    padding-inline: 10px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewSecure {
-    display: none;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewBody {
-    grid-template-columns: 96px minmax(0, 1fr);
-    min-height: 360px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewSidebar {
-    padding: 13px 7px 9px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewLogoName {
-    font-size: 11px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewLogoSubtitle {
-    font-size: 4px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewClinic {
-    margin: 12px 3px 8px;
-    font-size: 6px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewNav span {
-    padding: 6px 5px;
-    font-size: 7px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewSidebarFooter {
-    padding: 6px 5px;
-    font-size: 6px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMain {
-    padding: 14px 11px 12px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewTopbar strong {
-    font-size: 17px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewIntro {
-    margin: 6px 0 11px;
-    font-size: 7px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMetrics {
-    gap: 6px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMetrics > div {
-    padding: 8px;
-    border-radius: 8px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMetrics span {
-    font-size: 6px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMetrics strong {
-    margin-top: 4px;
-    font-size: 12px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewContentGrid {
-    grid-template-columns: 1fr;
-    gap: 6px;
-    margin-top: 7px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewAttention,
-  [aria-label="Heri CMS dashboard preview"] .previewGlance {
-    padding: 9px;
-    border-radius: 9px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewSectionTitle {
-    font-size: 8px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewAlert {
-    gap: 5px;
-    margin-top: 7px;
-    padding-top: 7px;
-    font-size: 6.5px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMiniGrid {
-    gap: 5px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMiniGrid span {
-    padding: 7px;
-    font-size: 5.5px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMiniGrid b {
-    font-size: 12px;
-  }
-
-  /* Product showcase */
-  #showcase > div {
-    padding: 56px 18px 64px;
-  }
-
-  #showcase > div > div {
-    gap: 26px;
-  }
-
-  #showcase video {
-    aspect-ratio: 16 / 10;
-  }
-
-  /* Capabilities and how-it-works */
-  #capabilities > div,
-  #how-it-works > div,
-  #security > div,
-  #trial > div {
-    padding-inline: 18px;
-  }
-
-  #capabilities .cards {
-    grid-template-columns: 1fr;
-  }
-
-  /* Security */
-  #security .securityList {
-    padding: 17px !important;
-    border-radius: 18px !important;
-  }
-
-  #security .securityList > div:first-child {
-    align-items: flex-start !important;
-  }
-
-  #security .securityList > div:first-child > span {
-    font-size: 8px !important;
-  }
-
-  #security .securityList > div:not(:first-child) {
-    grid-template-columns: 30px minmax(0, 1fr) auto !important;
-  }
-
-  /* Demo CTA is the section immediately after the trial section. */
-  #trial + section > div {
-    padding: 52px 18px 58px;
-  }
-
-  #trial + section .actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  #trial + section a {
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 48px;
-  }
-
-  footer .footerInner {
-    padding: 20px 18px;
-    flex-direction: column;
-    gap: 10px;
-  }
+  #showcase > div { padding: 56px 18px 64px; }
+  #showcase > div > div { gap: 26px; }
+  #showcase video { aspect-ratio: 16 / 10; }
+  #capabilities > div, #how-it-works > div, #security > div, #trial > div { padding-inline: 18px; }
+  #capabilities [class*="cards"] { grid-template-columns: 1fr; }
+  #security [class*="securityList"] { padding: 17px !important; border-radius: 18px !important; }
+  #security [class*="securityList"] > div:first-child { align-items: flex-start !important; }
+  #security [class*="securityList"] > div:first-child > span { font-size: 8px !important; }
+  #security [class*="securityList"] > div:not(:first-child) { grid-template-columns: 30px minmax(0, 1fr) auto !important; }
+  #trial + section > div { padding: 52px 18px 58px; }
+  #trial + section [class*="actions"] { flex-direction: column; align-items: stretch; }
+  #trial + section a { width: 100%; box-sizing: border-box; min-height: 48px; }
+  footer [class*="footerInner"] { padding: 20px 18px; flex-direction: column; gap: 10px; }
 }
 
 @media (max-width: 420px) {
-  nav[aria-label="Public navigation"] .brandSubtitle {
-    display: none;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewBody {
-    grid-template-columns: 1fr;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewSidebar {
-    display: none;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMain {
-    padding: 14px;
-  }
-
-  [aria-label="Heri CMS dashboard preview"] .previewMetrics strong {
-    font-size: 13px;
-  }
-
-  .trustIndicators span {
-    white-space: normal;
-  }
+  nav[aria-label="Public navigation"] [class*="brandSubtitle"] { display: none; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewBody"] { grid-template-columns: 1fr; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewSidebar"] { display: none; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMain"] { padding: 14px; }
+  [aria-label="Heri CMS dashboard preview"] [class*="previewMetrics"] strong { font-size: 13px; }
 }
