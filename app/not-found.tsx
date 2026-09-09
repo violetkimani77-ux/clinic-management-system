@@ -101,8 +101,6 @@ export default function NotFound() {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: 12,
-            flexWrap: "wrap",
             marginTop: 30,
           }}
         >
@@ -124,25 +122,6 @@ export default function NotFound() {
             }}
           >
             Return to Heri CMS
-          </Link>
-          <Link
-            href="/trial"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 48,
-              padding: "0 22px",
-              borderRadius: 12,
-              border: "1px solid rgba(11,38,51,.14)",
-              background: "#fff",
-              color: "#173445",
-              fontSize: 13,
-              fontWeight: 800,
-              textDecoration: "none",
-            }}
-          >
-            Start a Free Trial
           </Link>
         </div>
       </section>
