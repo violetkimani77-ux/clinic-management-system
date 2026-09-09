@@ -19,7 +19,6 @@ export default function TrialPage() {
           <button type="submit">Create Trial Workspace</button>
         </form>
         <p className={styles.note}>Your password is securely hashed and is never displayed after signup.</p>
-        <Link href="/login" className={styles.login}>Already have access? Sign in</Link>
       </section>
     </main>
   );
