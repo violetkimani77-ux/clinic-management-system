@@ -115,6 +115,20 @@ test.describe("protected clinical workspace", () => {
           select: { id: true },
         });
 
+    const batch = await prisma.stockBatch.create({
+      data: {
+        clinicId: clinic!.id,
+        medicineId: medicine.id,
+        batchNumber: `E2E-${uniqueId}`,
+        expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        quantity: 10,
+        unitCost: 2,
+        sellingPrice: 5,
+        supplierName: "E2E Test Supplier",
+      },
+      select: { id: true, quantity: true },
+    });
+
     await signIn(page);
 
     await page.goto("/patients");
@@ -152,7 +166,7 @@ test.describe("protected clinical workspace", () => {
     });
     expect(prescription?.status).toBe("SENT_TO_PHARMACY");
 
-    const auditEvent = await prisma.auditLog.findFirst({
+    const sendAuditEvent = await prisma.auditLog.findFirst({
       where: {
         clinicId: clinic!.id,
         action: "PRESCRIPTION_SENT_TO_PHARMACY",
@@ -162,9 +176,65 @@ test.describe("protected clinical workspace", () => {
       orderBy: { sequence: "desc" },
       select: { id: true, userId: true, metadata: true },
     });
-    expect(auditEvent?.id).toBeTruthy();
-    expect(auditEvent?.userId).toBeTruthy();
-    expect(auditEvent?.metadata).toEqual({ patientId: expect.any(String), visitId });
+    expect(sendAuditEvent?.id).toBeTruthy();
+    expect(sendAuditEvent?.userId).toBeTruthy();
+    expect(sendAuditEvent?.metadata).toEqual({ patientId: expect.any(String), visitId });
+
+    await page.goto("/pharmacy");
+    const prescriptionRow = page.locator("tbody tr").filter({ hasText: `${firstName} Prescription` });
+    await expect(prescriptionRow).toContainText("SENT TO PHARMACY");
+    await prescriptionRow.getByRole("button", { name: "Dispense" }).click();
+    await expect(page).toHaveURL(/\/pharmacy$/);
+
+    const dispensedPrescription = await prisma.prescription.findUnique({
+      where: { id: createdPrescription!.id },
+      select: { status: true },
+    });
+    expect(dispensedPrescription?.status).toBe("DISPENSED");
+
+    const updatedBatch = await prisma.stockBatch.findUnique({ where: { id: batch.id }, select: { quantity: true } });
+    expect(updatedBatch?.quantity).toBe(0);
+
+    const dispensing = await prisma.dispensing.findFirst({
+      where: { clinicId: clinic!.id, prescriptionId: createdPrescription!.id },
+      select: { id: true, dispensedById: true, items: { select: { batchId: true, quantity: true } } },
+    });
+    expect(dispensing?.id).toBeTruthy();
+    expect(dispensing?.dispensedById).toBeTruthy();
+    expect(dispensing?.items).toEqual([{ batchId: batch.id, quantity: 10 }]);
+
+    const invoiceItem = await prisma.invoiceItem.findFirst({
+      where: { dispensingId: dispensing!.id },
+      select: { quantity: true, unitPrice: true, total: true, invoiceId: true },
+    });
+    expect(invoiceItem?.invoiceId).toBeTruthy();
+    expect(invoiceItem?.quantity).toBe(1);
+    expect(Number(invoiceItem?.unitPrice)).toBe(50);
+    expect(Number(invoiceItem?.total)).toBe(50);
+
+    const dispenseMovement = await prisma.stockMovement.findFirst({
+      where: { clinicId: clinic!.id, batchId: batch.id, referenceId: dispensing!.id, type: "DISPENSE" },
+      select: { quantity: true },
+    });
+    expect(dispenseMovement?.quantity).toBe(10);
+
+    const dispenseAuditEvent = await prisma.auditLog.findFirst({
+      where: {
+        clinicId: clinic!.id,
+        action: "PRESCRIPTION_DISPENSED",
+        entityType: "Prescription",
+        entityId: createdPrescription!.id,
+      },
+      orderBy: { sequence: "desc" },
+      select: { id: true, userId: true, metadata: true },
+    });
+    expect(dispenseAuditEvent?.id).toBeTruthy();
+    expect(dispenseAuditEvent?.userId).toBeTruthy();
+    expect(dispenseAuditEvent?.metadata).toEqual({
+      dispensingId: dispensing!.id,
+      invoiceId: invoiceItem!.invoiceId,
+      totalCharge: 50,
+    });
   });
 
   test("rejects an expired session", async ({ page }) => {
