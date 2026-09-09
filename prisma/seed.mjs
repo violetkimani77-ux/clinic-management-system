@@ -60,7 +60,11 @@ const PERMISSION_DESCRIPTIONS = {
 };
 
 const DEFAULT_CLINIC = { code: "DEMO-CLINIC", name: "Demo Clinic" };
-const DEFAULT_ADMIN = { email: "admin@demo-clinic.local", name: "Clinic Administrator", password: "ChangeMe123!" };
+const DEFAULT_ADMIN = {
+  email: "admin@demo-clinic.local",
+  name: "Clinic Administrator",
+  password: process.env.E2E_STAFF_PASSWORD ?? "ChangeMe123!",
+};
 
 async function hashPassword(password) {
   const salt = randomBytes(16);
@@ -127,8 +131,7 @@ async function main() {
   });
   console.log(`Seeded clinic: ${clinic.code}`);
   console.log(`Seeded admin: ${DEFAULT_ADMIN.email}`);
-  console.log("Initial admin password: ChangeMe123!");
-  console.log("Change the initial password before using this account in a real clinic.");
+  console.log("Admin password configured from E2E_STAFF_PASSWORD when provided.");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; }).finally(async () => { await prisma.$disconnect(); });
