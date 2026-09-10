@@ -53,9 +53,9 @@ A workflow is considered verified only when the test passes against a production
 - [ ] A valid Visit mutation is applied once.
 - [ ] Replaying the same operation is idempotent.
 - [ ] A stale expected version produces a conflict without corrupting data.
-- [ ] Invalid client timestamps are rejected before persistence.
+- [x] Invalid client timestamps are rejected before persistence.
 - [x] Cross-tenant/device/user sync operations are rejected.
-- [ ] A transient failure can be retried without duplicate domain mutations.
+- [x] A transient failure can be retried without duplicate domain mutations.
 
 ## Evidence required before checklist completion
 
