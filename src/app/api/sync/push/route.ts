@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma, VisitStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/session";
 import { requireTenantDataStore } from "@/lib/tenant/datastore";
@@ -8,11 +8,170 @@ import { replaySyncOperation } from "@/lib/sync/idempotency";
 import { validateSyncPushRequest } from "@/lib/sync/validation";
 import type { SyncOperation, SyncPushRequest, SyncPushResponse } from "@/lib/sync/protocol";
 import { SYNC_PROTOCOL_VERSION } from "@/lib/sync/protocol";
+import type { AuthContext } from "@/lib/auth/authorization";
+import { recordAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
 function errorResponse(code: string, status: number) {
   return NextResponse.json({ error: code }, { status });
+}
+
+function stringValue(payload: Record<string, unknown>, key: string, required = false) {
+  const value = payload[key];
+  if (typeof value !== "string") {
+    if (required) throw new Error("SYNC_INVALID_PAYLOAD");
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (required && !trimmed) throw new Error("SYNC_INVALID_PAYLOAD");
+  return trimmed || null;
+}
+
+function dateValue(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) {
+    throw new Error("SYNC_INVALID_PAYLOAD");
+  }
+  return new Date(value);
+}
+
+function applyPatientMutation(
+  tx: Prisma.TransactionClient,
+  context: AuthContext,
+  operation: SyncOperation,
+) {
+  const patientNo = stringValue(operation.payload, "patientNo", true);
+  const firstName = stringValue(operation.payload, "firstName", true);
+  const lastName = stringValue(operation.payload, "lastName", true);
+  const dateOfBirth = dateValue(operation.payload, "dateOfBirth");
+  const phone = stringValue(operation.payload, "phone");
+  const email = stringValue(operation.payload, "email");
+  const address = stringValue(operation.payload, "address");
+  const notes = stringValue(operation.payload, "notes");
+
+  if (operation.operationType === "CREATE") {
+    return tx.patient.create({
+      data: {
+        id: operation.entityId,
+        clinicId: context.clinicId,
+        patientNo: patientNo!,
+        firstName: firstName!,
+        lastName: lastName!,
+        dateOfBirth: dateOfBirth ?? null,
+        phone: phone ?? null,
+        email: email ? email.toLowerCase() : null,
+        address: address ?? null,
+        notes: notes ?? null,
+      },
+      select: { id: true },
+    });
+  }
+
+  if (operation.operationType === "UPDATE") {
+    const existing = tx.patient.findFirst({
+      where: { id: operation.entityId, clinicId: context.clinicId, archivedAt: null },
+      select: { id: true },
+    });
+
+    return existing.then((patient) => {
+      if (!patient) throw new Error("PATIENT_NOT_FOUND");
+      return tx.patient.update({
+        where: { id: patient.id },
+        data: {
+          patientNo: patientNo!,
+          firstName: firstName!,
+          lastName: lastName!,
+          dateOfBirth: dateOfBirth ?? null,
+          phone: phone ?? null,
+          email: email ? email.toLowerCase() : null,
+          address: address ?? null,
+          notes: notes ?? null,
+        },
+        select: { id: true },
+      });
+    });
+  }
+
+  throw new Error("SYNC_UNSUPPORTED_ENTITY_OPERATION");
+}
+
+async function applyVisitMutation(
+  tx: Prisma.TransactionClient,
+  context: AuthContext,
+  operation: SyncOperation,
+) {
+  const patientId = stringValue(operation.payload, "patientId", true);
+  const notes = stringValue(operation.payload, "notes");
+  const openedAt = dateValue(operation.payload, "openedAt");
+  const statusValue = stringValue(operation.payload, "status");
+  const status = statusValue ? (statusValue as VisitStatus) : undefined;
+
+  if (status && !Object.values(VisitStatus).includes(status)) {
+    throw new Error("SYNC_INVALID_PAYLOAD");
+  }
+
+  const patient = await tx.patient.findFirst({
+    where: { id: patientId!, clinicId: context.clinicId, archivedAt: null },
+    select: { id: true },
+  });
+  if (!patient) throw new Error("PATIENT_NOT_FOUND");
+
+  if (operation.operationType === "CREATE") {
+    return tx.visit.create({
+      data: {
+        id: operation.entityId,
+        clinicId: context.clinicId,
+        patientId: patient.id,
+        status: status ?? VisitStatus.OPEN,
+        openedAt: openedAt ?? new Date(),
+        notes: notes ?? null,
+      },
+      select: { id: true },
+    });
+  }
+
+  if (operation.operationType === "UPDATE") {
+    const current = await tx.visit.findFirst({
+      where: { id: operation.entityId, clinicId: context.clinicId },
+      select: { id: true, status: true },
+    });
+    if (!current) throw new Error("VISIT_NOT_FOUND");
+
+    return tx.visit.update({
+      where: { id: current.id },
+      data: {
+        patientId: patient.id,
+        ...(status ? { status } : {}),
+        ...(openedAt ? { openedAt } : {}),
+        ...(operation.payload.notes !== undefined ? { notes: notes ?? null } : {}),
+        closedAt:
+          status === VisitStatus.COMPLETED || status === VisitStatus.CANCELLED
+            ? new Date()
+            : status
+              ? null
+              : undefined,
+      },
+      select: { id: true },
+    });
+  }
+
+  throw new Error("SYNC_UNSUPPORTED_ENTITY_OPERATION");
+}
+
+async function applyBusinessMutation(
+  tx: Prisma.TransactionClient,
+  context: AuthContext,
+  operation: SyncOperation,
+) {
+  if (operation.entityType === "Patient") {
+    return applyPatientMutation(tx, context, operation);
+  }
+  if (operation.entityType === "Visit") {
+    return applyVisitMutation(tx, context, operation);
+  }
+  throw new Error("SYNC_UNSUPPORTED_ENTITY");
 }
 
 export async function POST(request: Request) {
@@ -47,6 +206,8 @@ export async function POST(request: Request) {
   const results = [] as SyncPushResponse["results"];
 
   for (const operation of body.operations as SyncOperation[]) {
+    if (operation.userId !== context.userId) return errorResponse("SYNC_USER_MISMATCH", 403);
+
     const existing = await db.syncOperation.findUnique({ where: { operationId: operation.operationId } });
     if (existing) {
       if (existing.clinicId !== context.clinicId || existing.deviceId !== body.deviceId || existing.userId !== context.userId) {
@@ -109,6 +270,8 @@ export async function POST(request: Request) {
         });
       }
 
+      await applyBusinessMutation(tx, context, operation);
+
       const nextVersion = actualVersion + 1;
       await tx.syncChange.create({
         data: {
@@ -121,6 +284,13 @@ export async function POST(request: Request) {
           entityVersion: nextVersion,
         },
       });
+
+      await recordAuditEvent(context, {
+        action: "SYNC_MUTATION_APPLIED",
+        entityType: operation.entityType,
+        entityId: operation.entityId,
+        metadata: { operationId: operation.operationId, operationType: operation.operationType },
+      }, tx);
 
       return tx.syncOperation.update({
         where: { id: operationRecord.id },
