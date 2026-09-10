@@ -101,4 +101,6 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright E2E
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tests/e2e/mock-server-only.cjs
         run: npm run test:e2e
