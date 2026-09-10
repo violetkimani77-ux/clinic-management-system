@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
+import { pushSyncWithRetry } from "@/lib/sync/retry";
 
 const staffEmail = process.env.E2E_STAFF_EMAIL;
 const staffPassword = process.env.E2E_STAFF_PASSWORD;
@@ -108,6 +109,35 @@ test.describe("offline sync business mutations", () => {
     expect(userResponse.status()).toBe(403); expect(await userResponse.json()).toEqual({ error: "SYNC_USER_MISMATCH" });
 
     expect(await prisma.patient.findUnique({ where: { id: patientId } })).toBeNull();
+  });
+
+  test("retries a transient transport failure without duplicating the domain mutation", async ({ page }) => {
+    requireStaffCredentials(); await signIn(page); const context = await getSyncContext();
+    const patientId = randomUUID(); const operationId = randomUUID();
+    const payload = { patientNo: `E2E-SYNC-RETRY-${Date.now()}`, firstName: "Retry", lastName: "Patient", notes: "Committed before simulated response loss" };
+    const requestBody = { protocolVersion: 1, clinicId: context.clinicId, deviceId: context.deviceId, operations: [operation({ operationId, clinicId: context.clinicId, deviceId: context.deviceId, userId: context.userId, entityType: "Patient", entityId: patientId, payload })] };
+    let attempts = 0;
+
+    const response = await pushSyncWithRetry(async () => {
+      attempts += 1;
+      const serverResponse = await page.request.post("/api/sync/push", { data: requestBody });
+      if (attempts === 1) throw new Error("SIMULATED_RESPONSE_LOSS_AFTER_COMMIT");
+      return serverResponse;
+    }, { maxAttempts: 3, baseDelayMs: 0 });
+
+    expect(attempts).toBe(2);
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    expect(body.results[0]).toMatchObject({ operationId, status: "PROCESSED", entityVersion: 1 });
+
+    const [patientCount, changeCount, operationRecord] = await Promise.all([
+      prisma.patient.count({ where: { id: patientId } }),
+      prisma.syncChange.count({ where: { operationId } }),
+      prisma.syncOperation.findUnique({ where: { operationId }, select: { status: true, entityVersion: true } }),
+    ]);
+    expect(patientCount).toBe(1);
+    expect(changeCount).toBe(1);
+    expect(operationRecord).toEqual({ status: "PROCESSED", entityVersion: 1 });
   });
 
   test("applies a valid Visit mutation to an existing clinic patient", async ({ page }) => {
