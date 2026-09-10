@@ -138,6 +138,74 @@ test.describe("offline sync business mutations", () => {
     expect(operationRecord).toEqual({ status: "PROCESSED", entityVersion: 1 });
   });
 
+  test("rejects a stale expected version without applying the mutation", async ({ page }) => {
+    requireStaffCredentials();
+    await signIn(page);
+    const context = await getSyncContext();
+    const uniqueId = Date.now().toString();
+    const patientId = randomUUID();
+    const initialOperationId = randomUUID();
+    const initialPayload = {
+      patientNo: `E2E-SYNC-CONFLICT-${uniqueId}`,
+      firstName: "Conflict",
+      lastName: "Patient",
+      notes: "Initial synced state",
+    };
+
+    const initialResponse = await page.request.post("/api/sync/push", {
+      data: {
+        protocolVersion: 1,
+        clinicId: context.clinicId,
+        deviceId: context.deviceId,
+        operations: [operation({ operationId: initialOperationId, clinicId: context.clinicId, deviceId: context.deviceId, userId: context.userId, entityType: "Patient", entityId: patientId, payload: initialPayload })],
+      },
+    });
+    expect(initialResponse.status()).toBe(200);
+    expect((await initialResponse.json()).results[0]).toMatchObject({ status: "PROCESSED", entityVersion: 1 });
+
+    const staleOperationId = randomUUID();
+    const stalePayload = {
+      patientNo: initialPayload.patientNo,
+      firstName: "Should",
+      lastName: "Not Apply",
+      notes: "Stale client mutation",
+    };
+    const staleResponse = await page.request.post("/api/sync/push", {
+      data: {
+        protocolVersion: 1,
+        clinicId: context.clinicId,
+        deviceId: context.deviceId,
+        operations: [operation({ operationId: staleOperationId, clinicId: context.clinicId, deviceId: context.deviceId, userId: context.userId, entityType: "Patient", entityId: patientId, payload: stalePayload, expectedVersion: 0 })],
+      },
+    });
+
+    expect(staleResponse.status()).toBe(200);
+    const staleBody = await staleResponse.json();
+    expect(staleBody.results[0]).toMatchObject({
+      operationId: staleOperationId,
+      status: "CONFLICT",
+      entityVersion: 1,
+      errorCode: "SYNC_VERSION_CONFLICT",
+    });
+
+    const [patient, changeCount, operationRecord, conflict] = await Promise.all([
+      prisma.patient.findUnique({ where: { id: patientId }, select: { firstName: true, lastName: true, notes: true } }),
+      prisma.syncChange.count({ where: { entityId: patientId } }),
+      prisma.syncOperation.findUnique({ where: { operationId: staleOperationId }, select: { status: true, entityVersion: true, errorCode: true } }),
+      prisma.syncConflict.findUnique({ where: { operationId: staleOperationId }, select: { expectedVersion: true, actualVersion: true, clientPayload: true, serverPayload: true } }),
+    ]);
+
+    expect(patient).toEqual({ firstName: "Conflict", lastName: "Patient", notes: "Initial synced state" });
+    expect(changeCount).toBe(1);
+    expect(operationRecord).toEqual({ status: "CONFLICT", entityVersion: 1, errorCode: "SYNC_VERSION_CONFLICT" });
+    expect(conflict).toMatchObject({
+      expectedVersion: 0,
+      actualVersion: 1,
+      clientPayload: stalePayload,
+      serverPayload: initialPayload,
+    });
+  });
+
   test("applies a valid Visit mutation to an existing clinic patient", async ({ page }) => {
     requireStaffCredentials();
     await signIn(page);
