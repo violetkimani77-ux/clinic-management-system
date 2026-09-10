@@ -54,7 +54,7 @@ A workflow is considered verified only when the test passes against a production
 - [ ] Replaying the same operation is idempotent.
 - [ ] A stale expected version produces a conflict without corrupting data.
 - [ ] Invalid client timestamps are rejected before persistence.
-- [ ] Cross-tenant/device/user sync operations are rejected.
+- [x] Cross-tenant/device/user sync operations are rejected.
 - [ ] A transient failure can be retried without duplicate domain mutations.
 
 ## Evidence required before checklist completion
