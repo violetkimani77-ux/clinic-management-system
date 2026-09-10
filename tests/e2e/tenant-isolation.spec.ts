@@ -2,8 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { updatePatient } from "@/lib/patients/registry";
-import { getVisit } from "@/lib/visits/registry";
-import { listPharmacyPrescriptions } from "@/lib/pharmacy/registry";
+import { getVisit, updateVisit } from "@/lib/visits/registry";
+import { dispensePrescription, listPharmacyPrescriptions } from "@/lib/pharmacy/registry";
 import type { AuthContext } from "@/lib/auth/authorization";
 
 const staffEmail = process.env.E2E_STAFF_EMAIL;
@@ -93,7 +93,7 @@ test.describe("tenant isolation", () => {
     await expect(page.getByText("0700111000")).toBeVisible();
   });
 
-  test("denies cross-tenant patient, visit, and pharmacy reads", async ({ page }) => {
+  test("denies cross-tenant patient, visit, and pharmacy reads and mutations", async ({ page }) => {
     requireStaffCredentials();
 
     const primaryClinic = await prisma.clinic.findUniqueOrThrow({
@@ -174,7 +174,7 @@ test.describe("tenant isolation", () => {
       },
       select: { id: true },
     });
-    await prisma.prescription.create({
+    const otherTenantPrescription = await prisma.prescription.create({
       data: {
         clinicId: secondaryClinic.id,
         patientId: otherTenantPatient.id,
@@ -182,6 +182,7 @@ test.describe("tenant isolation", () => {
         status: "SENT_TO_PHARMACY",
         items: { create: { medicineId: otherTenantMedicine.id, quantity: 1 } },
       },
+      select: { id: true },
     });
 
     const primaryContext = await getPrimaryContext();
@@ -211,6 +212,18 @@ test.describe("tenant isolation", () => {
       }),
     ).rejects.toThrow("PATIENT_NOT_FOUND");
 
+    await expect(
+      updateVisit(primaryContext, {
+        visitId: otherTenantVisit.id,
+        status: "IN_PROGRESS",
+        notes: "Tampered visit",
+      }),
+    ).rejects.toThrow("VISIT_NOT_FOUND");
+
+    await expect(dispensePrescription(primaryContext, otherTenantPrescription.id)).rejects.toThrow(
+      "PRESCRIPTION_NOT_FOUND",
+    );
+
     const unchanged = await prisma.patient.findUnique({
       where: { id: otherTenantPatient.id },
       select: { clinicId: true, firstName: true, lastName: true, phone: true },
@@ -220,6 +233,25 @@ test.describe("tenant isolation", () => {
       firstName: "Other",
       lastName: "Tenant",
       phone: "0711000001",
+    });
+
+    const unchangedVisit = await prisma.visit.findUnique({
+      where: { id: otherTenantVisit.id },
+      select: { clinicId: true, status: true, notes: true },
+    });
+    expect(unchangedVisit).toEqual({
+      clinicId: secondaryClinic.id,
+      status: "OPEN",
+      notes: "E2E cross-tenant visit",
+    });
+
+    const unchangedPrescription = await prisma.prescription.findUnique({
+      where: { id: otherTenantPrescription.id },
+      select: { clinicId: true, status: true },
+    });
+    expect(unchangedPrescription).toEqual({
+      clinicId: secondaryClinic.id,
+      status: "SENT_TO_PHARMACY",
     });
 
     expect(primaryClinic.id).not.toBe(secondaryClinic.id);
