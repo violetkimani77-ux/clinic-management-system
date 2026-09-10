@@ -39,7 +39,17 @@ test.describe("tenant isolation", () => {
 
     const primaryUser = await prisma.user.findUniqueOrThrow({
       where: { email: staffEmail! },
-      select: { id: true, name: true, roleCode: true },
+      select: { id: true, name: true },
+    });
+
+    const primaryMembership = await prisma.membership.findUniqueOrThrow({
+      where: {
+        clinicId_userId: {
+          clinicId: primaryClinic.id,
+          userId: primaryUser.id,
+        },
+      },
+      select: { role: { select: { code: true } } },
     });
 
     const secondaryClinic = await prisma.clinic.upsert({
@@ -111,7 +121,7 @@ test.describe("tenant isolation", () => {
       userId: primaryUser.id,
       userName: primaryUser.name,
       clinicId: primaryClinic.id,
-      roleCode: primaryUser.roleCode,
+      roleCode: primaryMembership.role.code,
       permissions: new Set([PERMISSIONS.PATIENTS_UPDATE]),
     };
 
