@@ -20,7 +20,6 @@ export default function LoginPage() {
           <span className="auth-brand-subtitle">CLINIC MANAGEMENT SYSTEM</span>
         </Link>
         <div className="auth-nav-actions">
-          <Link href="/trial" className="auth-nav-link">Free trial</Link>
           <Link href="/" className="auth-nav-back">Back to Heri CMS</Link>
         </div>
       </nav>
