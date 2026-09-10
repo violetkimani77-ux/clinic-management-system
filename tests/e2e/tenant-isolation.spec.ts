@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
+import { PERMISSIONS } from "@/lib/auth/permissions";
+import { updatePatient } from "@/lib/patients/registry";
+import type { AuthContext } from "@/lib/auth/authorization";
 
 const staffEmail = process.env.E2E_STAFF_EMAIL;
 const staffPassword = process.env.E2E_STAFF_PASSWORD;
@@ -28,6 +31,16 @@ test.describe("tenant isolation", () => {
 
   test("denies cross-tenant patient reads and mutation surfaces", async ({ page }) => {
     requireStaffCredentials();
+
+    const primaryClinic = await prisma.clinic.findUniqueOrThrow({
+      where: { code: "DEMO-CLINIC" },
+      select: { id: true },
+    });
+
+    const primaryUser = await prisma.user.findUniqueOrThrow({
+      where: { email: staffEmail! },
+      select: { id: true, name: true, roleCode: true },
+    });
 
     const secondaryClinic = await prisma.clinic.upsert({
       where: { code: "E2E-ISOLATION-CLINIC" },
@@ -93,6 +106,26 @@ test.describe("tenant isolation", () => {
     expect(editResponse?.status()).toBe(404);
     await expect(page).toHaveURL(`/patients/${otherTenantPatient.id}/edit`);
     await expect(page.getByRole("heading", { name: "Edit patient" })).not.toBeVisible();
+
+    const primaryContext: AuthContext = {
+      userId: primaryUser.id,
+      userName: primaryUser.name,
+      clinicId: primaryClinic.id,
+      roleCode: primaryUser.roleCode,
+      permissions: new Set([PERMISSIONS.PATIENTS_UPDATE]),
+    };
+
+    // Exercise the server-side mutation boundary directly. The authenticated
+    // clinic comes from the primary session context, while the target ID is a
+    // patient owned by the secondary clinic. A foreign ID must be rejected
+    // before any update occurs; a UI-only 404 is not sufficient evidence.
+    await expect(
+      updatePatient(primaryContext, otherTenantPatient.id, {
+        firstName: "Tampered",
+        lastName: "Tenant",
+        phone: "0799999999",
+      }),
+    ).rejects.toThrow("PATIENT_NOT_FOUND");
 
     const unchanged = await prisma.patient.findUnique({
       where: { id: otherTenantPatient.id },
