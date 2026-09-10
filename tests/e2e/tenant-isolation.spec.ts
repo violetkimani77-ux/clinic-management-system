@@ -29,6 +29,46 @@ test.describe("tenant isolation", () => {
     await prisma.$disconnect();
   });
 
+  test("allows access to records belonging to the authenticated clinic", async ({ page }) => {
+    requireStaffCredentials();
+
+    const primaryClinic = await prisma.clinic.findUniqueOrThrow({
+      where: { code: "DEMO-CLINIC" },
+      select: { id: true },
+    });
+
+    const ownTenantPatient = await prisma.patient.upsert({
+      where: {
+        clinicId_patientNo: {
+          clinicId: primaryClinic.id,
+          patientNo: "E2E-OWN-TENANT-001",
+        },
+      },
+      update: {
+        firstName: "Own",
+        lastName: "Tenant",
+        phone: "0700111000",
+        archivedAt: null,
+      },
+      create: {
+        clinicId: primaryClinic.id,
+        patientNo: "E2E-OWN-TENANT-001",
+        firstName: "Own",
+        lastName: "Tenant",
+        phone: "0700111000",
+      },
+      select: { id: true },
+    });
+
+    await signIn(page);
+
+    const profileResponse = await page.goto(`/patients/${ownTenantPatient.id}`);
+    expect(profileResponse?.status()).toBe(200);
+    await expect(page).toHaveURL(`/patients/${ownTenantPatient.id}`);
+    await expect(page.getByRole("heading", { name: "Own Tenant" })).toBeVisible();
+    await expect(page.getByText("0700111000")).toBeVisible();
+  });
+
   test("denies cross-tenant patient reads and mutation surfaces", async ({ page }) => {
     requireStaffCredentials();
 
@@ -125,10 +165,6 @@ test.describe("tenant isolation", () => {
       permissions: new Set([PERMISSIONS.PATIENTS_UPDATE]),
     };
 
-    // Exercise the server-side mutation boundary directly. The authenticated
-    // clinic comes from the primary session context, while the target ID is a
-    // patient owned by the secondary clinic. A foreign ID must be rejected
-    // before any update occurs; a UI-only 404 is not sufficient evidence.
     await expect(
       updatePatient(primaryContext, otherTenantPatient.id, {
         firstName: "Tampered",
