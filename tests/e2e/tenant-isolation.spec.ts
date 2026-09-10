@@ -2,6 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { updatePatient } from "@/lib/patients/registry";
+import { getVisit } from "@/lib/visits/registry";
+import { listPharmacyPrescriptions } from "@/lib/pharmacy/registry";
 import type { AuthContext } from "@/lib/auth/authorization";
 
 const staffEmail = process.env.E2E_STAFF_EMAIL;
@@ -22,6 +24,28 @@ async function signIn(page: Page) {
   await page.getByRole("textbox", { name: "Password" }).fill(staffPassword!);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
+}
+
+async function getPrimaryContext(): Promise<AuthContext> {
+  const clinic = await prisma.clinic.findUniqueOrThrow({
+    where: { code: "DEMO-CLINIC" },
+    select: { id: true },
+  });
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { email: staffEmail! },
+    select: { id: true, name: true },
+  });
+  const membership = await prisma.membership.findUniqueOrThrow({
+    where: { clinicId_userId: { clinicId: clinic.id, userId: user.id } },
+    select: { role: { select: { code: true } } },
+  });
+  return {
+    userId: user.id,
+    userName: user.name,
+    clinicId: clinic.id,
+    roleCode: membership.role.code,
+    permissions: new Set([PERMISSIONS.PATIENTS_UPDATE, PERMISSIONS.PHARMACY_DISPENSE]),
+  };
 }
 
 test.describe("tenant isolation", () => {
@@ -69,29 +93,13 @@ test.describe("tenant isolation", () => {
     await expect(page.getByText("0700111000")).toBeVisible();
   });
 
-  test("denies cross-tenant patient reads and mutation surfaces", async ({ page }) => {
+  test("denies cross-tenant patient, visit, and pharmacy reads", async ({ page }) => {
     requireStaffCredentials();
 
     const primaryClinic = await prisma.clinic.findUniqueOrThrow({
       where: { code: "DEMO-CLINIC" },
       select: { id: true },
     });
-
-    const primaryUser = await prisma.user.findUniqueOrThrow({
-      where: { email: staffEmail! },
-      select: { id: true, name: true },
-    });
-
-    const primaryMembership = await prisma.membership.findUniqueOrThrow({
-      where: {
-        clinicId_userId: {
-          clinicId: primaryClinic.id,
-          userId: primaryUser.id,
-        },
-      },
-      select: { role: { select: { code: true } } },
-    });
-
     const secondaryClinic = await prisma.clinic.upsert({
       where: { code: "E2E-ISOLATION-CLINIC" },
       update: { name: "E2E Isolation Clinic" },
@@ -143,7 +151,40 @@ test.describe("tenant isolation", () => {
         lastName: "Tenant",
         phone: "0711000001",
       },
+      select: { id: true },
     });
+
+    const otherTenantVisit = await prisma.visit.create({
+      data: {
+        clinicId: secondaryClinic.id,
+        patientId: otherTenantPatient.id,
+        status: "OPEN",
+        notes: "E2E cross-tenant visit",
+      },
+      select: { id: true },
+    });
+
+    const otherTenantMedicine = await prisma.medicine.create({
+      data: {
+        clinicId: secondaryClinic.id,
+        name: `E2E Isolation Medicine ${Date.now()}`,
+        strength: "500mg",
+        form: "Tablet",
+        active: true,
+      },
+      select: { id: true },
+    });
+    await prisma.prescription.create({
+      data: {
+        clinicId: secondaryClinic.id,
+        patientId: otherTenantPatient.id,
+        visitId: otherTenantVisit.id,
+        status: "SENT_TO_PHARMACY",
+        items: { create: { medicineId: otherTenantMedicine.id, quantity: 1 } },
+      },
+    });
+
+    const primaryContext = await getPrimaryContext();
 
     await signIn(page);
 
@@ -157,13 +198,10 @@ test.describe("tenant isolation", () => {
     await expect(page).toHaveURL(`/patients/${otherTenantPatient.id}/edit`);
     await expect(page.getByRole("heading", { name: "Edit patient" })).not.toBeVisible();
 
-    const primaryContext: AuthContext = {
-      userId: primaryUser.id,
-      userName: primaryUser.name,
-      clinicId: primaryClinic.id,
-      roleCode: primaryMembership.role.code,
-      permissions: new Set([PERMISSIONS.PATIENTS_UPDATE]),
-    };
+    expect(await getVisit(primaryContext, otherTenantVisit.id)).toBeNull();
+    expect(await listPharmacyPrescriptions(primaryContext)).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ patientId: otherTenantPatient.id })]),
+    );
 
     await expect(
       updatePatient(primaryContext, otherTenantPatient.id, {
@@ -183,5 +221,7 @@ test.describe("tenant isolation", () => {
       lastName: "Tenant",
       phone: "0711000001",
     });
+
+    expect(primaryClinic.id).not.toBe(secondaryClinic.id);
   });
 });
