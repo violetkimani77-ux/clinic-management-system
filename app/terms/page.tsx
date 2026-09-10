@@ -1,141 +1,60 @@
-export const metadata = {
-  title: "Terms & Conditions | Hali CMS",
-  description: "Terms and Conditions for Hali CMS, a clinic management system for clinic teams.",
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import Link from "next/link";
+import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "Heri CMS Terms of Service for clinic management software, trials, accounts and authorised clinic use.",
+  robots: { index: true, follow: true },
 };
 
 export default function TermsPage() {
   return (
-    <main>
-      <article>
-        <header>
-          <p>Hali CMS</p>
-          <h1>Terms &amp; Conditions</h1>
-          <p>Last updated: September 9, 2026</p>
-        </header>
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <Link href="/" className={styles.brand} aria-label="Heri CMS home">
+          <span className={styles.heri}>Heri</span><span className={styles.cms}> CMS</span>
+          <small>CLINIC MANAGEMENT SYSTEM</small>
+        </Link>
+        <Link href="/" className={styles.back}>Back to Heri CMS</Link>
+      </header>
 
-        <section>
-          <h2>About these terms</h2>
-          <p>
-            These terms govern use of Hali CMS, a clinic management system intended for
-            authorized clinic teams. By using the service, you agree to use it lawfully and
-            in accordance with these terms and any applicable agreement with the organization
-            operating your deployment.
-          </p>
-        </section>
-
-        <section>
-          <h2>Authorized use</h2>
-          <p>
-            Access is limited to authorized users. You must provide accurate account information,
-            keep authentication credentials confidential, and use only the permissions assigned to
-            you. You must not attempt to access another clinic, tenant, account, device, or record
-            without authorization.
-          </p>
-        </section>
-
-        <section>
-          <h2>Clinic and patient information</h2>
-          <p>
-            Hali CMS may be used to manage sensitive clinic and patient information. Clinics and
-            other organizations using the service remain responsible for determining that their use
-            of the service has an appropriate lawful basis and complies with applicable healthcare,
-            privacy, records-management, and professional requirements.
-          </p>
-        </section>
-
-        <section>
-          <h2>Acceptable use</h2>
-          <p>
-            You must not misuse the service, interfere with its operation, bypass security controls,
-            introduce malicious code, attempt unauthorized access, or use the service for unlawful
-            activity. You must not use Hali CMS as a substitute for professional clinical judgment
-            or emergency medical services.
-          </p>
-        </section>
-
-        <section>
-          <h2>Service availability</h2>
-          <p>
-            We aim to keep Hali CMS reliable and available, but availability is not guaranteed.
-            Maintenance, security events, infrastructure failures, network conditions, or other
-            circumstances may temporarily affect the service.
-          </p>
-        </section>
-
-        <section>
-          <h2>Data and backups</h2>
-          <p>
-            Organizations using Hali CMS are responsible for maintaining appropriate operational
-            procedures and ensuring that information entered into the system is accurate and handled
-            appropriately. Backup, synchronization, and recovery features are provided to support
-            operational resilience but should not be treated as an unconditional guarantee that
-            information can always be recovered.
-          </p>
-        </section>
-
-        <section>
-          <h2>Security</h2>
-          <p>
-            Hali CMS uses technical and organizational safeguards intended to protect accounts,
-            clinic boundaries, and information. Users must also protect their credentials, devices,
-            and access permissions. No online service can guarantee absolute security.
-          </p>
-        </section>
-
-        <section>
-          <h2>Intellectual property</h2>
-          <p>
-            Hali CMS, including its software, branding, visual design, documentation, and other
-            original materials, remains the property of its respective owner or licensors except
-            where otherwise agreed in writing. These terms do not transfer ownership of the service
-            or its underlying intellectual property to users.
-          </p>
-        </section>
-
-        <section>
-          <h2>Suspension and termination</h2>
-          <p>
-            Access may be suspended or terminated where necessary for security, legal compliance,
-            misuse prevention, non-payment where applicable, or material violation of these terms
-            or an applicable service agreement. Where appropriate, reasonable notice may be given.
-          </p>
-        </section>
-
-        <section>
-          <h2>Disclaimers</h2>
-          <p>
-            Hali CMS is a software tool for clinic operations. It does not provide medical advice,
-            diagnosis, treatment, or emergency services. Organizations and users remain responsible
-            for their professional decisions and for verifying information before relying on it.
-          </p>
-        </section>
-
-        <section>
-          <h2>Limitation of liability</h2>
-          <p>
-            To the extent permitted by applicable law, liability relating to use of Hali CMS is
-            limited to the scope agreed in the applicable service or commercial agreement. Nothing
-            in these terms excludes or limits liability that cannot lawfully be excluded or limited.
-          </p>
-        </section>
-
-        <section>
-          <h2>Changes to these terms</h2>
-          <p>
-            These terms may be updated as the service, agreements, or applicable requirements change.
-            Material updates should be reflected by updating the date shown above and, where required,
-            communicating the change to affected users.
-          </p>
-        </section>
-
-        <section>
-          <h2>Contact</h2>
-          <p>
-            Questions about these terms should be directed to the organization or service operator
-            responsible for the applicable Hali CMS deployment.
-          </p>
-        </section>
+      <article className={styles.document}>
+        <p className={styles.kicker}>LEGAL · TERMS OF SERVICE</p>
+        <h1>Terms of Service</h1>
+        <p className={styles.updated}>Effective date: 10 September 2026 · Version 1.0</p>
+        <p className={styles.lead}>These Terms of Service govern access to and use of Heri CMS, a clinic management platform operated by IHL Tech. By creating a workspace, accepting an invitation, accessing a trial, or using the service on behalf of a clinic, you agree to these Terms.</p>
+        <div className={styles.notice}><strong>Important:</strong> Heri CMS is software for clinic administration and operations. It is not a substitute for professional medical judgement, clinical governance, legal advice or a clinic&apos;s own obligations to patients and regulators.</div>
+        <nav className={styles.contents} aria-label="Contents"><strong>Contents</strong>{[["acceptance", "1. Acceptance and eligibility"], ["definitions", "2. Definitions"], ["service", "3. The service"], ["accounts", "4. Accounts and authorised users"], ["workspace", "5. Clinic workspace and roles"], ["customer-responsibilities", "6. Clinic responsibilities"], ["patient-data", "7. Patient and health information"], ["acceptable-use", "8. Acceptable use"], ["trial", "9. Trial period"], ["fees", "10. Fees and billing"], ["third-parties", "11. Third-party services"], ["security", "12. Security and confidentiality"], ["availability", "13. Availability and changes"], ["support", "14. Support and communications"], ["suspension", "15. Suspension and termination"], ["data-export", "16. Data export and deletion"], ["ip", "17. Intellectual property"], ["disclaimers", "18. Disclaimers"], ["liability", "19. Limitation of liability"], ["indemnity", "20. Indemnity"], ["changes", "21. Changes to these Terms"], ["law", "22. Governing law and disputes"], ["contact", "23. Contact"]].map(([id, label]) => <a key={id} href={`#${id}`}>{label}</a>)}</nav>
+        <Section id="acceptance" title="1. Acceptance and eligibility"><p>You may use Heri CMS only if you have authority to enter into these Terms. If you are using the service for a clinic, you represent that you are authorised by that clinic to create or administer the workspace and bind the clinic to these Terms.</p><p>If you do not agree with these Terms, do not create an account, accept an invitation or use the service.</p></Section>
+        <Section id="definitions" title="2. Definitions"><ul><li><strong>Heri CMS</strong> means the clinic management software and related services operated by IHL Tech.</li><li><strong>Clinic</strong> means the healthcare facility, organisation or business that creates or uses a workspace.</li><li><strong>Workspace</strong> means the clinic-specific environment created for authorised users.</li><li><strong>Authorised User</strong> means an individual permitted by a clinic to access its workspace.</li><li><strong>Clinic Data</strong> means information submitted to or generated within a clinic workspace, including patient, staff, pharmacy, billing and operational information.</li></ul></Section>
+        <Section id="service" title="3. The service"><p>Heri CMS provides software intended to help clinics manage operational workflows, staff access, records, pharmacy processes, accounts and reporting. Features may change as we improve the service.</p><p>We do not provide medical diagnosis, treatment, prescribing, clinical decision-making or emergency care. Any clinical decision remains the responsibility of appropriately qualified healthcare professionals.</p></Section>
+        <Section id="accounts" title="4. Accounts and authorised users"><p>Users must provide accurate account information and keep credentials confidential. Each person should use their own account; credentials must not be shared.</p><p>Clinic administrators are responsible for inviting authorised users, assigning appropriate roles, reviewing access and promptly removing access when it is no longer required.</p><p>Heri CMS may require additional verification or security controls where reasonably necessary to protect the service or Clinic Data.</p></Section>
+        <Section id="workspace" title="5. Clinic workspace and roles"><p>The clinic controls its workspace and determines which people are authorised to access it. Role-based permissions are intended to support least-privilege access, but the clinic remains responsible for configuring and reviewing access appropriately.</p><p>Standard trial workspaces may have defined team limits, including up to two Pharmacy users and up to two Accounts &amp; Billing users in addition to the clinic administrator. Larger or custom team structures may require a separate configuration or commercial arrangement.</p></Section>
+        <Section id="customer-responsibilities" title="6. Clinic responsibilities"><p>The clinic is responsible for its use of Heri CMS and for ensuring that its use complies with applicable law, professional requirements and contractual obligations.</p><ul><li>maintain appropriate notices, consents and lawful bases for information processing;</li><li>ensure information entered into the service is accurate and appropriate for the intended purpose;</li><li>maintain appropriate user access and credential practices;</li><li>use the service only for authorised clinic activities; and</li><li>respond to patients, staff and regulators where the clinic has the relevant legal responsibility.</li></ul></Section>
+        <Section id="patient-data" title="7. Patient and health information"><p>Health information is sensitive personal data under Kenyan data-protection law. Where a clinic determines the purposes and means of processing patient information, the clinic generally acts as the data controller and Heri CMS may act as a data processor.</p><p>The parties should use an applicable Data Processing Addendum or other written data-processing terms where required. Heri CMS will process Clinic Data according to the applicable agreement and documented instructions, subject to applicable law.</p><p>The clinic must not use Heri CMS to collect, disclose or otherwise process patient information unlawfully. Nothing in these Terms transfers the clinic&apos;s regulatory or clinical responsibilities to Heri CMS.</p></Section>
+        <Section id="acceptable-use" title="8. Acceptable use"><p>You must not use Heri CMS to:</p><ul><li>break the law or violate another person&apos;s rights;</li><li>gain unauthorised access to accounts, workspaces, systems or information;</li><li>upload malicious code, attempt to disrupt the service or interfere with security controls;</li><li>misrepresent your identity or authority to access a clinic workspace;</li><li>use the service to provide unauthorised access to third parties; or</li><li>reverse engineer, copy or exploit the service except where applicable law expressly permits it.</li></ul></Section>
+        <Section id="trial" title="9. Trial period"><p>Heri CMS may offer a fourteen-day trial for eligible clinics. The trial is provided for evaluation of the service and may be subject to feature, user or usage limits communicated during signup.</p><p>A trial does not require a clinic to purchase a paid plan unless the clinic separately agrees to one. Trial access may end automatically when the trial period expires or earlier where these Terms permit suspension or termination.</p><p>Trial workspaces should not be treated as a substitute for the clinic&apos;s own backup, retention or regulatory arrangements.</p></Section>
+        <Section id="fees" title="10. Fees and billing"><p>If paid plans are introduced or selected, the applicable pricing, billing terms and commercial order or subscription terms will apply. Any taxes, payment obligations, renewal terms or cancellation requirements will be disclosed through the applicable commercial arrangement.</p><p>We will not represent a trial as paid access, and we will not charge a clinic for a paid service unless the clinic has agreed to the applicable commercial terms.</p></Section>
+        <Section id="third-parties" title="11. Third-party services"><p>Heri CMS may rely on third-party infrastructure and service providers for hosting, communications, security, monitoring, payments or other supporting functions. Their involvement does not remove our contractual or legal obligations relating to information we process on a clinic&apos;s behalf.</p><p>Third-party services that a clinic chooses to connect or use independently may be subject to their own terms and privacy policies.</p></Section>
+        <Section id="security" title="12. Security and confidentiality"><p>We maintain reasonable technical and organisational safeguards designed to protect the service and Clinic Data against unauthorised access, alteration, disclosure, loss or destruction.</p><p>Both parties should protect confidential information obtained through the service. Clinic Data will be handled in accordance with the applicable privacy policy, data-processing terms and the clinic&apos;s lawful instructions.</p></Section>
+        <Section id="availability" title="13. Availability and changes"><p>We aim to keep Heri CMS available and reliable, but we do not guarantee uninterrupted or error-free operation. Service may be temporarily unavailable for maintenance, upgrades, security work, infrastructure failures, events outside our reasonable control or other operational reasons.</p><p>We may modify, replace or discontinue features where reasonably necessary. Where a material change is expected to significantly affect a paid service, we will use an appropriate communication channel where practicable.</p></Section>
+        <Section id="support" title="14. Support and communications"><p>We may provide support through channels we make available from time to time. Support commitments for paid customers, if any, will be stated in the applicable commercial terms.</p><p>By using the service, you agree that we may send service-related communications such as security notices, account messages, maintenance notices and important changes to the service.</p></Section>
+        <Section id="suspension" title="15. Suspension and termination"><p>We may suspend or restrict access where reasonably necessary to address security risks, unlawful use, serious misuse, non-payment under applicable paid terms, or a material breach of these Terms.</p><p>A clinic may stop using the service at any time, subject to any applicable paid subscription or commercial terms. We may terminate a workspace where the service is discontinued or where continued provision would create a legal, security or operational risk.</p></Section>
+        <Section id="data-export" title="16. Data export and deletion"><p>Where supported by the service and applicable agreement, clinics may export their Clinic Data during the relationship. On termination, return, export and deletion of Clinic Data will be handled according to the applicable data-processing terms, legal requirements and reasonable technical capabilities.</p><p>We may retain limited information where required by law, needed to resolve disputes, protect security, maintain audit records or enforce these Terms.</p></Section>
+        <Section id="ip" title="17. Intellectual property"><p>Heri CMS, including its software, interface, documentation, branding and underlying technology, is owned by or licensed to IHL Tech and is protected by applicable intellectual-property laws.</p><p>Subject to these Terms, we grant authorised clinics and users a limited, non-exclusive, non-transferable right to use the service for legitimate clinic operations during the applicable access period.</p><p>The clinic retains its rights in Clinic Data. You grant us only the rights reasonably necessary to host, process, transmit, secure, back up and otherwise provide the service.</p></Section>
+        <Section id="disclaimers" title="18. Disclaimers"><p>To the extent permitted by law, Heri CMS is provided on an “as available” basis. We do not warrant that the service will meet every clinic requirement, operate without interruption, or be free from every defect or security risk.</p><p>Heri CMS does not replace clinical judgement, professional supervision, statutory recordkeeping requirements, patient communication obligations, or independent backups and continuity arrangements where those are required by the clinic&apos;s circumstances.</p></Section>
+        <Section id="liability" title="19. Limitation of liability"><p>To the fullest extent permitted by applicable law, neither party will be liable for indirect, incidental, special, consequential or punitive losses arising from these Terms, except where such exclusion is not permitted by law.</p><p>Any additional liability cap, exclusions or customer-specific allocation of risk may be set out in the applicable commercial agreement. Nothing in these Terms excludes liability that cannot lawfully be excluded or limited.</p></Section>
+        <Section id="indemnity" title="20. Indemnity"><p>Where permitted by law, the clinic agrees to be responsible for claims arising from its unlawful use of the service, its violation of these Terms, or its failure to obtain required authority or permissions for information it submits to the service, except to the extent caused by Heri CMS&apos;s own breach or misconduct.</p></Section>
+        <Section id="changes" title="21. Changes to these Terms"><p>We may update these Terms as the service, business or applicable legal requirements change. Updated Terms will be published with a new effective date. Where required, material changes will be communicated through the service or another appropriate channel.</p></Section>
+        <Section id="law" title="22. Governing law and disputes"><p>These Terms are intended to be governed by the laws of Kenya, subject to any mandatory legal protections that apply to a party or transaction.</p><p>The parties should first try to resolve disputes through good-faith discussion. Where a dispute cannot be resolved informally, it may be referred to the courts or another dispute-resolution forum with appropriate jurisdiction under Kenyan law and any applicable commercial agreement.</p></Section>
+        <Section id="contact" title="23. Contact"><p>Questions about these Terms, commercial arrangements or the Heri CMS service can be directed to <a href="mailto:invest@investit.click">invest@investit.click</a>.</p><p>You can also review our <Link href="/privacy">Privacy &amp; Data Protection Policy</Link>.</p><p className={styles.disclaimer}>These Terms are intended as a practical draft for Heri CMS. They are not legal advice and should be reviewed and approved by qualified Kenyan counsel before being treated as the company&apos;s final legal position or incorporated into a paid customer agreement.</p></Section>
       </article>
     </main>
   );
+}
+
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return <section id={id} className={styles.section}><h2>{title}</h2>{children}</section>;
 }
