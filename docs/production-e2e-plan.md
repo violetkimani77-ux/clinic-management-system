@@ -28,7 +28,7 @@ A workflow is considered verified only when the test passes against a production
 
 - [ ] A user can access records belonging to their clinic.
 - [ ] A user cannot read another clinic's patient/visit/pharmacy records.
-- [ ] A user cannot mutate another clinic's records by changing IDs in requests.
+- [x] A user cannot mutate another clinic's records by changing IDs in requests.
 - [ ] Server-side authorization remains enforced when UI restrictions are bypassed.
 
 ### Clinical workflow
