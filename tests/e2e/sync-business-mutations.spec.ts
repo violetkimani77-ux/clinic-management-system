@@ -188,17 +188,23 @@ test.describe("offline sync business mutations", () => {
       errorCode: "SYNC_VERSION_CONFLICT",
     });
 
-    const [patient, changeCount, operationRecord, conflict] = await Promise.all([
+    const [patient, changeCount, operationRecord, conflicts] = await Promise.all([
       prisma.patient.findUnique({ where: { id: patientId }, select: { firstName: true, lastName: true, notes: true } }),
       prisma.syncChange.count({ where: { entityId: patientId } }),
       prisma.syncOperation.findUnique({ where: { operationId: staleOperationId }, select: { status: true, entityVersion: true, errorCode: true } }),
-      prisma.syncConflict.findUnique({ where: { operationId: staleOperationId }, select: { expectedVersion: true, actualVersion: true, clientPayload: true, serverPayload: true } }),
+      prisma.syncConflict.findMany({
+        where: { operationId: staleOperationId },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { expectedVersion: true, actualVersion: true, clientPayload: true, serverPayload: true },
+      }),
     ]);
 
     expect(patient).toEqual({ firstName: "Conflict", lastName: "Patient", notes: "Initial synced state" });
     expect(changeCount).toBe(1);
     expect(operationRecord).toEqual({ status: "CONFLICT", entityVersion: 1, errorCode: "SYNC_VERSION_CONFLICT" });
-    expect(conflict).toMatchObject({
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0]).toMatchObject({
       expectedVersion: 0,
       actualVersion: 1,
       clientPayload: stalePayload,
