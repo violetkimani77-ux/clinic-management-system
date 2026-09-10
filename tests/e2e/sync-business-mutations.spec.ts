@@ -92,8 +92,9 @@ test.describe("offline sync business mutations", () => {
   test("rejects cross-tenant, cross-device, and cross-user sync pushes", async ({ page }) => {
     requireStaffCredentials(); await signIn(page); const context = await getSyncContext();
     const patientId = randomUUID(); const payload = { patientNo: `E2E-SYNC-BOUNDARY-${Date.now()}`, firstName: "Boundary", lastName: "Patient" };
+    const foreignClinicId = randomUUID();
 
-    const tenantResponse = await page.request.post("/api/sync/push", { data: { protocolVersion: 1, clinicId: randomUUID(), deviceId: context.deviceId, operations: [operation({ operationId: randomUUID(), clinicId: randomUUID(), deviceId: context.deviceId, userId: context.userId, entityType: "Patient", entityId: patientId, payload })] } });
+    const tenantResponse = await page.request.post("/api/sync/push", { data: { protocolVersion: 1, clinicId: foreignClinicId, deviceId: context.deviceId, operations: [operation({ operationId: randomUUID(), clinicId: foreignClinicId, deviceId: context.deviceId, userId: context.userId, entityType: "Patient", entityId: patientId, payload })] } });
     expect(tenantResponse.status()).toBe(403); expect(await tenantResponse.json()).toEqual({ error: "TENANT_ACCESS_DENIED" });
 
     const otherUser = await prisma.user.create({ data: { email: `e2e-sync-other-${Date.now()}@example.com`, name: "E2E Other Sync User", passwordHash: "test-only", status: "INVITED" }, select: { id: true } });
