@@ -45,14 +45,14 @@ A workflow is considered verified only when the test passes against a production
 - [x] Partial dispensing preserves remaining quantity/state.
 - [x] Insufficient or expired stock is rejected safely.
 - [x] A return/disposal operation updates stock and history correctly.
-- [ ] Dispensing is linked to billing/audit records where expected.
+- [x] Dispensing is linked to billing/audit records where expected.
 
 ### Offline sync
 
-- [ ] A valid Patient mutation is applied once.
-- [ ] A valid Visit mutation is applied once.
-- [ ] Replaying the same operation is idempotent.
-- [ ] A stale expected version produces a conflict without corrupting data.
+- [x] A valid Patient mutation is applied once.
+- [x] A valid Visit mutation is applied once.
+- [x] Replaying the same operation is idempotent.
+- [x] A stale expected version produces a conflict without corrupting data.
 - [x] Invalid client timestamps are rejected before persistence.
 - [x] Cross-tenant/device/user sync operations are rejected.
 - [x] A transient failure can be retried without duplicate domain mutations.
