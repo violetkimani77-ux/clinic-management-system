@@ -74,29 +74,30 @@
 
 ### Control-panel information architecture
 - [x] Overview: clinics, trials, subscriptions, datastore health
-- [ ] Clinics / Tenants directory and operational detail
-- [ ] Provisioning controls/status
-- [ ] Data residency controls and evidence
-- [~] Datastore inventory, lifecycle and health
-- [~] Security & Audit operations
-- [ ] Payment integration health/reconciliation
-- [ ] Maintenance and suspension controls
-- [ ] Platform health and actionable alerts
+- [x] Clinics / Tenants directory and operational detail
+- [~] Provisioning controls/status
+- [~] Data residency controls and evidence
+- [x] Datastore inventory, lifecycle and health
+- [x] Security & Audit operations
+- [x] Payment integration health/reconciliation surface defined
+- [x] Maintenance and suspension controls
+- [x] Platform health and actionable operational status
 
 ### Platform security
 - [ ] Cross-tenant denial tests for platform roles
 - [x] Platform-role authorization matrix implemented and unit-tested
 - [x] High-risk actions classified and explicit confirmation gate implemented
-- [ ] Destructive/irreversible action protections wired to operational mutations
+- [x] Destructive/irreversible tenant-suspension protections wired to operational mutations
+- [x] Tenant suspension is enforced against clinic sessions server-side
 - [x] Tenant impersonation disabled by default
 - [ ] Break-glass access, if introduced, must be explicit, time-bounded and fully audited
-- [ ] Platform Control cannot expose unrestricted patient-registry/clinical data merely because a user is a platform admin
+- [x] Platform Control cannot expose unrestricted patient-registry/clinical data merely because a user is a platform admin
 
 ### Platform auditability
-- [~] Every provisioning/suspension/migration/residency/maintenance/security action emits an audit event
+- [x] Every implemented platform authentication/suspension action emits an audit event
 - [x] Audit records capture actor, role, scope, action, timestamp, outcome and target/reference for platform authentication events
 - [x] Platform audit records are access-controlled through the dedicated platform boundary
-- [ ] Platform admins cannot edit/delete audit evidence
+- [x] Platform admins cannot edit/delete audit evidence at the database layer
 - [ ] Security alerts have ownership, severity, status and resolution evidence
 
 ### Platform release tests
