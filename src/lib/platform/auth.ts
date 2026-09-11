@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth/password";
 import { decryptPlatformSecret } from "./crypto";
@@ -54,7 +55,7 @@ export async function recordPlatformAudit(
       action,
       entityType: "PLATFORM",
       platformAdminId,
-      metadata,
+      metadata: metadata as Prisma.InputJsonValue,
       ipAddress: context?.ipAddress,
       userAgent: context?.userAgent,
     },
