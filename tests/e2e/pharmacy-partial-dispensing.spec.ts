@@ -61,17 +61,21 @@ test.describe("pharmacy partial dispensing", () => {
     const second = await dispensePrescription(context, prescription.id);
     expect(second.status).toBe("DISPENSED");
 
-    const [completedPrescription, completedBatch, allItems, movements, invoiceItems] = await Promise.all([
+    const [completedPrescription, completedBatch, allItems, movements, invoiceItems, auditEvents] = await Promise.all([
       prisma.prescription.findUnique({ where: { id: prescription.id }, select: { status: true } }),
       prisma.stockBatch.findUnique({ where: { id: batch.id }, select: { quantity: true } }),
       prisma.dispensingItem.findMany({ where: { dispensing: { prescriptionId: prescription.id } }, select: { quantity: true } }),
       prisma.stockMovement.findMany({ where: { batchId: batch.id, type: "DISPENSE", referenceId: { not: null } }, select: { quantity: true } }),
-      prisma.invoiceItem.findMany({ where: { dispensing: { prescriptionId: prescription.id } }, select: { total: true } }),
+      prisma.invoiceItem.findMany({ where: { dispensing: { prescriptionId: prescription.id } }, select: { total: true, dispensingId: true } }),
+      prisma.auditLog.findMany({ where: { clinicId: context.clinicId, entityType: "Prescription", entityId: prescription.id }, orderBy: { sequence: "asc" }, select: { action: true, metadata: true } }),
     ]);
     expect(completedPrescription?.status).toBe("DISPENSED");
     expect(completedBatch?.quantity).toBe(0);
     expect(allItems.reduce((sum, item) => sum + item.quantity, 0)).toBe(10);
     expect(movements.reduce((sum, movement) => sum + movement.quantity, 0)).toBe(10);
     expect(invoiceItems).toHaveLength(2);
+    expect(invoiceItems.every((item) => item.dispensingId)).toBe(true);
+    expect(invoiceItems.reduce((sum, item) => sum + Number(item.total), 0)).toBe(50);
+    expect(auditEvents.map((event) => event.action)).toEqual(["PRESCRIPTION_PARTIALLY_DISPENSED", "PRESCRIPTION_DISPENSED"]);
   });
 });
