@@ -7,7 +7,7 @@ import {
   TransferAssessmentStatus,
   UserStatus,
 } from "@prisma/client";
-import { randomBytes, scrypt as nodeScrypt } from "node:crypto";
+import { createCipheriv, randomBytes, scrypt as nodeScrypt } from "node:crypto";
 import { promisify } from "node:util";
 
 const prisma = new PrismaClient();
@@ -78,6 +78,53 @@ async function hashPassword(password) {
   return `scrypt:${salt.toString("hex")}:${Buffer.from(derivedKey).toString("hex")}`;
 }
 
+function encryptPlatformSecret(secret) {
+  const key = process.env.PLATFORM_AUTH_ENCRYPTION_KEY;
+  if (!key || !/^[0-9a-fA-F]{64}$/.test(key)) {
+    throw new Error("PLATFORM_AUTH_ENCRYPTION_KEY must be configured as a 32-byte hex key when provisioning Platform Control.");
+  }
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", Buffer.from(key, "hex"), iv);
+  const ciphertext = Buffer.concat([cipher.update(secret, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `v1:${iv.toString("base64url")}:${tag.toString("base64url")}:${ciphertext.toString("base64url")}`;
+}
+
+async function seedPlatformAdmin() {
+  const email = process.env.PLATFORM_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.PLATFORM_ADMIN_PASSWORD;
+  const mfaSecret = process.env.PLATFORM_ADMIN_MFA_SECRET;
+  const configured = Boolean(email || password || mfaSecret || process.env.PLATFORM_AUTH_ENCRYPTION_KEY);
+  if (!configured) return;
+  if (!email || !password || !mfaSecret) {
+    throw new Error("PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_PASSWORD, and PLATFORM_ADMIN_MFA_SECRET must all be configured together.");
+  }
+
+  const passwordHash = await hashPassword(password);
+  const mfaSecretEncrypted = encryptPlatformSecret(mfaSecret);
+  await prisma.platformAdmin.upsert({
+    where: { email },
+    update: {
+      name: process.env.PLATFORM_ADMIN_NAME ?? "Heri Platform Administrator",
+      passwordHash,
+      mfaSecretEncrypted,
+      mfaEnabled: true,
+      status: "ACTIVE",
+      roleCode: "PLATFORM_ADMIN",
+    },
+    create: {
+      email,
+      name: process.env.PLATFORM_ADMIN_NAME ?? "Heri Platform Administrator",
+      passwordHash,
+      mfaSecretEncrypted,
+      mfaEnabled: true,
+      status: "ACTIVE",
+      roleCode: "PLATFORM_ADMIN",
+    },
+  });
+  console.log(`Provisioned platform admin: ${email}`);
+}
+
 async function main() {
   const clinic = await prisma.clinic.upsert({ where: { code: DEFAULT_CLINIC.code }, update: { name: DEFAULT_CLINIC.name }, create: DEFAULT_CLINIC });
   const now = new Date();
@@ -135,6 +182,7 @@ async function main() {
     update: { roleId: roles[RoleCode.ADMIN].id },
     create: { clinicId: clinic.id, userId: admin.id, roleId: roles[RoleCode.ADMIN].id },
   });
+  await seedPlatformAdmin();
   console.log(`Seeded clinic: ${clinic.code}`);
   console.log(`Seeded admin: ${DEFAULT_ADMIN.email}`);
   console.log("Admin password supplied through an environment secret.");
