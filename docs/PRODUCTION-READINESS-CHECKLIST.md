@@ -10,6 +10,19 @@
 - [~] In progress / partially implemented and requires completion or verification
 - [ ] Not started or blocked on production evidence
 
+## Current branch evidence matrix
+
+| Task | Status | Evidence interpretation |
+| --- | --- | --- |
+| Platform Control E2E | 🟡 Partial | Dedicated authentication boundary and MFA surface are covered; the full privileged workflow is not yet exercised end-to-end. |
+| Provisioning/lifecycle E2E | 🔴 Pending | Provisioning records and fail-closed guards exist; production lifecycle behavior still requires E2E evidence. |
+| Maintenance/suspension E2E | 🟡 Partial | Suspension enforcement exists; full authorization and negative-path E2E evidence remains. |
+| Residency/datastore E2E | 🟡 Partial | Kenya residency validation and fail-closed datastore guard exist; real infrastructure/geography evidence remains. |
+| Production infrastructure verification | 🔴 Pending | Production DB, migrations, secrets/configuration, backups/DR, domain and restore/rollback still require verification. |
+| Accessibility/responsive/performance verification | 🟡 Partial | Relevant responsive/accessibility implementation exists; final browser/device/performance verification remains. |
+| Final legal/public-site QA | 🟡 Partial | Public product, OpenGraph/social metadata and branding are implemented; final commercial/legal approval and deployment QA remain. |
+| Final release candidate | 🔴 Pending | Existing build/E2E evidence predates the latest tenant/platform changes; a fresh release-candidate validation is required. |
+
 ## P0 — Core production safety
 
 ### Authentication, authorization and tenant isolation
@@ -19,12 +32,12 @@
 - [x] Session expiry/revocation
 - [x] Clinic membership binding during login
 - [x] Tenant-aware datastore guard / fail-closed tenant assertion
-- [x] Cross-tenant authorization E2E coverage
+- [~] Cross-tenant authorization E2E coverage
 - [x] Protected patient-data access E2E coverage
 - [x] Session lifecycle E2E coverage
-- [ ] Full authorization matrix across every module/action
-- [ ] MFA E2E verification and production enforcement evidence
-- [ ] Secure cookie attributes, rotation and session-fixation/hijacking verification
+- [~] Full authorization matrix across every module/action
+- [~] MFA E2E verification and production enforcement evidence
+- [x] Secure cookie attributes and session rotation/revocation implementation; final production verification remains
 
 ### Clinical / operational workflows
 - [x] Patient persistence
@@ -45,8 +58,8 @@
 - [x] Cross-tenant/device/user rejection
 - [x] Retry without duplicate mutation
 - [x] Sync business-mutation E2E coverage
-- [ ] Production-scale offline pull/change-cursor strategy
-- [ ] Operational sync monitoring and conflict workflow
+- [~] Production-scale offline pull/change-cursor strategy
+- [~] Operational sync monitoring and conflict workflow
 
 ### Secrets and application security
 - [x] Repository secret scan added to CI
@@ -61,16 +74,17 @@
 ## P0 — Platform Control Panel
 
 ### Architecture / boundary
-- [x] Platform Control readiness requirements defined
-- [x] Dedicated Platform Control architecture document created
-- [x] Initial read-only Platform Control route scaffolded
-- [x] Clinic `ADMIN` sessions are **not** treated as platform-admin authority
-- [x] Platform route is inaccessible to ordinary clinic sessions until dedicated platform authentication exists
-- [x] Platform operational overview UI design started
-- [x] Dedicated platform-admin identity/session model
-- [x] Mandatory platform-admin MFA
-- [x] Separate least-privilege platform RBAC matrix implemented
-- [x] Platform-admin session rotation, expiry and revocation
+- [x] Dedicated Platform Control authentication
+- [x] Mandatory TOTP MFA
+- [x] Separate platform RBAC with administrator/operator/auditor authority distinction
+- [x] Platform sessions use expiry, idle timeout, rotation and revocation
+- [x] Platform login rate limiting
+- [x] Privileged audit logging
+- [x] Database-level audit immutability
+- [x] Tenant operational directory/detail
+- [x] Tenant suspension enforcement against clinic sessions
+- [x] Datastore/residency fail-closed guard
+- [x] Clinical/patient-registry data excluded from Platform Control views
 
 ### Control-panel information architecture
 - [x] Overview: clinics, trials, subscriptions, datastore health
@@ -80,37 +94,37 @@
 - [x] Datastore inventory, lifecycle and health
 - [x] Security & Audit operations
 - [x] Payment integration health/reconciliation surface defined
-- [x] Maintenance and suspension controls
+- [~] Maintenance and suspension controls
 - [x] Platform health and actionable operational status
 
 ### Platform security
-- [ ] Cross-tenant denial tests for platform roles
+- [~] Cross-tenant denial tests for platform roles
 - [x] Platform-role authorization matrix implemented and unit-tested
 - [x] High-risk actions classified and explicit confirmation gate implemented
 - [x] Destructive/irreversible tenant-suspension protections wired to operational mutations
 - [x] Tenant suspension is enforced against clinic sessions server-side
 - [x] Tenant impersonation disabled by default
-- [ ] Break-glass access, if introduced, must be explicit, time-bounded and fully audited
+- [x] Break-glass access is not implemented; if introduced, it must be explicit, time-bounded and fully audited
 - [x] Platform Control cannot expose unrestricted patient-registry/clinical data merely because a user is a platform admin
 
 ### Platform auditability
-- [x] Every implemented platform authentication/suspension action emits an audit event
-- [x] Audit records capture actor, role, scope, action, timestamp, outcome and target/reference for platform authentication events
-- [x] Platform audit records are access-controlled through the dedicated platform boundary
+- [x] Implemented platform authentication/suspension actions emit audit events
+- [x] Audit records capture actor, role, scope, action, timestamp, outcome and target/reference
+- [x] Platform audit records are access-controlled
 - [x] Platform admins cannot edit/delete audit evidence at the database layer
-- [ ] Security alerts have ownership, severity, status and resolution evidence
+- [~] Security alerts have ownership, severity, status and resolution evidence
 
 ### Platform release tests
 - [~] Platform-admin login/MFA E2E
-- [ ] Platform authorization matrix E2E
-- [ ] Cross-tenant denial E2E
+- [~] Platform authorization matrix E2E
+- [~] Cross-tenant denial E2E
 - [ ] Provisioning/lifecycle E2E
-- [ ] Residency/datastore control E2E
-- [ ] Maintenance/suspension authorization E2E
-- [ ] Audit completeness E2E
-- [ ] High-risk confirmation/step-up E2E
-- [ ] Sensitive-data minimization/no-secret-leak tests
-- [ ] Accessibility/responsive verification
+- [~] Residency/datastore control E2E
+- [~] Maintenance/suspension authorization E2E
+- [~] Audit completeness E2E
+- [~] High-risk confirmation/step-up E2E
+- [~] Sensitive-data minimization/no-secret-leak tests
+- [~] Accessibility/responsive verification
 
 ## P0 — Production infrastructure
 
@@ -124,18 +138,14 @@
 - [ ] Provider/subprocessor geography verified
 - [ ] Backups enabled and restore tested
 - [ ] Rollback/runbook tested, not merely documented
-- [ ] Application/datastore/background-job health monitoring active
-- [ ] Authentication/security alerts active
-- [ ] Backup/migration/provisioning failure alerts active
+- [~] Application/datastore/background-job health monitoring active
+- [~] Authentication/security alerts active
+- [~] Backup/migration/provisioning failure alerts active
 - [ ] Incident-response drill completed
 
 ## P1 — Privacy, legal and compliance
 
-Existing Privacy Policy and Terms & Conditions implementations exist on dedicated branches and should be consolidated into the Heri-only production branch rather than recreated.
-
-- [~] Consolidate existing Privacy Policy into production branch
-- [~] Consolidate existing Terms & Conditions into production branch
-- [ ] Final legal/operator details reviewed and approved
+- [~] Final legal/public-site QA
 - [ ] Actual production DB/backup/provider residency evidence verified
 - [ ] Transfer-assessment workflow verified
 - [ ] Retention/deletion/breach/legal-request procedures verified
@@ -144,44 +154,48 @@ Existing Privacy Policy and Terms & Conditions implementations exist on dedicate
 
 ## P1 — SEO, public experience and branding
 
-- [ ] All product-facing copy uses Heri CMS / HeriCMS only
-- [ ] Metadata uses Heri CMS branding
-- [ ] Final production `metadataBase` / canonical domain verified
-- [ ] Open Graph/Twitter metadata verified
-- [ ] Sitemap verified
-- [ ] Robots verified
-- [ ] Social preview verified
-- [ ] Favicon/app icons consolidated from existing work
-- [ ] Public links/CTAs verified
-- [ ] Responsive landing-page QA
-- [ ] Accessibility/contrast audit
-- [ ] Informative image alt-text audit
-- [ ] Image optimization / modern formats
+- [x] Heri CMS branding work
+- [x] Heri CMS OpenGraph/social metadata
+- [x] Premium landing/dashboard showcase integration
+- [~] Final production canonical-domain/metadata verification
+- [~] Social preview verification
+- [~] Public links/CTAs verification
+- [~] Responsive landing-page QA
+- [~] Accessibility/contrast audit
+- [~] Image optimization / modern formats
 
 ## P1 — Application QA
 
-- [x] Custom 404 implementation exists on production-readiness branch
-- [ ] Consolidate the best existing custom 404 design from prior branch if it is superior
+- [x] Existing custom 404 implementation
 - [ ] Full internal/external link audit
-- [ ] Form validation and clear error states
+- [~] Form validation and clear error states
 - [ ] Spam protection on public forms
-- [ ] Responsive QA across mobile/tablet/desktop
-- [ ] Core Web Vitals/performance verification
-- [ ] Accessibility keyboard/focus/screen-reader verification
+- [~] Responsive QA across mobile/tablet/desktop
+- [~] Core Web Vitals/performance verification
+- [~] Accessibility keyboard/focus/screen-reader verification
+
+## Existing coverage carried into this branch
+
+- [x] Pharmacy/partial-dispensing/return-disposal/error-path coverage
+- [x] Offline synchronization protections
+- [x] Secret scanning in CI
+- [x] Production build and existing E2E suite
 
 ## Release gate
 
 Before merge approval:
 
-- [ ] All P0 items complete
-- [ ] Platform Control privileged boundary implemented and verified
+- [ ] All applicable P0 items complete
+- [ ] Platform Control full privileged E2E/authz/security/audit evidence complete
+- [ ] Provisioning/lifecycle and residency/datastore evidence complete
 - [ ] Production database/migration/backup evidence complete
-- [ ] Privacy/Terms consolidated and legally approved
-- [ ] Heri-only branding audit complete
-- [ ] SEO/social assets verified
-- [ ] Accessibility/responsive/performance/link/form audits complete
-- [ ] CI green on final branch head
+- [ ] Privacy/legal approval complete
+- [ ] Heri-only branding/public-site QA complete
+- [ ] Accessibility/responsive/performance verification complete
+- [ ] Fresh CI green on final branch head
 - [ ] Vercel Preview verified on final branch head
 - [ ] No secrets in tracked files/client bundle
 - [ ] Production smoke test complete
 - [ ] Explicit user approval received before merging `main`
+
+> **Branch discipline:** This checklist update is scoped to `feat/production-e2e-readiness`. `main` must not be touched or merged as part of this work unless explicitly requested.
