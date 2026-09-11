@@ -59,6 +59,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/clinic_management_test
       E2E_STAFF_EMAIL: admin@demo-clinic.local
       E2E_STAFF_PASSWORD: ${{ secrets.E2E_STAFF_PASSWORD }}
+      PLATFORM_ADMIN_EMAIL: platform-admin@e2e.local
 
     services:
       postgres:
@@ -88,8 +89,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate E2E credentials are configured
+      - name: Validate E2E staff credential is configured
         run: test -n "$E2E_STAFF_PASSWORD"
+
+      - name: Generate ephemeral Platform Control E2E credentials
+        shell: bash
+        run: |
+          node <<'NODE' >> "$GITHUB_ENV"
+          const crypto = require("node:crypto");
+          const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+          const bytes = crypto.randomBytes(20);
+          let bits = "";
+          for (const byte of bytes) bits += byte.toString(2).padStart(8, "0");
+          let secret = "";
+          for (let i = 0; i + 5 <= bits.length; i += 5) secret += alphabet[parseInt(bits.slice(i, i + 5), 2)];
+          process.stdout.write(`PLATFORM_ADMIN_PASSWORD=${crypto.randomBytes(24).toString("base64url")}\n`);
+          process.stdout.write(`PLATFORM_ADMIN_MFA_SECRET=${secret}\n`);
+          process.stdout.write(`PLATFORM_AUTH_ENCRYPTION_KEY=${crypto.randomBytes(32).toString("hex")}\n`);
+          NODE
 
       - name: Apply database migrations
         run: npm run db:migrate:deploy
