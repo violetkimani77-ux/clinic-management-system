@@ -41,7 +41,7 @@ A workflow is considered verified only when the test passes against a production
 
 ### Pharmacy and billing
 
-- [ ] Dispense available stock successfully.
+- [x] Dispense available stock successfully.
 - [ ] Partial dispensing preserves remaining quantity/state.
 - [ ] Insufficient or expired stock is rejected safely.
 - [ ] A return/disposal operation updates stock and history correctly.
