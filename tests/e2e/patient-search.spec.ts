@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const staffEmail = process.env.E2E_STAFF_EMAIL;
 const staffPassword = process.env.E2E_STAFF_PASSWORD;
@@ -11,7 +11,7 @@ function requireStaffCredentials() {
   test.skip(true, "Set E2E_STAFF_EMAIL and E2E_STAFF_PASSWORD for patient search tests.");
 }
 
-async function signIn(page: Parameters<typeof test>[1] extends never ? never : any) {
+async function signIn(page: Page) {
   await page.goto("/login");
   await page.getByLabel("Email address").fill(staffEmail!);
   await page.getByRole("textbox", { name: "Password" }).fill(staffPassword!);
