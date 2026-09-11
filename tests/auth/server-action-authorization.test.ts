@@ -46,21 +46,21 @@ describe("server action authorization boundaries", () => {
   });
 
   it.each([
-    ["registerPatient", registerPatient, new FormData()],
-    ["updatePatientRecord", updatePatientRecord, new FormData()],
-    ["openVisit", openVisit, new FormData()],
-    ["updateVisitRecord", updateVisitRecord, new FormData()],
-    ["createPrescriptionAction", createPrescriptionAction, new FormData()],
-    ["sendPrescriptionToPharmacyAction", sendPrescriptionToPharmacyAction, new FormData()],
-    ["dispensePrescriptionAction", dispensePrescriptionAction, new FormData()],
-  ])("rejects direct invocation of %s before reaching the domain mutation", async (_name, action, formData) => {
-    const previousState = { message: "", success: false };
-
-    await expect(
-      action === updatePatientRecord
-        ? action(previousState, formData)
-        : action(formData),
-    ).rejects.toThrow("FORBIDDEN");
+    ["registerPatient", (formData: FormData) => registerPatient(formData)],
+    [
+      "updatePatientRecord",
+      (formData: FormData) => updatePatientRecord({ message: "", success: false }, formData),
+    ],
+    ["openVisit", (formData: FormData) => openVisit(formData)],
+    ["updateVisitRecord", (formData: FormData) => updateVisitRecord(formData)],
+    ["createPrescriptionAction", (formData: FormData) => createPrescriptionAction(formData)],
+    [
+      "sendPrescriptionToPharmacyAction",
+      (formData: FormData) => sendPrescriptionToPharmacyAction(formData),
+    ],
+    ["dispensePrescriptionAction", (formData: FormData) => dispensePrescriptionAction(formData)],
+  ])("rejects direct invocation of %s before reaching the domain mutation", async (_name, invoke) => {
+    await expect(invoke(new FormData())).rejects.toThrow("FORBIDDEN");
 
     expect(requireClinicPermissionMock).toHaveBeenCalledTimes(1);
     expect(createPatient).not.toHaveBeenCalled();
