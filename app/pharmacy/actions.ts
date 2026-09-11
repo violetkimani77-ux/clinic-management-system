@@ -9,21 +9,24 @@ import { dispensePrescription } from "@/lib/pharmacy/registry";
 export async function dispensePrescriptionAction(formData: FormData) {
   const context = await requireClinicPermission(PERMISSIONS.PHARMACY_DISPENSE);
   const prescriptionId = String(formData.get("prescriptionId") ?? "").trim();
-  const requestedQuantity = String(formData.get("requestedQuantity") ?? "").trim();
-
+  const partial = formData.get("partial") === "true";
   if (!prescriptionId) throw new Error("PRESCRIPTION_ID_REQUIRED");
 
   try {
-    const quantities = requestedQuantity ? Number(requestedQuantity) : undefined;
-    if (quantities !== undefined && (!Number.isInteger(quantities) || quantities <= 0)) throw new Error("INVALID_DISPENSING_QUANTITY");
-    await dispensePrescription(context, prescriptionId, quantities === undefined ? undefined : { [String(formData.get("medicineId") ?? "")]: quantities });
+    let requestedQuantities: Record<string, number> | undefined;
+    if (partial) {
+      requestedQuantities = {};
+      for (const [key, value] of formData.entries()) {
+        if (!key.startsWith("quantity_")) continue;
+        const medicineId = key.slice("quantity_".length);
+        const quantity = Number(String(value).trim());
+        if (!medicineId || !Number.isInteger(quantity) || quantity < 0) throw new Error("INVALID_DISPENSING_QUANTITY");
+        requestedQuantities[medicineId] = quantity;
+      }
+    }
+    await dispensePrescription(context, prescriptionId, requestedQuantities);
   } catch (error) {
-    console.error("Pharmacy dispensing failed", {
-      clinicId: context.clinicId,
-      userId: context.userId,
-      prescriptionId,
-      error,
-    });
+    console.error("Pharmacy dispensing failed", { clinicId: context.clinicId, userId: context.userId, prescriptionId, error });
     throw error;
   }
 
