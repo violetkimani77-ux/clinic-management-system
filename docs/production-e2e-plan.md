@@ -33,8 +33,8 @@ A workflow is considered verified only when the test passes against a production
 
 ### Clinical workflow
 
-- [ ] Create a patient and verify it is persisted.
-- [ ] Open the patient from the patient list/search flow.
+- [x] Create a patient and verify it is persisted.
+- [x] Open the patient from the patient list/search flow.
 - [ ] Create a visit for that patient and verify persistence.
 - [ ] Create/update a prescription and verify the clinical state transition.
 - [ ] Verify sensitive operations produce the expected audit event.
