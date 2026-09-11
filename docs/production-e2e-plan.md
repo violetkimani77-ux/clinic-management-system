@@ -21,7 +21,7 @@ A workflow is considered verified only when the test passes against a production
 
 - [x] Staff can sign in with valid credentials.
 - [x] Invalid credentials are rejected without revealing account details.
-- [ ] An unauthenticated user cannot access protected routes.
+- [x] An unauthenticated user cannot access protected routes.
 - [x] Expired/revoked sessions cannot continue accessing protected data.
 
 ### Tenant isolation
