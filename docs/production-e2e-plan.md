@@ -27,7 +27,7 @@ A workflow is considered verified only when the test passes against a production
 ### Tenant isolation
 
 - [x] A user can access records belonging to their clinic.
-- [ ] A user cannot read another clinic's patient/visit/pharmacy records.
+- [x] A user cannot read another clinic's patient/visit/pharmacy records.
 - [x] A user cannot mutate another clinic's records by changing IDs in requests.
 - [x] Server-side authorization remains enforced when UI restrictions are bypassed.
 
