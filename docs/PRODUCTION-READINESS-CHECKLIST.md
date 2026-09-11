@@ -69,7 +69,7 @@
 - [x] Platform operational overview UI design started
 - [x] Dedicated platform-admin identity/session model
 - [x] Mandatory platform-admin MFA
-- [x] Separate least-privilege platform RBAC
+- [x] Separate least-privilege platform RBAC matrix implemented
 - [x] Platform-admin session rotation, expiry and revocation
 
 ### Control-panel information architecture
@@ -85,10 +85,10 @@
 
 ### Platform security
 - [ ] Cross-tenant denial tests for platform roles
-- [ ] Platform-role authorization matrix
-- [ ] Step-up authentication for high-risk actions
-- [ ] Destructive/irreversible action protections
-- [ ] Tenant impersonation disabled by default
+- [x] Platform-role authorization matrix implemented and unit-tested
+- [x] High-risk actions classified and explicit confirmation gate implemented
+- [ ] Destructive/irreversible action protections wired to operational mutations
+- [x] Tenant impersonation disabled by default
 - [ ] Break-glass access, if introduced, must be explicit, time-bounded and fully audited
 - [ ] Platform Control cannot expose unrestricted patient-registry/clinical data merely because a user is a platform admin
 
