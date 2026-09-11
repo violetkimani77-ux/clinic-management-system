@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { adjustStock, createMedicine, receiveStock } from "@/lib/pharmacy/inventory";
+import { adjustStock, createMedicine, receiveStock, returnOrDisposeStock } from "@/lib/pharmacy/inventory";
 
 function parseMoney(value: FormDataEntryValue | null) {
   const amount = Number(String(value ?? "").trim());
@@ -56,6 +56,23 @@ export async function adjustStockAction(formData: FormData) {
   await adjustStock(context, {
     batchId: String(formData.get("batchId") ?? "").trim(),
     delta: Number(String(formData.get("delta") ?? "0")),
+    reason: String(formData.get("reason") ?? ""),
+  });
+
+  revalidatePath("/pharmacy");
+  revalidatePath("/pharmacy/inventory");
+  revalidatePath("/dashboard");
+}
+
+export async function returnOrDisposeStockAction(formData: FormData) {
+  const context = await requireClinicPermission(PERMISSIONS.PHARMACY_STOCK_ADJUST);
+  const operation = String(formData.get("operation") ?? "").trim();
+  if (operation !== "RETURN" && operation !== "DISPOSAL") throw new Error("INVALID_STOCK_OPERATION");
+
+  await returnOrDisposeStock(context, {
+    batchId: String(formData.get("batchId") ?? "").trim(),
+    operation,
+    quantity: Number(String(formData.get("quantity") ?? "0")),
     reason: String(formData.get("reason") ?? ""),
   });
 
