@@ -1,5 +1,5 @@
 CREATE TABLE "PlatformAdmin" (
-  "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+  "id" TEXT NOT NULL,
   "email" TEXT NOT NULL,
   "name" TEXT NOT NULL,
   "passwordHash" TEXT NOT NULL,
@@ -19,7 +19,7 @@ CREATE INDEX "PlatformAdmin_status_idx" ON "PlatformAdmin"("status");
 CREATE INDEX "PlatformAdmin_roleCode_idx" ON "PlatformAdmin"("roleCode");
 
 CREATE TABLE "PlatformSession" (
-  "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+  "id" TEXT NOT NULL,
   "tokenHash" TEXT NOT NULL,
   "platformAdminId" TEXT NOT NULL,
   "expiresAt" TIMESTAMP(3) NOT NULL,
@@ -36,7 +36,7 @@ CREATE INDEX "PlatformSession_platformAdminId_expiresAt_idx" ON "PlatformSession
 CREATE INDEX "PlatformSession_expiresAt_idx" ON "PlatformSession"("expiresAt");
 
 CREATE TABLE "PlatformAuditLog" (
-  "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+  "id" TEXT NOT NULL,
   "platformAdminId" TEXT,
   "action" TEXT NOT NULL,
   "entityType" TEXT NOT NULL,
