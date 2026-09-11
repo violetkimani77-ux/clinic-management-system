@@ -63,22 +63,22 @@
 ### Architecture / boundary
 - [x] Platform Control readiness requirements defined
 - [x] Dedicated Platform Control architecture document created
-- [~] Initial read-only Platform Control route scaffolded
+- [x] Initial read-only Platform Control route scaffolded
 - [x] Clinic `ADMIN` sessions are **not** treated as platform-admin authority
 - [x] Platform route is inaccessible to ordinary clinic sessions until dedicated platform authentication exists
-- [~] Platform operational overview UI design started
-- [ ] Dedicated platform-admin identity/session model
-- [ ] Mandatory platform-admin MFA
-- [ ] Separate least-privilege platform RBAC
-- [ ] Platform-admin session rotation, expiry and revocation
+- [x] Platform operational overview UI design started
+- [x] Dedicated platform-admin identity/session model
+- [x] Mandatory platform-admin MFA
+- [x] Separate least-privilege platform RBAC
+- [x] Platform-admin session rotation, expiry and revocation
 
 ### Control-panel information architecture
-- [~] Overview: clinics, trials, subscriptions, datastore health
+- [x] Overview: clinics, trials, subscriptions, datastore health
 - [ ] Clinics / Tenants directory and operational detail
 - [ ] Provisioning controls/status
 - [ ] Data residency controls and evidence
-- [ ] Datastore inventory, lifecycle and health
-- [ ] Security & Audit operations
+- [~] Datastore inventory, lifecycle and health
+- [~] Security & Audit operations
 - [ ] Payment integration health/reconciliation
 - [ ] Maintenance and suspension controls
 - [ ] Platform health and actionable alerts
@@ -93,14 +93,14 @@
 - [ ] Platform Control cannot expose unrestricted patient-registry/clinical data merely because a user is a platform admin
 
 ### Platform auditability
-- [ ] Every provisioning/suspension/migration/residency/maintenance/security action emits an audit event
-- [ ] Audit records capture actor, role, scope, action, timestamp, outcome and target/reference
-- [ ] Audit evidence is tamper-evident and access-controlled
+- [~] Every provisioning/suspension/migration/residency/maintenance/security action emits an audit event
+- [x] Audit records capture actor, role, scope, action, timestamp, outcome and target/reference for platform authentication events
+- [x] Platform audit records are access-controlled through the dedicated platform boundary
 - [ ] Platform admins cannot edit/delete audit evidence
 - [ ] Security alerts have ownership, severity, status and resolution evidence
 
 ### Platform release tests
-- [ ] Platform-admin login/MFA E2E
+- [~] Platform-admin login/MFA E2E
 - [ ] Platform authorization matrix E2E
 - [ ] Cross-tenant denial E2E
 - [ ] Provisioning/lifecycle E2E
