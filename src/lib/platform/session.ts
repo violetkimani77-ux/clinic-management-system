@@ -8,6 +8,7 @@ import type { PlatformAdminRole, PlatformAdminStatus } from "@prisma/client";
 export const PLATFORM_SESSION_COOKIE = "heri_platform_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 2;
 const SESSION_IDLE_TIMEOUT_SECONDS = 60 * 15;
+const SESSION_ROTATION_SECONDS = 60 * 10;
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -66,7 +67,24 @@ export async function getPlatformAuthContext(): Promise<PlatformAuthContext | nu
     return null;
   }
 
-  await db.platformSession.update({ where: { id: session.id }, data: { lastUsedAt: now } });
+  const shouldRotate = now.getTime() - session.createdAt.getTime() >= SESSION_ROTATION_SECONDS * 1000;
+  if (shouldRotate) {
+    const rotated = await createPlatformSession(session.platformAdmin.id);
+    await db.platformSession.update({
+      where: { id: session.id },
+      data: { revokedAt: now, lastUsedAt: now },
+    });
+    cookieStore.set(PLATFORM_SESSION_COOKIE, rotated.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/platform",
+      expires: rotated.expiresAt,
+    });
+  } else {
+    await db.platformSession.update({ where: { id: session.id }, data: { lastUsedAt: now } });
+  }
+
   return {
     platformAdminId: session.platformAdmin.id,
     email: session.platformAdmin.email,
