@@ -4,7 +4,7 @@ import { requireClinicPermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getInventoryOverview } from "@/lib/pharmacy/inventory";
 import styles from "@/components/dashboard/workspace-page.module.css";
-import { createMedicineAction, receiveStockAction, adjustStockAction } from "../inventory-actions";
+import { createMedicineAction, receiveStockAction, adjustStockAction, returnOrDisposeStockAction } from "../inventory-actions";
 
 /**
  * Inventory is the operational stock surface for pharmacy staff. Catalog,
@@ -89,9 +89,29 @@ export default async function PharmacyInventoryPage() {
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <caption className={styles.srOnly}>Stock batches and expiry dates</caption>
-              <thead><tr><th>Medicine</th><th>Batch</th><th>Expiry</th><th>Quantity</th><th>Supplier</th>{canAdjust ? <th>Adjust</th> : null}</tr></thead>
+              <thead><tr><th>Medicine</th><th>Batch</th><th>Expiry</th><th>Quantity</th><th>Supplier</th>{canAdjust ? <th>Stock operation</th> : null}</tr></thead>
               <tbody>
-                {overview.batches.map((batch) => <tr key={batch.id}><td>{batch.medicineName}</td><td>{batch.batchNumber}</td><td>{batch.expiryDate.toLocaleDateString("en-KE")}</td><td>{batch.quantity}</td><td>{batch.supplierName || "—"}</td>{canAdjust ? <td><form action={adjustStockAction}><input type="hidden" name="batchId" value={batch.id} /><div className={styles.formActions}><input name="delta" type="number" step="1" placeholder="± qty" aria-label={`Adjustment for ${batch.batchNumber}`} required /><input name="reason" placeholder="Reason" aria-label={`Reason for ${batch.batchNumber}`} required /><button type="submit" className={styles.secondaryButton}>Adjust</button></div></form></td> : null}</tr>)}
+                {overview.batches.map((batch) => <tr key={batch.id}>
+                  <td>{batch.medicineName}</td><td>{batch.batchNumber}</td><td>{batch.expiryDate.toLocaleDateString("en-KE")}</td><td>{batch.quantity}</td><td>{batch.supplierName || "—"}</td>
+                  {canAdjust ? <td>
+                    <form action={adjustStockAction}>
+                      <input type="hidden" name="batchId" value={batch.id} />
+                      <div className={styles.formActions}><input name="delta" type="number" step="1" placeholder="± qty" aria-label={`Adjustment for ${batch.batchNumber}`} required /><input name="reason" placeholder="Reason" aria-label={`Reason for ${batch.batchNumber}`} required /><button type="submit" className={styles.secondaryButton}>Adjust</button></div>
+                    </form>
+                    <details>
+                      <summary>Return / dispose</summary>
+                      <form action={returnOrDisposeStockAction} className={styles.patientForm}>
+                        <input type="hidden" name="batchId" value={batch.id} />
+                        <div className={styles.formGrid}>
+                          <label className={styles.field}><span>Operation</span><select name="operation" defaultValue="DISPOSAL"><option value="RETURN">Return to stock</option><option value="DISPOSAL">Dispose stock</option></select></label>
+                          <label className={styles.field}><span>Quantity</span><input name="quantity" type="number" min="1" max={batch.quantity} step="1" required /></label>
+                          <label className={styles.fieldWide}><span>Reason</span><input name="reason" required /></label>
+                        </div>
+                        <div className={styles.formActions}><button type="submit" className={styles.secondaryButton}>Record operation</button></div>
+                      </form>
+                    </details>
+                  </td> : null}
+                </tr>)}
               </tbody>
             </table>
           </div>
