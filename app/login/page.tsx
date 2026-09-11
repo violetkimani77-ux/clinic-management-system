@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Manrope } from "next/font/google";
 import { LoginForm } from "@/components/auth/login-form";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-landing",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -13,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="auth-page">
+    <main className={`auth-page ${manrope.variable}`}>
       <nav className="auth-nav" aria-label="Public navigation">
         <Link href="/" className="auth-brand" aria-label="Heri CMS — Clinic Management System">
           <span className="auth-brand-name"><span className="auth-brand-heri">Heri</span><span className="auth-brand-cms"> CMS</span></span>
