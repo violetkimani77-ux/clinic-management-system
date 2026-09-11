@@ -38,6 +38,9 @@ jobs:
       - name: Secret scan
         run: npm run security:secrets
 
+      - name: Dependency vulnerability audit
+        run: npm audit --audit-level=high
+
       - name: Lint
         run: npm run lint
 
