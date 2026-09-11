@@ -1,6 +1,7 @@
 import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { StockMovementType } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 import { recordAuditEvent } from "@/lib/audit";
 
 /**
@@ -268,7 +269,7 @@ export async function returnOrDisposeStock(
       where: { id: batch.id },
       data: { quantity: nextQuantity },
     });
-    const referenceId = crypto.randomUUID();
+    const referenceId = randomUUID();
 
     await tx.stockMovement.create({
       data: {
