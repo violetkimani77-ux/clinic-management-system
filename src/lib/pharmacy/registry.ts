@@ -76,7 +76,7 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
       },
     });
     if (!prescription) throw new Error("PRESCRIPTION_NOT_FOUND");
-    if (![PrescriptionStatus.SENT_TO_PHARMACY, PrescriptionStatus.PROCESSING, PrescriptionStatus.PARTIALLY_DISPENSED].includes(prescription.status)) throw new Error("PRESCRIPTION_NOT_READY");
+    if (prescription.status !== PrescriptionStatus.SENT_TO_PHARMACY && prescription.status !== PrescriptionStatus.PROCESSING && prescription.status !== PrescriptionStatus.PARTIALLY_DISPENSED) throw new Error("PRESCRIPTION_NOT_READY");
     if (prescription.items.length === 0) throw new Error("PRESCRIPTION_HAS_NO_ITEMS");
 
     const dispensedByMedicine = new Map<string, number>();
