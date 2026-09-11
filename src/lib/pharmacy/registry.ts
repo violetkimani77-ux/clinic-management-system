@@ -4,13 +4,6 @@ import { InvoiceStatus, PrescriptionStatus } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { recordAuditEvent } from "@/lib/audit";
 
-/**
- * Owns clinic-scoped pharmacy reads and dispensing transactions.
- *
- * Stock allocation and the resulting pharmacy charge are committed together
- * so inventory and billing cannot drift apart.
- */
-
 export type PharmacyPrescriptionItem = {
   id: string; medicineId: string; medicineName: string; strength: string | null; form: string | null;
   quantity: number; remainingQuantity: number; dosage: string | null; frequency: string | null; duration: string | null; instructions: string | null;
@@ -41,10 +34,8 @@ export async function listPharmacyPrescriptions(context: AuthContext): Promise<P
   });
   return prescriptions.map((prescription) => {
     const dispensedByMedicine = new Map<string, number>();
-    for (const dispensing of prescription.dispensing) {
-      for (const item of dispensing.items) {
-        dispensedByMedicine.set(item.batch.medicineId, (dispensedByMedicine.get(item.batch.medicineId) ?? 0) + item.quantity);
-      }
+    for (const dispensing of prescription.dispensing) for (const item of dispensing.items) {
+      dispensedByMedicine.set(item.batch.medicineId, (dispensedByMedicine.get(item.batch.medicineId) ?? 0) + item.quantity);
     }
     return {
       id: prescription.id, patientId: prescription.patientId, patientNo: prescription.patient.patientNo,
@@ -71,11 +62,7 @@ export async function getPharmacyOverview(context: AuthContext): Promise<Pharmac
   const lowStockMedicines = medicines.map((medicine) => ({ id: medicine.id, name: medicine.name, currentQuantity: quantityByMedicine.get(medicine.id) ?? 0, reorderLevel: medicine.reorderLevel })).filter((medicine) => medicine.currentQuantity <= medicine.reorderLevel);
   const now = new Date();
   const expiryLimit = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  return {
-    prescriptions, dispensedTodayCount, lowStockMedicines,
-    expiredBatchCount: batches.filter((batch) => batch.expiryDate < now).length,
-    expiringSoonBatchCount: batches.filter((batch) => batch.expiryDate >= now && batch.expiryDate <= expiryLimit).length,
-  };
+  return { prescriptions, dispensedTodayCount, lowStockMedicines, expiredBatchCount: batches.filter((batch) => batch.expiryDate < now).length, expiringSoonBatchCount: batches.filter((batch) => batch.expiryDate >= now && batch.expiryDate <= expiryLimit).length };
 }
 
 export async function dispensePrescription(context: AuthContext, prescriptionId: string, requestedQuantities?: Record<string, number>) {
@@ -89,29 +76,21 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
       },
     });
     if (!prescription) throw new Error("PRESCRIPTION_NOT_FOUND");
-    if (prescription.status !== PrescriptionStatus.SENT_TO_PHARMACY && prescription.status !== PrescriptionStatus.PROCESSING && prescription.status !== PrescriptionStatus.PARTIALLY_DISPENSED) throw new Error("PRESCRIPTION_NOT_READY");
+    if (![PrescriptionStatus.SENT_TO_PHARMACY, PrescriptionStatus.PROCESSING, PrescriptionStatus.PARTIALLY_DISPENSED].includes(prescription.status)) throw new Error("PRESCRIPTION_NOT_READY");
     if (prescription.items.length === 0) throw new Error("PRESCRIPTION_HAS_NO_ITEMS");
 
     const dispensedByMedicine = new Map<string, number>();
-    for (const dispensing of prescription.dispensing) {
-      for (const item of dispensing.items) {
-        dispensedByMedicine.set(item.batch.medicineId, (dispensedByMedicine.get(item.batch.medicineId) ?? 0) + item.quantity);
-      }
+    for (const dispensing of prescription.dispensing) for (const item of dispensing.items) {
+      dispensedByMedicine.set(item.batch.medicineId, (dispensedByMedicine.get(item.batch.medicineId) ?? 0) + item.quantity);
     }
 
     const quantities = prescription.items.map((item) => {
       const remaining = Math.max(0, item.quantity - (dispensedByMedicine.get(item.medicineId) ?? 0));
-      const requested = requestedQuantities?.[item.medicineId] ?? remaining;
-      if (!Number.isInteger(requested) || requested <= 0 || requested > remaining) throw new Error("INVALID_DISPENSING_QUANTITY");
+      const requested = requestedQuantities ? (requestedQuantities[item.medicineId] ?? 0) : remaining;
+      if (!Number.isInteger(requested) || requested < 0 || requested > remaining) throw new Error("INVALID_DISPENSING_QUANTITY");
       return { ...item, remaining, requested };
     });
-
-    if (prescription.items.some((item) => (dispensedByMedicine.get(item.medicineId) ?? 0) >= item.quantity)) {
-      // A fully dispensed medicine must never be dispensed again.
-      for (const item of prescription.items) {
-        if ((dispensedByMedicine.get(item.medicineId) ?? 0) >= item.quantity && requestedQuantities?.[item.medicineId]) throw new Error("INVALID_DISPENSING_QUANTITY");
-      }
-    }
+    if (quantities.every((item) => item.requested === 0)) throw new Error("INVALID_DISPENSING_QUANTITY");
 
     const dispensing = await tx.dispensing.create({ data: { clinicId: context.clinicId, prescriptionId: prescription.id, dispensedById: context.userId }, select: { id: true } });
     const now = new Date();
@@ -119,6 +98,7 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
     let totalCharge = 0;
 
     for (const item of quantities) {
+      if (item.requested === 0) continue;
       const batches = await tx.stockBatch.findMany({
         where: { clinicId: context.clinicId, medicineId: item.medicineId, quantity: { gt: 0 }, expiryDate: { gte: now } },
         orderBy: [{ expiryDate: "asc" }, { createdAt: "asc" }],
@@ -149,21 +129,13 @@ export async function dispensePrescription(context: AuthContext, prescriptionId:
       await tx.invoiceItem.create({ data: { invoiceId, dispensingId: dispensing.id, description, quantity: 1, unitPrice: totalCharge, total: totalCharge } });
       await tx.invoice.update({ where: { id: invoiceId }, data: { total: { increment: totalCharge } } });
     } else {
-      const invoice = await tx.invoice.create({
-        data: { clinicId: context.clinicId, patientId: prescription.patientId, visitId: prescription.visitId, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total: totalCharge, issuedAt: new Date(), items: { create: { dispensingId: dispensing.id, description, quantity: 1, unitPrice: totalCharge, total: totalCharge } } },
-        select: { id: true },
-      });
+      const invoice = await tx.invoice.create({ data: { clinicId: context.clinicId, patientId: prescription.patientId, visitId: prescription.visitId, invoiceNo: makeInvoiceNo(), status: InvoiceStatus.ISSUED, total: totalCharge, issuedAt: new Date(), items: { create: { dispensingId: dispensing.id, description, quantity: 1, unitPrice: totalCharge, total: totalCharge } } }, select: { id: true } });
       invoiceId = invoice.id;
     }
 
-    const allDispensed = quantities.every((item) => item.requested === item.remaining);
-    const updated = await tx.prescription.update({ where: { id: prescription.id }, data: { status: allDispensed ? PrescriptionStatus.DISPENSED : PrescriptionStatus.PARTIALLY_DISPENSED }, select: { id: true, status: true } });
-    await recordAuditEvent(context, {
-      action: allDispensed ? "PRESCRIPTION_DISPENSED" : "PRESCRIPTION_PARTIALLY_DISPENSED",
-      entityType: "Prescription",
-      entityId: prescription.id,
-      metadata: { dispensingId: dispensing.id, invoiceId, totalCharge },
-    }, tx);
+    const allRemainingDispensed = quantities.every((item) => item.requested === item.remaining);
+    const updated = await tx.prescription.update({ where: { id: prescription.id }, data: { status: allRemainingDispensed ? PrescriptionStatus.DISPENSED : PrescriptionStatus.PARTIALLY_DISPENSED }, select: { id: true, status: true } });
+    await recordAuditEvent(context, { action: allRemainingDispensed ? "PRESCRIPTION_DISPENSED" : "PRESCRIPTION_PARTIALLY_DISPENSED", entityType: "Prescription", entityId: prescription.id, metadata: { dispensingId: dispensing.id, invoiceId, totalCharge } }, tx);
     return { ...updated, dispensingId: dispensing.id, invoiceId, totalCharge };
   }, { isolationLevel: "Serializable" });
 }
