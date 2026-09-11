@@ -11,7 +11,8 @@
     "db:migrate:deploy": "npx --yes prisma@6.19.3 migrate deploy",
     "test": "jest --testPathIgnorePatterns=tests/e2e",
     "test:watch": "jest --watch",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "security:secrets": "node scripts/check-secrets.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
@@ -31,7 +32,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.0",
     "jest": "^30.5.1",
-    "jest-environment-jsdom": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.0",
     "typescript": "^5.0.0"
   }
 }
