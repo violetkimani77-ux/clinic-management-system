@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./responsive.css";
-
-const productionUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? `https://${process.env.NEXT_PUBLIC_SITE_URL.replace(/^https?:\/\//, "")}`
-  : process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(productionUrl),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "Heri CMS | Clinic Management System",
     template: "%s | Heri CMS",
