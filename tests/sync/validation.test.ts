@@ -30,10 +30,17 @@ describe("sync validation", () => {
     );
   });
 
-  it("rejects device mismatch and oversized batches", () => {
+  it("rejects device mismatch, invalid timestamps, and oversized batches", () => {
     expect(() => validateSyncOperation(operation(), "clinic-1", "device-2")).toThrow(
       "SYNC_DEVICE_MISMATCH",
     );
+    expect(() =>
+      validateSyncOperation(
+        operation({ clientCreatedAt: "not-a-timestamp" }),
+        "clinic-1",
+        "device-1",
+      ),
+    ).toThrow("SYNC_INVALID_CLIENT_CREATED_AT");
 
     const operations = Array.from({ length: 101 }, (_, index) =>
       operation({ operationId: `op-${index}` }),

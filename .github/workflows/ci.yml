@@ -35,6 +35,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Secret scan
+        run: npm run security:secrets
+
+      - name: Dependency vulnerability audit
+        run: npm audit --audit-level=high
+
       - name: Lint
         run: npm run lint
 
@@ -50,8 +56,28 @@ jobs:
   e2e:
     name: Playwright E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     needs: test
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/clinic_management_test
+      E2E_STAFF_EMAIL: admin@demo-clinic.local
+      E2E_STAFF_PASSWORD: ${{ secrets.E2E_STAFF_PASSWORD }}
+      PLATFORM_ADMIN_EMAIL: platform-admin@e2e.local
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: clinic_management_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d clinic_management_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -66,11 +92,67 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate E2E staff credential is configured
+        run: test -n "$E2E_STAFF_PASSWORD"
+
+      - name: Generate ephemeral Platform Control E2E credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          platform_admin_password="$(node -e 'console.log(require("node:crypto").randomBytes(24).toString("base64url"))')"
+          platform_admin_mfa_secret="$(node - <<'NODE'
+          const crypto = require("node:crypto");
+          const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+          const bytes = crypto.randomBytes(20);
+          let bits = "";
+          for (const byte of bytes) bits += byte.toString(2).padStart(8, "0");
+          let secret = "";
+          for (let i = 0; i + 5 <= bits.length; i += 5) secret += alphabet[parseInt(bits.slice(i, i + 5), 2)];
+          process.stdout.write(secret);
+          NODE
+          )"
+          platform_auth_encryption_key="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
+
+          echo "::add-mask::$platform_admin_password"
+          echo "::add-mask::$platform_admin_mfa_secret"
+          echo "::add-mask::$platform_auth_encryption_key"
+
+          {
+            printf 'PLATFORM_ADMIN_PASSWORD=%s\n' "$platform_admin_password"
+            printf 'PLATFORM_ADMIN_MFA_SECRET=%s\n' "$platform_admin_mfa_secret"
+            printf 'PLATFORM_AUTH_ENCRYPTION_KEY=%s\n' "$platform_auth_encryption_key"
+          } >> "$GITHUB_ENV"
+
+          unset platform_admin_password platform_admin_mfa_secret platform_auth_encryption_key
+
+      - name: Apply database migrations
+        run: npm run db:migrate:deploy
+
+      - name: Seed isolated E2E database
+        run: npx --yes prisma@6.19.3 db seed
+
       - name: Install pinned Playwright test runner
-        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+        run: npm install --no-save --package-lock=false --legacy-peer-deps @playwright/test@1.63.0
+
+      - name: Verify E2E dependency vulnerability audit
+        run: npm audit --audit-level=high
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright E2E
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tests/e2e/mock-server-only.cjs
         run: npm run test:e2e
+
+      - name: Upload Playwright diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-diagnostics
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7

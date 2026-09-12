@@ -33,6 +33,14 @@ export async function createSession(userId: string, clinicId: string, client: Se
   return { token, expiresAt };
 }
 
+async function isPlatformTenantSuspended(clinicId: string): Promise<boolean> {
+  const rows = await db.$queryRawUnsafe<Array<{ status: string }>>(
+    `SELECT "status" FROM "PlatformTenantControl" WHERE "clinicId" = $1`,
+    clinicId,
+  );
+  return rows[0]?.status === "SUSPENDED";
+}
+
 export async function getAuthContext(): Promise<AuthContext | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -56,6 +64,12 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     session.user.status !== "ACTIVE"
   ) {
     if (session) await db.authSession.deleteMany({ where: { id: session.id } });
+    return null;
+  }
+
+  if (await isPlatformTenantSuspended(session.clinicId)) {
+    await db.authSession.deleteMany({ where: { id: session.id } });
+    cookieStore.delete(SESSION_COOKIE);
     return null;
   }
 

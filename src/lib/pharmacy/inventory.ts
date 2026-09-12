@@ -1,6 +1,7 @@
 import type { AuthContext } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { StockMovementType } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 import { recordAuditEvent } from "@/lib/audit";
 
 /**
@@ -242,5 +243,52 @@ export async function adjustStock(
     }, tx);
 
     return updated;
+  });
+}
+
+export async function returnOrDisposeStock(
+  context: AuthContext,
+  input: { batchId: string; operation: "RETURN" | "DISPOSAL"; quantity: number; reason: string },
+) {
+  if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new Error("INVALID_STOCK_QUANTITY");
+  const reason = input.reason.trim();
+  if (!reason) throw new Error("STOCK_OPERATION_REASON_REQUIRED");
+
+  return db.$transaction(async (tx) => {
+    const batch = await tx.stockBatch.findFirst({
+      where: { id: input.batchId, clinicId: context.clinicId },
+      select: { id: true, quantity: true, medicine: { select: { name: true } } },
+    });
+    if (!batch) throw new Error("STOCK_BATCH_NOT_FOUND");
+
+    const delta = input.operation === "RETURN" ? input.quantity : -input.quantity;
+    const nextQuantity = batch.quantity + delta;
+    if (nextQuantity < 0) throw new Error("INSUFFICIENT_STOCK_FOR_DISPOSAL");
+
+    const updated = await tx.stockBatch.update({
+      where: { id: batch.id },
+      data: { quantity: nextQuantity },
+    });
+    const referenceId = randomUUID();
+
+    await tx.stockMovement.create({
+      data: {
+        clinicId: context.clinicId,
+        batchId: batch.id,
+        type: input.operation === "RETURN" ? StockMovementType.RETURN : StockMovementType.DISPOSAL,
+        quantity: delta,
+        referenceId,
+        reason,
+      },
+    });
+
+    await recordAuditEvent(context, {
+      action: input.operation === "RETURN" ? "STOCK_RETURNED" : "STOCK_DISPOSED",
+      entityType: "StockBatch",
+      entityId: batch.id,
+      metadata: { medicineName: batch.medicine.name, quantity: input.quantity, reason, referenceId },
+    }, tx);
+
+    return { ...updated, referenceId };
   });
 }

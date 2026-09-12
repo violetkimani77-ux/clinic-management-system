@@ -148,6 +148,18 @@ enum SyncConflictStatus {
   REJECTED
 }
 
+enum PlatformAdminStatus {
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum PlatformAdminRole {
+  PLATFORM_ADMIN
+  PLATFORM_OPERATOR
+  PLATFORM_AUDITOR
+}
+
 model Clinic {
   id String @id @default(uuid())
   name String
@@ -644,4 +656,51 @@ model SyncConflict {
   @@index([clinicId, status, createdAt])
   @@index([clinicId, entityType, entityId])
   @@index([deviceId, status])
+}
+
+model PlatformAdmin {
+  id String @id @default(uuid())
+  email String @unique
+  name String
+  passwordHash String
+  mfaSecretEncrypted String
+  mfaEnabled Boolean @default(true)
+  status PlatformAdminStatus @default(ACTIVE)
+  roleCode PlatformAdminRole @default(PLATFORM_ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions PlatformSession[]
+  auditLogs PlatformAuditLog[]
+  @@index([status])
+  @@index([roleCode])
+}
+
+model PlatformSession {
+  id String @id @default(uuid())
+  tokenHash String @unique
+  platformAdminId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  lastUsedAt DateTime?
+  mfaVerifiedAt DateTime
+  revokedAt DateTime?
+  platformAdmin PlatformAdmin @relation(fields: [platformAdminId], references: [id], onDelete: Restrict)
+  @@index([platformAdminId, expiresAt])
+  @@index([expiresAt])
+}
+
+model PlatformAuditLog {
+  id String @id @default(uuid())
+  platformAdminId String?
+  action String
+  entityType String
+  entityId String?
+  metadata Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  platformAdmin PlatformAdmin? @relation(fields: [platformAdminId], references: [id], onDelete: SetNull)
+  @@index([platformAdminId, createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@index([action, createdAt])
 }

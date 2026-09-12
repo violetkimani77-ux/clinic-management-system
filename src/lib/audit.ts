@@ -40,7 +40,7 @@ async function buildEntryHash(
       ${input.id},
       ${input.clinicId},
       ${input.userId},
-      ${input.sequence},
+      CAST(${input.sequence} AS integer),
       ${input.action},
       ${input.entityType},
       ${input.entityId},
@@ -48,7 +48,7 @@ async function buildEntryHash(
       ${input.ipAddress},
       ${input.userAgent},
       ${input.previousHash},
-      ${input.createdAt.toISOString()}
+      CAST(${input.createdAt.toISOString()} AS timestamptz)
     ) AS "entryHash"
   `;
 

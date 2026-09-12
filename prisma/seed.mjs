@@ -1,5 +1,13 @@
-import { PrismaClient, RoleCode, UserStatus } from "@prisma/client";
-import { randomBytes, scrypt as nodeScrypt } from "node:crypto";
+import {
+  PrismaClient,
+  RoleCode,
+  TenantDataStoreStatus,
+  TenantIsolationMode,
+  TenantResidencyPolicy,
+  TransferAssessmentStatus,
+  UserStatus,
+} from "@prisma/client";
+import { createCipheriv, randomBytes, scrypt as nodeScrypt } from "node:crypto";
 import { promisify } from "node:util";
 
 const prisma = new PrismaClient();
@@ -52,7 +60,17 @@ const PERMISSION_DESCRIPTIONS = {
 };
 
 const DEFAULT_CLINIC = { code: "DEMO-CLINIC", name: "Demo Clinic" };
-const DEFAULT_ADMIN = { email: "admin@demo-clinic.local", name: "Clinic Administrator", password: "ChangeMe123!" };
+const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? process.env.E2E_STAFF_PASSWORD;
+
+if (!adminPassword) {
+  throw new Error("SEED_ADMIN_PASSWORD or E2E_STAFF_PASSWORD must be configured before seeding.");
+}
+
+const DEFAULT_ADMIN = {
+  email: "admin@demo-clinic.local",
+  name: "Clinic Administrator",
+  password: adminPassword,
+};
 
 async function hashPassword(password) {
   const salt = randomBytes(16);
@@ -60,8 +78,82 @@ async function hashPassword(password) {
   return `scrypt:${salt.toString("hex")}:${Buffer.from(derivedKey).toString("hex")}`;
 }
 
+function encryptPlatformSecret(secret) {
+  const key = process.env.PLATFORM_AUTH_ENCRYPTION_KEY;
+  if (!key || !/^[0-9a-fA-F]{64}$/.test(key)) {
+    throw new Error("PLATFORM_AUTH_ENCRYPTION_KEY must be configured as a 32-byte hex key when provisioning Platform Control.");
+  }
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", Buffer.from(key, "hex"), iv);
+  const ciphertext = Buffer.concat([cipher.update(secret, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `v1:${iv.toString("base64url")}:${tag.toString("base64url")}:${ciphertext.toString("base64url")}`;
+}
+
+async function seedPlatformAdmin() {
+  const email = process.env.PLATFORM_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.PLATFORM_ADMIN_PASSWORD;
+  const mfaSecret = process.env.PLATFORM_ADMIN_MFA_SECRET;
+  const configured = Boolean(email || password || mfaSecret || process.env.PLATFORM_AUTH_ENCRYPTION_KEY);
+  if (!configured) return;
+  if (!email || !password || !mfaSecret) {
+    throw new Error("PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_PASSWORD, and PLATFORM_ADMIN_MFA_SECRET must all be configured together.");
+  }
+
+  const passwordHash = await hashPassword(password);
+  const mfaSecretEncrypted = encryptPlatformSecret(mfaSecret);
+  await prisma.platformAdmin.upsert({
+    where: { email },
+    update: {
+      name: process.env.PLATFORM_ADMIN_NAME ?? "Heri Platform Administrator",
+      passwordHash,
+      mfaSecretEncrypted,
+      mfaEnabled: true,
+      status: "ACTIVE",
+      roleCode: "PLATFORM_ADMIN",
+    },
+    create: {
+      email,
+      name: process.env.PLATFORM_ADMIN_NAME ?? "Heri Platform Administrator",
+      passwordHash,
+      mfaSecretEncrypted,
+      mfaEnabled: true,
+      status: "ACTIVE",
+      roleCode: "PLATFORM_ADMIN",
+    },
+  });
+  console.log(`Provisioned platform admin: ${email}`);
+}
+
 async function main() {
   const clinic = await prisma.clinic.upsert({ where: { code: DEFAULT_CLINIC.code }, update: { name: DEFAULT_CLINIC.name }, create: DEFAULT_CLINIC });
+  const now = new Date();
+
+  await prisma.tenantDataStore.upsert({
+    where: { clinicId: clinic.id },
+    update: {
+      isolationMode: TenantIsolationMode.POOL,
+      status: TenantDataStoreStatus.HEALTHY,
+      residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
+      transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
+      country: "KE",
+      backupCountry: "KE",
+      provisionedAt: now,
+      lastHealthCheckAt: now,
+    },
+    create: {
+      clinicId: clinic.id,
+      isolationMode: TenantIsolationMode.POOL,
+      status: TenantDataStoreStatus.HEALTHY,
+      residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
+      transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
+      country: "KE",
+      backupCountry: "KE",
+      provisionedAt: now,
+      lastHealthCheckAt: now,
+    },
+  });
+
   const roles = {};
   for (const [code, name] of [[RoleCode.ADMIN, "Administrator"], [RoleCode.PHARMACY, "Pharmacy"], [RoleCode.ACCOUNTS, "Accounts"]]) {
     roles[code] = await prisma.role.upsert({ where: { code }, update: { name }, create: { code, name } });
@@ -90,10 +182,10 @@ async function main() {
     update: { roleId: roles[RoleCode.ADMIN].id },
     create: { clinicId: clinic.id, userId: admin.id, roleId: roles[RoleCode.ADMIN].id },
   });
+  await seedPlatformAdmin();
   console.log(`Seeded clinic: ${clinic.code}`);
   console.log(`Seeded admin: ${DEFAULT_ADMIN.email}`);
-  console.log("Initial admin password: ChangeMe123!");
-  console.log("Change the initial password before using this account in a real clinic.");
+  console.log("Admin password supplied through an environment secret.");
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; }).finally(async () => { await prisma.$disconnect(); });

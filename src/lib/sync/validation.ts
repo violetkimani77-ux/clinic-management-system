@@ -44,6 +44,9 @@ export function validateSyncOperation(
   if (!isRecord(operation.payload)) {
     throw new Error("SYNC_INVALID_PAYLOAD");
   }
+  if (!Number.isFinite(Date.parse(operation.clientCreatedAt))) {
+    throw new Error("SYNC_INVALID_CLIENT_CREATED_AT");
+  }
   if (
     operation.expectedVersion !== undefined &&
     (!Number.isInteger(operation.expectedVersion) || operation.expectedVersion < 0)
