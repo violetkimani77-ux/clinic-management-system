@@ -17,10 +17,6 @@
   "prisma": {
     "seed": "node prisma/seed.mjs"
   },
-  "overrides": {
-    "deepmerge-ts": "8.0.2",
-    "postcss": "8.5.28"
-  },
   "dependencies": {
     "@prisma/client": "6.19.3",
     "next": "^15.5.0",
