@@ -48,7 +48,7 @@ async function buildEntryHash(
       ${input.ipAddress},
       ${input.userAgent},
       ${input.previousHash},
-      ${input.createdAt.toISOString()}
+      ${input.createdAt.toISOString()}::timestamptz
     ) AS "entryHash"
   `;
 
