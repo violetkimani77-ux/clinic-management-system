@@ -106,14 +106,14 @@
 
 ## 4. Authentication, authorization and secure session security
 - [x] Password hashing
-- [x] Login rate limiting
+- [x] Login rate limiting — per-IP (20/15min) and per-email (5/15min) fixed-window limits on `/api/auth/login`, sharing the `AuthRateLimit` table and limiter used by trial signup (`src/lib/auth/rate-limit.ts`)
 - [x] MFA infrastructure
 - [x] RBAC and entitlement checks
 - [x] Suspended/disabled users rejected server-side
 - [x] Session expiry/revocation server-side
 - [ ] E2E MFA verification
 - [ ] Authorization matrix verified for every module/action
-- [ ] Realistic brute-force/rate-limit verification
+- [x] Realistic brute-force/rate-limit verification — `tests/auth/login.test.ts` covers per-IP and per-email lockout, confirms a rate-limited attempt never reaches the password/user lookup
 - [ ] Security-sensitive authentication actions produce audit evidence
 - [ ] **Secure session cookies:** HttpOnly; Secure in production; appropriate SameSite; narrow Path/Domain; appropriate Max-Age/Expires; no sensitive data in cookie values
 - [ ] Session rotation after authentication and privilege changes
@@ -402,7 +402,8 @@
 ## 16. Testing and release validation
 - [x] Release candidate SHA `af690c6eb433729cbf8f6f2a2411255bca4f5c37` passed lint/typecheck/unit/build/Playwright in Actions run #36
 - [x] Successful Vercel deployment evidence for corrected trial implementation
-- [ ] Rerun CI evidence after subsequent tenant-architecture changes
+- [x] Rerun CI evidence after subsequent tenant-architecture changes — PR #17 (`0e8f09a`) fixed a stale `TenantIsolationMode` enum reference blocking `typecheck`; PR #16 added real Postgres provisioning to the `e2e` job and fixed two latent Prisma raw-query type mismatches in `computeAuditEntryHash` (bigint vs INTEGER for `sequence`, text vs TIMESTAMPTZ for `createdAt`) that unit tests never caught because `tests/audit/audit.test.ts` mocks the database entirely — first fully green `test` + `e2e` run on `main`.
+- [ ] Unit-test coverage on raw-SQL call sites (`src/lib/audit.ts` and any future `$queryRaw`/`$executeRaw` usage) does not catch Postgres type-binding mismatches, since mocked queries never touch a real database — consider a lightweight integration suite against real Postgres for these.
 - [ ] Production-like signup/login/expiry flows
 - [ ] Critical clinic workflow E2E
 - [ ] Tenant isolation/cross-tenant denial E2E
