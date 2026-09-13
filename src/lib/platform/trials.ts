@@ -1,13 +1,13 @@
-import "server-only";
-
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { Prisma, SubscriptionStatus, TenantDataStoreStatus, TenantIsolationMode, TenantResidencyPolicy, TransferAssessmentStatus, UserStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
+import { consumeRateLimit } from "@/lib/auth/rate-limit";
 
 const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
 const TRIAL_WINDOW_MS = 60 * 60 * 1000;
 const TRIAL_ATTEMPT_LIMIT = 5;
+const TRIAL_RATE_LIMIT = { keyType: "TRIAL_IP", windowMs: TRIAL_WINDOW_MS, limit: TRIAL_ATTEMPT_LIMIT };
 
 export type CreateTrialInput = {
   clinicName: string;
@@ -28,45 +28,8 @@ function normalize(value: string) {
   return value.trim();
 }
 
-function hashRateLimitKey(value: string) {
-  return createHash("sha256").update(value).digest("hex");
-}
-
 function createClinicCode() {
   return `HALI-${randomBytes(4).toString("hex").toUpperCase()}`;
-}
-
-async function consumeTrialRateLimit(ipAddress: string | null) {
-  const keyHash = hashRateLimitKey(ipAddress?.trim() || "unknown");
-  const now = new Date();
-
-  return db.$transaction(async (tx) => {
-    const existing = await tx.authRateLimit.findUnique({
-      where: { keyType_keyHash: { keyType: "TRIAL_IP", keyHash } },
-    });
-
-    if (!existing || now.getTime() - existing.windowStartedAt.getTime() >= TRIAL_WINDOW_MS) {
-      await tx.authRateLimit.upsert({
-        where: { keyType_keyHash: { keyType: "TRIAL_IP", keyHash } },
-        create: { keyType: "TRIAL_IP", keyHash, attempts: 1, windowStartedAt: now },
-        update: { attempts: 1, windowStartedAt: now, blockedUntil: null },
-      });
-      return true;
-    }
-
-    if (existing.blockedUntil && existing.blockedUntil > now) return false;
-
-    const attempts = existing.attempts + 1;
-    await tx.authRateLimit.update({
-      where: { keyType_keyHash: { keyType: "TRIAL_IP", keyHash } },
-      data: {
-        attempts,
-        blockedUntil: attempts >= TRIAL_ATTEMPT_LIMIT ? new Date(now.getTime() + TRIAL_WINDOW_MS) : null,
-      },
-    });
-
-    return attempts < TRIAL_ATTEMPT_LIMIT;
-  });
 }
 
 export async function createClinicTrial(input: CreateTrialInput): Promise<CreateTrialResult> {
@@ -79,7 +42,7 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
   if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 254) throw new Error("INVALID_EMAIL");
   if (input.password.length < 12 || input.password.length > 128) throw new Error("INVALID_PASSWORD");
 
-  if (!(await consumeTrialRateLimit(input.ipAddress))) {
+  if (!(await consumeRateLimit(TRIAL_RATE_LIMIT, input.ipAddress))) {
     throw new Error("TRIAL_RATE_LIMITED");
   }
 

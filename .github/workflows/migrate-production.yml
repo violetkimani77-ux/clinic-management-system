@@ -17,8 +17,12 @@ jobs:
   migrate:
     name: Apply Prisma migrations
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
+
+    # Keep production database credentials scoped to this deployment environment.
+    environment: production
 
     steps:
       - name: Checkout repository
@@ -28,11 +32,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate Prisma schema
+        run: npx --no-install prisma@6.19.3 validate
 
       - name: Apply pending production migrations
-        run: npx --yes prisma@6.19.3 migrate deploy
+        run: npx --no-install prisma@6.19.3 migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

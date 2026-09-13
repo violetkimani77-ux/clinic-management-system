@@ -4,6 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { requireTenantDataStore, TENANT_DATASTORE_FAILURE } from "@/lib/tenant/datastore";
 import type { PermissionCode } from "./permissions";
 import type { AuthContext } from "./authorization";
 
@@ -71,6 +72,14 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   });
 
   if (!membership) {
+    await db.authSession.deleteMany({ where: { id: session.id } });
+    return null;
+  }
+
+  try {
+    await requireTenantDataStore(session.clinicId);
+  } catch (error) {
+    if (error instanceof Error && error.message !== TENANT_DATASTORE_FAILURE) throw error;
     await db.authSession.deleteMany({ where: { id: session.id } });
     return null;
   }

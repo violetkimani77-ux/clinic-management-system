@@ -1,4 +1,12 @@
-import { PrismaClient, RoleCode, UserStatus } from "@prisma/client";
+import {
+  PrismaClient,
+  RoleCode,
+  TenantDataStoreStatus,
+  TenantIsolationMode,
+  TenantResidencyPolicy,
+  TransferAssessmentStatus,
+  UserStatus,
+} from "@prisma/client";
 import { randomBytes, scrypt as nodeScrypt } from "node:crypto";
 import { promisify } from "node:util";
 
@@ -90,6 +98,33 @@ async function main() {
     update: { roleId: roles[RoleCode.ADMIN].id },
     create: { clinicId: clinic.id, userId: admin.id, roleId: roles[RoleCode.ADMIN].id },
   });
+
+  const now = new Date();
+  await prisma.tenantDataStore.upsert({
+    where: { clinicId: clinic.id },
+    update: {
+      isolationMode: TenantIsolationMode.POOL,
+      status: TenantDataStoreStatus.HEALTHY,
+      residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
+      transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
+      country: "KE",
+      backupCountry: "KE",
+      provisionedAt: now,
+      lastHealthCheckAt: now,
+    },
+    create: {
+      clinicId: clinic.id,
+      isolationMode: TenantIsolationMode.POOL,
+      status: TenantDataStoreStatus.HEALTHY,
+      residencyPolicy: TenantResidencyPolicy.KENYA_ONLY,
+      transferAssessmentStatus: TransferAssessmentStatus.NOT_REQUIRED,
+      country: "KE",
+      backupCountry: "KE",
+      provisionedAt: now,
+      lastHealthCheckAt: now,
+    },
+  });
+
   console.log(`Seeded clinic: ${clinic.code}`);
   console.log(`Seeded admin: ${DEFAULT_ADMIN.email}`);
   console.log("Initial admin password: ChangeMe123!");

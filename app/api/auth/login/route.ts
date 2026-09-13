@@ -22,7 +22,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const session = await authenticateStaff(body.email, body.password);
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const ipAddress = forwardedFor?.split(",")[0]?.trim() || request.headers.get("x-real-ip");
+
+  let session;
+  try {
+    session = await authenticateStaff(body.email, body.password, ipAddress);
+  } catch (error) {
+    if (error instanceof Error && error.message === "LOGIN_RATE_LIMITED") {
+      return NextResponse.json(
+        { error: "Too many sign-in attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
+    throw error;
+  }
+
   if (!session) {
     return NextResponse.json(
       { error: "Invalid email or password." },

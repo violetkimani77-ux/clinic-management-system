@@ -1,263 +1,459 @@
-# Hali CMS — Production Readiness Checklist
+# Heri CMS — Production Readiness Checklist
 
-**Product:** Hali CMS — Clinic Management System  
-**Purpose:** Single source of truth for the work required before declaring the platform production-ready.
+**Product:** Heri CMS / HeriCMS — Clinic Management System  
+**Purpose:** Single source of truth for the work required before declaring the platform production-ready.  
+**Naming:** The current product name is **Heri CMS / HeriCMS**. **Hali CMS** is the former name and must not be used for new product-facing copy, UI, metadata, or documentation except where historical context is necessary.
 
 ## Status legend
-
 - [x] **Done** — implemented and verified with evidence
 - [~] **In progress** — implementation exists but still needs completion or verification
 - [ ] **Not started** — agreed work has not been implemented
 
-> **Release rule:** A successful Vercel build/deployment alone does not equal production readiness. Production readiness requires functional application flow, production database/configuration verification, security checks, residency controls, and validation evidence.
+> **Release rule:** A successful Vercel build/deployment alone does not equal production readiness. Production readiness requires functional application flow, production database/configuration verification, security checks, secure sessions, tenant isolation, Kenya-first residency/privacy controls, data-export controls, payment-data integrity, backups/restore, observability, and validation evidence.
 
-## Current implementation pass
+## 0. Architecture foundations — locked before scale
 
-This pass completed the code-level items that can be safely implemented from repository evidence without inventing production infrastructure or compliance facts. Production-only verification remains explicitly open.
+### 0.1 HeriCMS data ownership boundary
+- [x] HeriCMS is a patient-registry and clinic-operations platform, not the authoritative longitudinal clinical-record system
+- [x] Platform architecture must not assume HeriCMS stores a complete clinical record
+- [ ] Define the exact patient-registry/operational data boundary and prohibited clinical-data classes
+- [ ] Verify every module against that boundary before production launch
+- [ ] Ensure Platform Control does not become an unrestricted clinical-record viewer
+
+### 0.2 Canonical health-data interoperability
+- [ ] Define a canonical Heri domain model that is not tightly coupled to one external health-data standard
+- [ ] Patient registry mappings to FHIR Patient/Organization/Practitioner concepts
+- [ ] Visit/encounter mappings to FHIR Encounter concepts where applicable
+- [ ] Define OpenMRS interoperability mappings where useful
+- [ ] Define KHIS/DHIS2 reporting mappings and terminology/code mappings
+- [ ] Preserve stable Heri identifiers plus external-system identifiers/mapping records
+- [ ] Define terminology/versioning strategy so interoperability mappings can evolve without destructive schema changes
+- [ ] Test representative Heri records through FHIR/OpenMRS/KHIS mappings
+
+### 0.3 Tiered multi-tenancy and data sovereignty
+- [x] Shared-schema tenancy is the economical default for the initial clinic scale
+- [x] Tenant isolation is abstracted through tenant-aware datastore concepts rather than assuming one physical storage layout
+- [ ] Shared-schema implementation uses strict tenant scoping and database-level row isolation where appropriate
+- [ ] Define schema-per-tenant as the intermediate stronger-isolation tier
+- [ ] Define database-per-tenant as the dedicated sovereignty/enterprise tier
+- [ ] Define objective criteria for moving a tenant between pool/schema/database isolation modes
+- [ ] Ensure migrations, backups, restore, monitoring and support tooling work across all isolation modes
+- [ ] Ensure tenant/application code is storage-mode agnostic
+- [ ] Document data-sovereignty guarantees and limitations for each isolation tier
+- [ ] Test cross-tenant isolation independently for each supported isolation mode
+
+### 0.4 Offline-first and synchronization architecture
+- [ ] Treat offline-first as a core architecture decision, not a UI enhancement
+- [ ] Define device-local persistence for Heri-owned patient-registry/operational data
+- [ ] Define tenant- and user-scoped local storage boundaries
+- [ ] Define operation IDs and an offline outbox for every offline mutation
+- [ ] Define idempotent server-side sync processing
+- [ ] Define incremental pull/change cursors
+- [ ] Define optimistic versioning and conflict detection
+- [ ] Define domain-specific conflict-resolution policies
+- [ ] Define explicit conflict queues for records that cannot be safely merged
+- [ ] Define offline authentication/session/revocation rules
+- [ ] Define online-only operations, including irreversible/high-risk financial and administrative operations
+- [ ] Define sync retry, reconnect, duplicate, replay and out-of-order handling
+- [ ] Implement Patients/registry offline sync before expanding offline scope to additional modules
+
+### 0.5 Payments and billing architecture
+- [ ] Daraja integration boundary documented for verified payment events
+- [ ] Patient-payment flow separated from HeriCMS subscription billing
+- [ ] Clinic subscription billing supports STK Push with authoritative payment confirmation
+- [ ] Insurance co-pay collection represented as a separate payment/business flow if enabled
+- [ ] Payment identities/references are stable, unique and provenance-preserving
+- [ ] Payment integrations remain server-authorized and tenant-bound
+- [ ] Offline architecture never fabricates or finalizes authoritative payment settlement
 
 ## 1. Public product experience
-
 - [x] Public marketing landing page at `/`
-- [x] Hali CMS / Clinic Management System positioning
+- [x] Heri CMS / Clinic Management System positioning
 - [x] Conversion-focused landing-page copy
 - [x] Locked section title: **Built for the whole clinic**
 - [x] Locked section title: **Security by design**
 - [x] Montserrat typography foundation
-- [x] Hali CMS brand lockup with Clinic Management System beneath it
+- [x] Heri CMS brand lockup with Clinic Management System beneath it
 - [x] Free-trial CTA connected to `/trial`
 - [ ] Review all public copy for final commercial/legal approval
-- [ ] Verify responsive/mobile presentation in the final deployment
+- [ ] Verify responsive/mobile presentation in final deployment
 - [ ] Verify public navigation and all CTA links end-to-end
 
 ## 2. Self-service trial lifecycle
-
-- [x] Trial signup page
-- [x] Trial API endpoint
-- [x] Input validation
-- [x] Password hashing using the existing password utility
-- [x] Clinic creation
-- [x] Administrator user creation
-- [x] ADMIN membership creation
-- [x] Four-day trial subscription creation
-- [x] Tenant datastore record creation
-- [x] Trial success page
-- [x] Central entitlement enforcement already blocks expired clinic access
-- [ ] Functional test: landing → trial → successful signup
-- [ ] Functional test: created administrator can log in
-- [ ] Functional test: created administrator reaches dashboard/workspace
-- [ ] Functional test: trial expiry blocks protected workspace access
-- [ ] Functional test: duplicate administrator email is handled safely
-- [~] Functional test: rate limiting behaves as intended — automated service coverage added; runtime verification still required
-- [x] Add automated tests for trial service and API behavior
-- [ ] Improve browser-facing trial error UX
-- [x] Remove/simplify sensitive email data in success-page URLs
+- [x] Trial signup page/API, validation, password hashing, clinic/admin/membership creation, four-day trial, tenant datastore and success flow
+- [x] Central entitlement enforcement
+- [x] Sensitive signup URL data removed
+- [x] Trial endpoint hardened with same-origin validation, no-store responses and generic client errors
+- [x] Precise Prisma `P2002` handling
+- [x] Trial service automated coverage
+- [ ] Landing → trial → signup E2E
+- [ ] Created administrator login/dashboard E2E
+- [ ] Trial expiry/entitlement E2E
+- [ ] Duplicate administrator email E2E
+- [ ] Runtime verification of rate limiting
+- [ ] Browser-facing trial error UX
 
 ## 3. Trial security hardening
+- [x] IP-based trial rate limiting implementation
+- [x] Explicit Origin validation
+- [x] No-store sensitive responses
+- [x] Generic external errors
+- [x] No internal exception details in client responses
+- [x] Passwords absent from URLs/responses
+- [x] Same-origin/CSRF protection
+- [x] Precise Prisma conflict handling
+- [ ] Verify runtime logs contain no signup request payloads/secrets/unauthorized PII
 
-- [x] IP-based trial rate limiting exists with an explicit five-attempt/hour boundary
-- [x] Explicit Origin validation on the trial endpoint
-- [x] `Cache-Control: no-store` on sensitive trial responses
-- [x] Generic external error responses
-- [x] Internal exception details/codes are not returned by the trial endpoint
-- [x] Passwords are not placed in trial success URLs or responses
-- [~] Sensitive signup data logging — the trial endpoint logs only an internal error code; verify deployment/runtime logs contain no request payloads
-- [x] CSRF/cross-origin behavior has explicit same-origin Origin validation for trial POSTs
-- [x] Replace brittle clinic-code unique-error string matching with precise Prisma `P2002` handling
-
-## 4. Authentication, authorization and account security
-
-- [x] Existing password hashing utility
-- [x] Existing login security/rate limiting
+## 4. Authentication, authorization and secure session security
+- [x] Password hashing
+- [x] Login rate limiting — per-IP (20/15min) and per-email (5/15min) fixed-window limits on `/api/auth/login`, sharing the `AuthRateLimit` table and limiter used by trial signup (`src/lib/auth/rate-limit.ts`)
 - [x] MFA infrastructure
-- [x] Role-based authorization infrastructure
-- [x] Central clinic entitlement enforcement
-- [x] Audit-event infrastructure
-- [ ] End-to-end test MFA login flow in production-like environment
-- [x] Suspended/disabled users are rejected by server-side session/login checks
-- [ ] Verify authorization boundaries for every clinic module
-- [x] Session expiry/revocation behavior is enforced server-side
-- [ ] Verify brute-force/rate-limit behavior under realistic conditions
-- [ ] Verify security-sensitive actions generate appropriate audit evidence
+- [x] RBAC and entitlement checks
+- [x] Suspended/disabled users rejected server-side
+- [x] Session expiry/revocation server-side
+- [ ] E2E MFA verification
+- [ ] Authorization matrix verified for every module/action
+- [x] Realistic brute-force/rate-limit verification — `tests/auth/login.test.ts` covers per-IP and per-email lockout, confirms a rate-limited attempt never reaches the password/user lookup
+- [ ] Security-sensitive authentication actions produce audit evidence
+- [ ] **Secure session cookies:** HttpOnly; Secure in production; appropriate SameSite; narrow Path/Domain; appropriate Max-Age/Expires; no sensitive data in cookie values
+- [ ] Session rotation after authentication and privilege changes
+- [ ] Session fixation/hijacking tests
+- [ ] Revocation verified after logout, membership removal and account disablement
 
 ## 5. Tenant isolation and clinic data boundaries
-
 - [x] Clinic membership model
 - [x] Tenant-aware datastore model
 - [x] Tenant datastore health guard
-- [x] Pool / bridge / silo isolation modes represented in platform models
-- [ ] Review every clinic-facing data access path for tenant scoping
-- [x] Server authorization has an explicit fail-closed tenant assertion
-- [ ] Test cross-tenant access attempts end-to-end
-- [x] Clinic selection is membership-bound during login
-- [ ] Verify background jobs and reports preserve tenant boundaries
-- [ ] Verify exports/downloads preserve tenant boundaries
-- [ ] Verify support/admin access is explicitly authorized and audited
+- [x] Pool / bridge / silo isolation modes represented
+- [x] Fail-closed tenant assertion
+- [x] Clinic selection membership-bound during login
+- [ ] Review every clinic-facing data-access path for tenant scoping
+- [ ] Cross-tenant read/write E2E tests
+- [ ] Background jobs/reports isolation tests
+- [ ] Export/download isolation tests
+- [ ] Support/admin authorization and audit verification
 
 ## 6. Kenya-first data residency and privacy
+- [x] Kenya-first residency policy/validation library
+- [x] Kenya-only pooled validation
+- [x] Cross-border transfer controls/residency fields
+- [ ] Actual production DB geography verified
+- [ ] Backup/DR geography verified
+- [ ] Provider/subprocessor geography verified
+- [ ] Operational residency validation with evidence
+- [ ] Transfer assessment workflow
+- [ ] Consent/legal-basis verification where applicable
+- [ ] Residency/transfer evidence retention
+- [ ] Analytics/monitoring/support tooling checked for identifiable health-data export
+- [ ] Provider contractual safeguards/DPA requirements verified
+- [ ] Breach/deletion/retention/legal-request procedures verified
 
-- [x] Kenya data-residency policy document
-- [x] Residency validation library
-- [x] Kenya-only pooled-storage validation
-- [x] Cross-border transfer controls represented in the policy/model
-- [x] Residency-related platform fields
-- [ ] Verify actual production database/backup geography
-- [ ] Verify provider/subprocessor geography and processing locations
-- [ ] Verify backup/DR geography satisfies the selected clinic policy
-- [ ] Implement operational residency validation before datastore activation
-- [ ] Implement transfer-assessment workflow for cross-border processing
-- [ ] Track required consent/legal basis for applicable cross-border sensitive-data processing
-- [ ] Retain residency/transfer evidence per clinic
-- [ ] Verify analytics, monitoring and support tooling do not unintentionally export identifiable health data
-- [ ] Verify provider contractual safeguards/DPA requirements
-- [ ] Verify breach, deletion, retention and legal-request procedures
-
-## 7. Tenant datastore provisioning
-
-- [x] `TenantDataStore` model
-- [x] Isolation mode model: POOL / BRIDGE_DATABASE / SILO_DATABASE
-- [x] Residency policy model
-- [x] Transfer assessment status/ref fields
-- [x] Datastore health status model
+## 7. Tenant datastore provisioning and lifecycle
+- [x] Datastore/residency/transfer/health models
 - [x] Runtime health guard
-- [~] Self-service Kenya-only pooled trial provisioning currently records the datastore as `HEALTHY`; code-level safety documentation added, but real infrastructure validation is still required
-- [ ] Implement/verify lifecycle: `SETUP → RESIDENCY_SELECTED → RESIDENCY_VALIDATED → PROVISIONING → MIGRATING → HEALTHY`
-- [ ] Fail closed when residency validation fails
-- [ ] Fail closed when datastore health checks fail
-- [ ] Fail closed when backup/migration/security validation fails
-- [ ] Implement dedicated datastore provisioning for BRIDGE_DATABASE
-- [ ] Implement dedicated datastore provisioning for SILO_DATABASE
-- [ ] Implement secure connection-secret reference handling
-- [ ] Implement datastore migration/version tracking
-- [ ] Implement recurring datastore health checks
+- [~] Kenya-only pooled trial provisioning records HEALTHY; real infrastructure validation required
+- [ ] Production lifecycle implementation
+- [ ] Fail closed on residency/datastore/backup/migration/security validation failures
+- [ ] Bridge/silo provisioning
+- [ ] Secure connection-secret references
+- [ ] Migration/version tracking
+- [ ] Recurring datastore health checks
+- [ ] Storage-mode migration path between pool, schema-per-tenant and database-per-tenant
 
-## 8. Hali CMS Platform Control
+## 8. Heri CMS Platform Control
 
-- [ ] Create separate Hali CMS Platform Control surface
-- [ ] Overview
-- [ ] Clinics / Tenants
-- [ ] Provisioning
-- [ ] Data Residency
-- [ ] Datastores
-- [ ] Security / Audit
-- [ ] Maintenance
-- [ ] Platform Health
-- [ ] Platform-admin authentication and authorization
-- [ ] Platform-admin audit trail
-- [ ] Safe tenant provisioning/deprovisioning controls
-- [ ] Safe maintenance controls with confirmation and audit evidence
+### 8.1 Platform Control Panel purpose and boundary
+- [ ] Separate platform control surface implemented
+- [ ] Platform Control is a privileged platform-operations boundary, separate from the clinic application/dashboard
+- [ ] Platform admins cannot be treated as ordinary clinic users with an implicit “super-admin” bypass
+- [ ] Platform metadata/operations are separated from clinic patient-registry and operational data access
+- [ ] Platform Control does not automatically grant unrestricted patient-registry access
+- [ ] Any exceptional registry access requires explicit authorization, business justification, time-bounded access and audit evidence
 
-> The Platform Control surface is **not currently an existing UI**. It must not be represented as already available.
+### 8.2 Platform Control Panel information architecture
+- [ ] **Overview:** platform health, active clinics, trials, subscriptions/entitlements, datastore health, payment-data integration health and security alerts
+- [ ] **Clinics / Tenants:** directory, clinic profile, subscription/entitlement, users/memberships, datastore, residency and audit history
+- [ ] **Provisioning:** new tenant, datastore provisioning, residency validation, migration status and provisioning failures
+- [ ] **Data Residency:** Kenya residency status, database location, backup location, provider/subprocessor location and transfer assessments
+- [ ] **Datastores:** pool/bridge/silo inventory, health, capacity, migration/version state and lifecycle operations
+- [ ] **Security & Audit:** authentication events, administrative actions, tenant access, export/download events, security incidents and immutable audit records
+- [ ] **Payment Integration:** integration health, event ingestion, reconciliation, failed events, reversals and data freshness
+- [ ] **Maintenance:** maintenance windows, tenant suspension, migration operations and emergency controls
+- [ ] **Platform Health:** application, database, datastore, background-job and payment-integration health with actionable alerts
+
+### 8.3 Platform Control Panel UX and interaction design
+- [ ] Consistent global navigation for the platform-operations surface
+- [ ] Clear platform-admin identity, role and current session indicator
+- [ ] Search, filtering, sorting and pagination for clinic/tenant and operational lists
+- [ ] Clinic/tenant detail pages expose operational context without unnecessarily exposing patient-registry data
+- [ ] Role-based navigation and action visibility
+- [ ] Clear read-only vs actionable states
+- [ ] Explicit confirmation for destructive, irreversible, suspension, migration and emergency actions
+- [ ] High-risk actions require step-up authentication where appropriate
+- [ ] Dangerous actions identify affected tenant(s), expected impact and rollback/recovery implications before confirmation
+- [ ] Empty, loading, error, degraded-service and permission-denied states designed and tested
+- [ ] Responsive behavior appropriate for operational use, while prioritizing safe desktop workflows for high-risk actions
+- [ ] Accessibility: keyboard navigation, focus management, labels, contrast, status messaging and screen-reader semantics
+- [ ] Sensitive values are minimized, masked or omitted unless operationally necessary
+- [ ] Financial records shown in Platform Control use the same authoritative, immutable payment dataset as Accounts
+
+### 8.4 Platform Control security architecture
+- [ ] Platform administration authentication with MFA enforced
+- [ ] Separate platform-admin authorization model from clinic RBAC
+- [ ] Least-privilege platform roles defined
+- [ ] Step-up authentication for dangerous operations
+- [ ] Secure session expiry, rotation and revocation for platform-admin sessions
+- [ ] Platform-admin sessions use secure cookie/session controls
+- [ ] Cross-tenant data leakage prevention tested
+- [ ] Tenant impersonation is disabled by default; if ever enabled, it requires explicit authorization, strong visual indication, time limit and complete audit trail
+- [ ] Destructive/irreversible operations are protected against accidental or replayed execution
+- [ ] Emergency/break-glass controls are restricted, justified, time-bounded and audited
+
+### 8.5 Platform Control auditability and operations
+- [ ] Every provisioning, suspension, migration, residency, maintenance and security-sensitive administrative action produces an audit event
+- [ ] Audit records include actor, role, tenant/scope, action, timestamp, outcome and relevant target/reference
+- [ ] Audit records are tamper-evident and access-controlled
+- [ ] Platform admins can review audit history without editing or deleting audit evidence
+- [ ] Security alerts have ownership, severity, status and resolution/evidence workflow
+- [ ] Operational failures expose actionable diagnostics without leaking secrets or patient-sensitive data
+- [ ] Platform health checks and alerts have documented response procedures
+- [ ] Platform Control actions have authorization and negative-path tests, not only happy-path tests
+
+### 8.6 Platform Control Panel release tests
+- [ ] Platform-admin login/MFA E2E
+- [ ] Platform-role authorization matrix E2E
+- [ ] Cross-tenant access-denial tests
+- [ ] Provisioning/lifecycle action tests
+- [ ] Residency/datastore control tests
+- [ ] Maintenance/suspension authorization tests
+- [ ] Audit-event completeness tests
+- [ ] High-risk action confirmation/step-up tests
+- [ ] Break-glass controls tested if implemented
+- [ ] Sensitive-data minimization and no-secret-leak tests
+- [ ] Accessibility and responsive UX verification
+
+> The Platform Control surface is not currently an existing UI and must not be represented as available until implemented and verified.
 
 ## 9. Clinic application / dashboard UX
+- [x] Missing-user placeholder normalized to `User`
+- [x] Heri CMS branding applied to authenticated workspace shell
+- [x] Responsive shell CSS
+- [ ] Final production deployment verification
+- [ ] Navigation labels and permission-aware rendering
+- [ ] Empty/loading/error states
+- [ ] Accessibility verification
 
-- [x] Replace the existing **`Zipporah W.`** placeholder with **`User`** where the placeholder is sourced as a missing user name
-- [x] Update dashboard top-left branding to Hali CMS / Clinic Management System
-- [x] Preserve agreed Hali CMS branding hierarchy across login/application/dashboard
-- [ ] Verify navigation labels and permissions remain clear
-- [ ] Review empty/loading/error states across core modules
-- [ ] Review accessibility of forms, navigation and actions
-- [x] Responsive behavior is represented in the shared dashboard shell CSS; final deployment verification remains open
+> **UI scope note:** The remaining clinic/dashboard UX work is intentionally deferred because it is being handled separately from this production-hardening track.
 
 ## 10. Core clinic workflows
-
-- [x] Patients module exists
-- [x] Visits module exists
-- [x] Pharmacy module exists
-- [x] Accounts module exists
-- [x] Reports module exists
-- [x] Help module exists
-- [ ] End-to-end patient workflow verification
-- [ ] End-to-end visit workflow verification
-- [ ] End-to-end pharmacy/medicine workflow verification
-- [ ] End-to-end accounts/payment workflow verification
-- [ ] End-to-end reporting workflow verification
-- [ ] Verify all workflows enforce clinic permissions
-- [ ] Verify sensitive operations are audited where required
+- [x] Core modules exist: Patients, Visits, Pharmacy, Accounts, Reports and Help
+- [ ] Patient workflow E2E
+- [ ] Visit workflow E2E
+- [ ] Pharmacy/medicine workflow E2E
+- [ ] Accounts/payment-data workflow E2E
+- [ ] Reporting workflow E2E
+- [ ] Permission-boundary verification for every workflow
+- [ ] Sensitive operation audit verification
+- [ ] Verify each module stays within the HeriCMS patient-registry/operations data boundary
 
 ## 11. Production database and deployment configuration
+- [x] Successful Vercel deployment evidence exists for corrected trial implementation
+- [ ] Production Prisma migration applied
+- [ ] Production DB connection verified
+- [ ] Required production environment variables verified
+- [ ] No development/test credentials in production
+- [ ] Production secrets use deployment secret mechanism
+- [ ] Backups enabled and tested
+- [ ] Production domain/aliases verified
+- [ ] Cache/no-store behavior verified for sensitive routes
+- [ ] Restore/rollback runbook tested, not merely documented
 
-- [x] Successful Vercel deployment exists for the corrected trial implementation
-- [ ] Confirm production Prisma migration is applied to the production database
-- [ ] Confirm production database connection is valid
-- [ ] Confirm required production environment variables are configured
-- [ ] Confirm no development/test credentials are used in production
-- [ ] Confirm production secrets are stored through the deployment secret mechanism
-- [ ] Confirm database backups are enabled and tested
-- [x] Document restore procedure in `docs/OPERATIONS-RUNBOOK.md`
-- [x] Document deployment rollback procedure in `docs/OPERATIONS-RUNBOOK.md`
-- [ ] Confirm production domain/aliases
-- [ ] Confirm cache behavior for authenticated/sensitive pages
-
-## 12. Observability and operations
-
-- [x] Existing audit infrastructure
-- [ ] Production application error monitoring verification
-- [ ] Platform health monitoring
-- [ ] Datastore health monitoring
+## 12. Observability and incident response
+- [x] Audit infrastructure
+- [x] Operations/incident/backup/maintenance/rollback documentation
+- [ ] Application error monitoring
+- [ ] Platform/datastore health monitoring
 - [ ] Authentication/security event monitoring
-- [ ] Alerting for repeated authentication failures
-- [ ] Alerting for datastore degradation
-- [ ] Alerting for failed migrations/provisioning
-- [x] Operational runbook
-- [x] Incident-response procedure
-- [x] Backup/restore runbook
-- [x] Maintenance procedure
-- [x] Rollback procedure
+- [ ] Auth-failure/rate-limit alerts
+- [ ] Datastore degradation alerts
+- [ ] Migration/provisioning failure alerts
+- [ ] Backup failure alerts
+- [ ] Cross-tenant authorization anomaly alerts
+- [ ] Incident-response drill
+- [ ] Log retention/access controls
+- [ ] No secrets/passwords/unsafe patient data in logs
+- [ ] Payment-integration ingestion/reconciliation health monitoring
+- [ ] Offline sync failure/conflict monitoring once sync is implemented
 
-## 13. Testing and release validation
+## 13. Application security, XSS and abuse resistance
+- [ ] Security headers verified in production
+- [ ] Content Security Policy (CSP) implemented and tested
+- [ ] `X-Content-Type-Options` configured
+- [ ] Appropriate `Referrer-Policy`
+- [ ] Appropriate frame protection / `frame-ancestors`
+- [ ] User-controlled HTML sanitized where rich text is intentionally supported
+- [ ] No unjustified `dangerouslySetInnerHTML` or equivalent unsafe rendering
+- [ ] URL/link validation for user-controlled destinations
+- [ ] File/SVG upload XSS controls if uploads exist
+- [ ] Stored XSS tests
+- [ ] Reflected XSS tests
+- [ ] DOM XSS tests
+- [ ] Dependency vulnerability scan
+- [ ] Secret scanning
+- [ ] SAST/security linting appropriate to the stack
+- [ ] Abuse-case review for authentication, exports and administrative actions
+- [ ] Independent penetration/security assessment before high-risk launch or according to risk schedule
 
-- [x] Existing auth/MFA/authorization/audit/residency automated tests have passed historically
-- [x] Existing Playwright smoke test has passed historically
-- [ ] Re-run typecheck against current HEAD
-- [ ] Re-run lint against current HEAD
-- [ ] Re-run full automated test suite against current HEAD
-- [ ] Re-run production build against current HEAD
-- [ ] Re-run Playwright against current HEAD
-- [x] Add trial-specific automated coverage
-- [ ] Add tenant-isolation tests where gaps exist
-- [ ] Add production-like signup/login/expiry E2E test
-- [ ] Verify no secrets/passwords are exposed in test output
+## 14. Data export, download and exfiltration controls
+- [ ] Admin data-export feature designed with least privilege
+- [ ] Export types and allowed roles explicitly defined
+- [ ] Server-side clinic/tenant authorization on export queries
+- [ ] Server-side validation of filters/date ranges
+- [ ] No patient/sensitive data in export URLs
+- [ ] Export files encrypted at rest where applicable
+- [ ] Downloads use short-lived authorized signed URLs/tokens
+- [ ] Export files automatically expire/delete according to retention policy
+- [ ] Re-authentication/step-up MFA for high-risk exports where appropriate
+- [ ] Every export request recorded in audit trail
+- [ ] Every successful download recorded with user, clinic, export type, timestamp and result
+- [ ] Security-relevant failed/denied export attempts recorded
+- [ ] Export record includes requestor identity/role, scope/filter, record count and export identifier
+- [ ] Cross-tenant export isolation E2E tests
+- [ ] Export/download audit events are tamper-evident and access-controlled
+- [ ] Authorized clinic administrators/auditors can review export/download history
+- [ ] Export/backup copies obey residency, retention and deletion controls
+- [ ] Interoperability exports use explicit FHIR/OpenMRS/KHIS mappings where applicable
 
-## 14. Legal / compliance operational readiness
+## 15. M-Pesa/payment-data integration and immutable financial records
 
-- [x] Kenya-first residency policy documented
-- [x] Kenya DPA / transfer considerations researched
-- [ ] Final legal/compliance review of the implemented processing model
-- [ ] Controller/processor responsibilities documented
-- [ ] Cloud-provider/subprocessor register
-- [ ] Data-retention/deletion policy
-- [ ] Data-subject request process
-- [ ] Security incident/breach process
-- [ ] Cross-border transfer assessment process
-- [ ] Evidence-retention process
-- [ ] Customer-facing privacy/data-residency disclosures
+> **Critical architecture rule:** Heri CMS does **not** receive, settle, or fabricate M-Pesa payments. Patients pay the clinic through the clinic's authoritative M-Pesa/payment system. Heri CMS is a trusted visibility/integration layer: it receives verified payment events/data from the authoritative source and presents the same verified dataset to authorized Accounts users and the admin dashboard.
 
-## 15. Production release gate
+### 15.1 Source of truth and ingestion
+- [ ] Authoritative M-Pesa/payment source explicitly defined
+- [ ] **Daraja API integration contract documented for patient payments**
+- [ ] Integration API/event contract documented
+- [ ] Source event authentication/signature/checksum mechanism verified where provided
+- [ ] TLS and integration secrets verified
+- [ ] Idempotent ingestion
+- [ ] Unique M-Pesa transaction/reference IDs enforced
+- [ ] Replay/duplicate event protection
+- [ ] Out-of-order event handling
+- [ ] Failed/retried event handling
+- [ ] Reconciliation against authoritative payment source
 
-The release should **not** be declared production-ready until all applicable items below are verified:
+### 15.2 Clinic subscription billing
+- [ ] Clinic subscription billing is a separate payment domain from patient payments
+- [ ] **STK Push flow implemented for clinic subscription billing**
+- [ ] Subscription payment request has idempotent billing/reference identity
+- [ ] STK callback/result is authenticated and validated
+- [ ] Subscription entitlement changes only after authoritative payment confirmation
+- [ ] Duplicate/replayed callbacks cannot extend or alter entitlement incorrectly
+- [ ] Failed/expired/cancelled STK requests have deterministic states
+- [ ] Subscription billing reconciliation exists against the authoritative payment source
+- [ ] Subscription payment records are immutable/auditable
 
-- [ ] Trial signup works against the intended production-like database
-- [ ] Trial admin can log in
-- [ ] Trial admin can reach the clinic workspace
-- [ ] Expired trial access is blocked
-- [ ] Duplicate/rate-limit/security cases behave safely
-- [ ] Tenant isolation is verified
-- [ ] Residency and backup geography are verified
-- [ ] Production migration is applied
-- [ ] Production environment variables/secrets are verified
-- [ ] Backups and restore process are verified
-- [ ] Automated tests pass on current HEAD
-- [ ] Build passes on current HEAD
-- [ ] E2E smoke test passes on current HEAD
-- [ ] Observability/alerting is operational
-- [ ] Legal/compliance operational requirements are reviewed
-- [x] Rollback and incident procedures are documented
+### 15.3 Insurance co-pay collection
+- [ ] Insurance co-pay collection model defined if enabled
+- [ ] Coverage/claim/co-pay responsibility is separated from patient payment facts
+- [ ] Co-pay payment references can be linked to the relevant patient/account/encounter context without overwriting source facts
+- [ ] Insurer/payment-source reconciliation defined
+- [ ] Co-pay reversals/adjustments follow immutable financial-record rules
 
-## Current known release evidence
+### 15.4 Immutable Accounts / financial ledger
+- [ ] **Accounts financial records are immutable by clinic users and administrators**
+- [ ] No UI/API permits editing or deleting an original M-Pesa transaction fact
+- [ ] No client can alter transaction amount, status, transaction ID/reference, timestamp or payer reference
+- [ ] Server-side authorization independently prevents financial-record mutation
+- [ ] Database constraints/architecture protect against unauthorized mutation
+- [ ] Payment facts are append-only or otherwise cryptographically/audit protected against tampering
+- [ ] Corrections are represented as controlled adjustment/reconciliation events, never by overwriting the original fact
+- [ ] Original transaction remains permanently visible with its original source values subject to lawful retention policy
+- [ ] Any adjustment/reconciliation references the original transaction and records reason, actor/system, timestamp and evidence
+- [ ] Audit trail for financial records is tamper-evident and access-controlled
 
-- **Latest successful Vercel deployment:** commit `de0affa1fd1d52d2c02c5f5ccfba10895e31dd61`
-- **Deployment state:** READY
-- **Application:** Hali CMS
-- **Branch:** `feat/mfa-login-protection`
+### 15.5 Reversals and lifecycle
+- [ ] **M-Pesa reversal is represented as a reversal event/status, not deletion or alteration of the original transaction**
+- [ ] Original payment remains visible after reversal
+- [ ] Reversal clearly identifies the affected original transaction
+- [ ] Reversal timestamp/reference/reason are preserved when supplied by the authoritative source
+- [ ] Accounts balance/ledger reflects the reversal through an explicit immutable adjustment
+- [ ] Reversed transactions cannot silently return to `SUCCESS`
+- [ ] Duplicate/replayed reversal events are idempotent
+- [ ] Reconciliation detects missing, conflicting or unexpected reversals
+- [ ] UI clearly distinguishes original payment, reversal and current reconciled state
 
-This evidence confirms a successful deployment of the corrected trial implementation. It does **not** by itself close the functional, database, residency, operational or compliance gates above.
+### 15.6 Consultation and pharmacy payments
+- [ ] Consultation-fee M-Pesa payments represented from verified source data
+- [ ] Pharmacy/medicine M-Pesa payments represented from verified source data
+- [ ] Payment-to-patient/invoice/visit linkage is server-authorized
+- [ ] Pharmacy payment data cannot be substituted for consultation payment data or vice versa
+- [ ] The Accounts view and admin dashboard consume the same verified payment dataset
+- [ ] No parallel/fabricated client-side payment source of truth
+
+### 15.7 Live updates
+- [ ] **Server-Sent Events (SSE) implemented as the initial live payment-update mechanism**
+- [ ] SSE authentication and tenant authorization verified
+- [ ] SSE stream cannot expose another clinic's payment events
+- [ ] **Polling fallback implemented** when SSE disconnects/is unavailable
+- [ ] Reconnect/replay behavior prevents missed or duplicated UI events
+- [ ] Live update events cause the client to refresh/reconcile against the authoritative payment dataset
+- [ ] Payment events remain auditable regardless of live-delivery mechanism
+
+## 16. Testing and release validation
+- [x] Release candidate SHA `af690c6eb433729cbf8f6f2a2411255bca4f5c37` passed lint/typecheck/unit/build/Playwright in Actions run #36
+- [x] Successful Vercel deployment evidence for corrected trial implementation
+- [x] Rerun CI evidence after subsequent tenant-architecture changes — PR #17 (`0e8f09a`) fixed a stale `TenantIsolationMode` enum reference blocking `typecheck`; PR #16 added real Postgres provisioning to the `e2e` job and fixed two latent Prisma raw-query type mismatches in `computeAuditEntryHash` (bigint vs INTEGER for `sequence`, text vs TIMESTAMPTZ for `createdAt`) that unit tests never caught because `tests/audit/audit.test.ts` mocks the database entirely — first fully green `test` + `e2e` run on `main`.
+- [ ] Unit-test coverage on raw-SQL call sites (`src/lib/audit.ts` and any future `$queryRaw`/`$executeRaw` usage) does not catch Postgres type-binding mismatches, since mocked queries never touch a real database — consider a lightweight integration suite against real Postgres for these.
+- [ ] Production-like signup/login/expiry flows
+- [ ] Critical clinic workflow E2E
+- [ ] Tenant isolation/cross-tenant denial E2E
+- [ ] MFA/authentication/security E2E
+- [ ] Secure cookie/session verification
+- [ ] Export/download authorization and isolation tests
+- [ ] XSS/security testing
+- [ ] Daraja patient-payment integration tests
+- [ ] Subscription STK Push tests
+- [ ] Insurance co-pay tests if enabled
+- [ ] Immutable financial mutation-attempt tests
+- [ ] Payment reversal tests
+- [ ] Duplicate/replay/out-of-order payment event tests
+- [ ] SSE and polling fallback tests
+- [ ] Offline outbox/sync/conflict tests once implemented
+- [ ] FHIR/OpenMRS/KHIS interoperability mapping tests
+- [ ] Platform Control E2E/authz/security/audit tests
+- [ ] No sensitive output in browser/API/log/test artifacts
+
+## 17. Legal, privacy and compliance
+- [x] Kenya-first residency/privacy policy research and architectural controls documented
+- [ ] Formal legal/privacy review and sign-off
+- [ ] Controller/processor responsibilities defined
+- [ ] Subprocessor inventory and contractual safeguards
+- [ ] Retention/deletion schedule
+- [ ] Data-subject/request handling procedures
+- [ ] Incident/breach procedures
+- [ ] Cross-border transfer assessment and controls
+- [ ] Evidence retention policy
+- [ ] Patient-registry export/disclosure policy
+- [ ] Payment-data provenance and accuracy responsibilities documented
+- [ ] Financial immutability/reversal policy documented
+- [ ] Daraja/payment-provider contractual and operational requirements verified
+- [ ] Insurance co-pay responsibilities documented if enabled
+- [ ] Interoperability/data-sharing responsibilities for KHIS/OpenMRS/FHIR integrations documented
+
+## 18. Release gate
+Production release remains blocked until all applicable critical evidence is complete, including:
+- production database/configuration, backups and restore evidence;
+- secure authentication/session controls;
+- verified tenant isolation and datastore lifecycle controls;
+- Kenya-first residency/privacy evidence;
+- export/download controls;
+- application security/XSS/abuse assessment;
+- observability and incident-response readiness;
+- Platform Control privileged boundary, authorization and auditability where applicable;
+- **Daraja/payment provenance, immutable financial records, reversals and reconciliation where payment visibility/billing is enabled**;
+- **offline-first synchronization/conflict controls for any workflow advertised as offline-capable**;
+- **interoperability mapping validation for supported FHIR/OpenMRS/KHIS integrations**;
+- legal/privacy/compliance sign-off;
+- final functional and security validation evidence.
+
+> **Current strategic direction:** Start with shared-schema multi-tenancy for cost efficiency, while preserving a storage-mode abstraction that allows a tenant to move to schema-per-tenant or database-per-tenant when scale, contractual requirements or data-sovereignty expectations justify the operational cost. This decision is intentionally made before broad clinic onboarding.
