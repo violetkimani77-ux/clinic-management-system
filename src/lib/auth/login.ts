@@ -3,6 +3,13 @@ import "server-only";
 import { db } from "@/lib/db";
 import { verifyPassword } from "./password";
 import { createSession } from "./session";
+import { consumeRateLimit } from "./rate-limit";
+
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+// Looser IP bound catches distributed guessing across many accounts; the
+// tighter per-email bound stops guessing against one account from any IP.
+const LOGIN_IP_LIMIT = { keyType: "LOGIN_IP", windowMs: LOGIN_WINDOW_MS, limit: 20 };
+const LOGIN_EMAIL_LIMIT = { keyType: "LOGIN_EMAIL", windowMs: LOGIN_WINDOW_MS, limit: 5 };
 
 /**
  * Authenticates a staff account and creates a clinic-scoped session.
@@ -11,8 +18,15 @@ import { createSession } from "./session";
  * session cookie. A generic failure is returned so login cannot reveal
  * whether an email exists or whether its password was incorrect.
  */
-export async function authenticateStaff(email: string, password: string) {
+export async function authenticateStaff(email: string, password: string, ipAddress: string | null) {
   const normalizedEmail = email.trim().toLowerCase();
+
+  if (!(await consumeRateLimit(LOGIN_IP_LIMIT, ipAddress))) {
+    throw new Error("LOGIN_RATE_LIMITED");
+  } 
+  if (!(await consumeRateLimit(LOGIN_EMAIL_LIMIT, normalizedEmail))) {
+    throw new Error("LOGIN_RATE_LIMITED");
+  }
 
   const user = await db.user.findUnique({
     where: { email: normalizedEmail },
