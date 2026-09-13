@@ -33,8 +33,8 @@ describe("tenant datastore guard", () => {
 
   it.each([
     ["unhealthy status", { status: TenantDataStoreStatus.DEGRADED }],
-    ["bridge isolation", { isolationMode: TenantIsolationMode.BRIDGE }],
-    ["silo isolation", { isolationMode: TenantIsolationMode.SILO }],
+    ["bridge isolation", { isolationMode: TenantIsolationMode.BRIDGE_DATABASE }],
+    ["silo isolation", { isolationMode: TenantIsolationMode.SILO_DATABASE }],
     ["non-Kenya primary", { country: "UG" }],
     ["non-Kenya backup", { backupCountry: "UG" }],
     ["missing provisioning timestamp", { provisionedAt: null }],
