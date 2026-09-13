@@ -26,22 +26,18 @@ describe("tenant datastore guard", () => {
   });
 
   it("fails closed when the datastore record is missing", () => {
-    expect(() => assertTenantDataStoreUsable(null)).toThrow(
-      TENANT_DATASTORE_FAILURE,
-    );
+    expect(() => assertTenantDataStoreUsable(null)).toThrow(TENANT_DATASTORE_FAILURE);
   });
 
   it.each([
     ["unhealthy status", { status: TenantDataStoreStatus.DEGRADED }],
-    ["bridge isolation", { isolationMode: TenantIsolationMode.BRIDGE }],
-    ["silo isolation", { isolationMode: TenantIsolationMode.SILO }],
+    ["bridge isolation", { isolationMode: TenantIsolationMode.BRIDGE_DATABASE }],
+    ["silo isolation", { isolationMode: TenantIsolationMode.SILO_DATABASE }],
     ["non-Kenya primary", { country: "UG" }],
     ["non-Kenya backup", { backupCountry: "UG" }],
     ["missing provisioning timestamp", { provisionedAt: null }],
     ["missing health-check timestamp", { lastHealthCheckAt: null }],
   ])("rejects %s", (_label, override) => {
-    expect(() =>
-      assertTenantDataStoreUsable({ ...healthyStore(), ...override }),
-    ).toThrow(TENANT_DATASTORE_FAILURE);
+    expect(() => assertTenantDataStoreUsable({ ...healthyStore(), ...override })).toThrow(TENANT_DATASTORE_FAILURE);
   });
 });

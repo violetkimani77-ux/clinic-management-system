@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuthContext } from "@/lib/auth/authorization";
 import { recordAuditEvent } from "@/lib/audit";
+import { recordSyncChange } from "@/lib/sync/change-ledger";
 
 export type PatientSearchResult = {
   id: string;
@@ -120,6 +121,24 @@ export async function createPatient(context: AuthContext, input: CreatePatientIn
       entityId: patient.id,
       metadata: { patientNo: patient.patientNo },
     }, tx);
+    await recordSyncChange(tx, {
+      clinicId: context.clinicId,
+      entityType: "Patient",
+      entityId: patient.id,
+      operationType: "CREATE",
+      payload: {
+        id: patient.id,
+        patientNo: patient.patientNo,
+        firstName: patient.firstName,
+        lastName: patient.lastName,
+        dateOfBirth: patient.dateOfBirth?.toISOString() ?? null,
+        phone: patient.phone,
+        email: patient.email,
+        address: patient.address,
+        notes: patient.notes,
+        archivedAt: patient.archivedAt,
+      } as Prisma.InputJsonValue,
+    });
 
     return patient;
   });
@@ -153,6 +172,24 @@ export async function updatePatient(context: AuthContext, patientId: string, inp
       entityId: patient.id,
       metadata: { patientNo: patient.patientNo },
     }, tx);
+    await recordSyncChange(tx, {
+      clinicId: context.clinicId,
+      entityType: "Patient",
+      entityId: updated.id,
+      operationType: "UPDATE",
+      payload: {
+        id: updated.id,
+        patientNo: updated.patientNo,
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        dateOfBirth: updated.dateOfBirth?.toISOString() ?? null,
+        phone: updated.phone,
+        email: updated.email,
+        address: updated.address,
+        notes: updated.notes,
+        archivedAt: updated.archivedAt,
+      } as Prisma.InputJsonValue,
+    });
 
     return updated;
   });
