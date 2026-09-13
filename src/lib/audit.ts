@@ -40,7 +40,7 @@ async function buildEntryHash(
       ${input.id},
       ${input.clinicId},
       ${input.userId},
-      ${input.sequence},
+      ${input.sequence}::integer,
       ${input.action},
       ${input.entityType},
       ${input.entityId},
