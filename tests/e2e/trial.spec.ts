@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("renders the self-service trial form", async ({ page }) => {
   await page.goto("/trial");
 
-  await expect(page.getByRole("heading", { name: "Start Your 4-Day Free Trial" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Start your 14-day free trial." })).toBeVisible();
   await expect(page.getByLabel("Clinic name")).toBeVisible();
   await expect(page.getByLabel("Administrator name")).toBeVisible();
   await expect(page.getByLabel("Administrator email")).toBeVisible();

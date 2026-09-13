@@ -1,35 +1,50 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Manrope } from "next/font/google";
 import { LoginForm } from "@/components/auth/login-form";
 
-/**
- * Provides the staff-only entry point for the clinic management system.
- * Authentication remains handled by the existing server-side login endpoint;
- * this page is responsible only for the presentation and form composition.
- */
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-landing",
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description: "Sign in to your Heri CMS clinic workspace.",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
+
 export default function LoginPage() {
   return (
-    <main className="auth-page">
+    <main className={`auth-page ${manrope.variable}`}>
+      <nav className="auth-nav" aria-label="Public navigation">
+        <Link href="/" className="auth-brand" aria-label="Heri CMS — Clinic Management System">
+          <span className="auth-brand-name"><span className="auth-brand-heri">Heri</span><span className="auth-brand-cms"> CMS</span></span>
+          <span className="auth-brand-subtitle">CLINIC MANAGEMENT SYSTEM</span>
+        </Link>
+        <div className="auth-nav-actions">
+          <Link href="/" className="auth-nav-back">Back to Heri CMS</Link>
+        </div>
+      </nav>
       <section className="auth-shell" aria-labelledby="login-title">
         <div className="auth-intro">
-          <div className="auth-mark">CMS Portal</div>
+          <div className="auth-mark" aria-label="Heri CMS">
+            <span className="brand-heri">Heri</span><span className="brand-cms"> CMS</span>
+          </div>
           <p className="auth-kicker">Clinic operations</p>
           <h1 id="login-title">Clinic Management System</h1>
-          <p className="auth-lead">
-            A secure workspace for managing clinic operations, patient records,
-            pharmacy workflows and accounts.
-          </p>
-          <div className="auth-security-note">
-            <span className="auth-security-dot" aria-hidden="true" />
-            <span>Staff access only</span>
-          </div>
+          <p className="auth-lead">A secure workspace for managing clinic operations, patient records, pharmacy workflows and accounts.</p>
+          <div className="auth-security-note"><span className="auth-security-dot" aria-hidden="true" /><span>Staff access only</span></div>
         </div>
-
         <div className="auth-panel">
-          <div className="auth-panel-header">
-            <p className="auth-panel-kicker">Welcome back</p>
-            <h2>Sign in</h2>
-            <p>Use your clinic staff account to continue.</p>
-          </div>
+          <div className="auth-panel-header"><p className="auth-panel-kicker">Welcome back</p><h2>Sign in</h2><p>Use your clinic staff account to continue.</p></div>
           <LoginForm />
+          <div className="auth-switch"><span>Not yet signed up?</span><Link href="/trial">Start Your Free trial today</Link></div>
         </div>
       </section>
       <p className="site-credit">POWERED BY IHL TECH</p>

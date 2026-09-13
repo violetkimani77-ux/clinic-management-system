@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 import { consumeRateLimit } from "@/lib/auth/rate-limit";
 
-const TRIAL_DURATION_MS = 4 * 24 * 60 * 60 * 1000;
+const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
 const TRIAL_WINDOW_MS = 60 * 60 * 1000;
 const TRIAL_ATTEMPT_LIMIT = 5;
 const TRIAL_RATE_LIMIT = { keyType: "TRIAL_IP", windowMs: TRIAL_WINDOW_MS, limit: TRIAL_ATTEMPT_LIMIT };
@@ -100,7 +100,7 @@ export async function createClinicTrial(input: CreateTrialInput): Promise<Create
         status: SubscriptionStatus.TRIAL,
         activatedAt: now,
         currentPeriodEnd: trialEndsAt,
-        notes: "Self-service 4-day trial",
+        notes: "Self-service 14-day trial",
       },
     });
 
