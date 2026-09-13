@@ -54,6 +54,8 @@ jobs:
     needs: test
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/clinic_management_test
+      E2E_STAFF_EMAIL: admin@demo-clinic.local
+      E2E_STAFF_PASSWORD: ChangeMe123!
 
     services:
       postgres:
