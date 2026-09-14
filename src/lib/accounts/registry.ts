@@ -101,11 +101,32 @@ export async function recordPayment(context: AuthContext, input: { invoiceId: st
   }, { isolationLevel: "Serializable" });
 }
 
+export async function reversePayment(context: AuthContext, input: { paymentId: string; reason: string }) {
+  if (!input.reason?.trim()) throw new Error("REVERSAL_REASON_REQUIRED");
+  return db.$transaction(async (tx) => {
+    const payment = await tx.payment.findFirst({ where: { id: input.paymentId, clinicId: context.clinicId }, select: { id: true, amount: true, invoiceId: true } });
+    if (!payment) throw new Error("PAYMENT_NOT_FOUND");
+    const existingReversal = await tx.paymentReversal.findFirst({ where: { paymentId: payment.id }, select: { id: true } });
+    if (existingReversal) throw new Error("PAYMENT_ALREADY_REVERSED");
+    const reversal = await tx.paymentReversal.create({ data: { paymentId: payment.id, clinicId: context.clinicId, amount: payment.amount, reason: input.reason.trim(), reversedByUserId: context.userId }, select: { id: true } });
+    if (payment.invoiceId) {
+      const invoice = await tx.invoice.findFirst({ where: { id: payment.invoiceId, clinicId: context.clinicId }, select: { id: true, total: true, amountPaid: true } });
+      if (invoice) {
+        const newAmountPaid = Math.max(0, Number(invoice.amountPaid) - Number(payment.amount));
+        const nextStatus = newAmountPaid >= Number(invoice.total) - 0.0001 ? InvoiceStatus.PAID : newAmountPaid > 0 ? InvoiceStatus.PARTIALLY_PAID : InvoiceStatus.ISSUED;
+        await tx.invoice.update({ where: { id: invoice.id }, data: { amountPaid: newAmountPaid, status: nextStatus } });
+      }
+    }
+    await recordAuditEvent(context, { action: "PAYMENT_REVERSED", entityType: "Payment", entityId: payment.id, metadata: { reversalId: reversal.id, amount: payment.amount.toString(), reason: input.reason.trim() } }, tx);
+    return reversal;
+  }, { isolationLevel: "Serializable" });
+}
+
 export async function getAccountsSummary(context: AuthContext) {
   const day = getKenyaDayBounds();
   const [payments, mpesa, outstanding, invoices] = await Promise.all([
-    db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, receivedAt: { gte: day.start, lt: day.end } }, _sum: { amount: true } }),
-    db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, method: PaymentMethod.MPESA, receivedAt: { gte: day.start, lt: day.end } }, _sum: { amount: true }, _count: { _all: true } }),
+    db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, receivedAt: { gte: day.start, lt: day.end }, reversals: { none: {} } }, _sum: { amount: true } }),
+    db.payment.aggregate({ where: { clinicId: context.clinicId, status: PaymentStatus.VERIFIED, method: PaymentMethod.MPESA, receivedAt: { gte: day.start, lt: day.end }, reversals: { none: {} } }, _sum: { amount: true }, _count: { _all: true } }),
     db.invoice.findMany({ where: { clinicId: context.clinicId, status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] } }, select: { total: true, amountPaid: true } }),
     db.invoice.count({ where: { clinicId: context.clinicId, status: { not: InvoiceStatus.VOID } } }),
   ]);
