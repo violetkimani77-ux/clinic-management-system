@@ -171,6 +171,7 @@ model Clinic {
   patientConsents PatientConsent[]
   subscriptions ClinicSubscription[]
   tenantDataStore TenantDataStore?
+  invitations ClinicInvitation[]
 }
 
 model User {
@@ -208,6 +209,27 @@ model Role {
   name String
   memberships Membership[]
   permissions RolePermission[]
+  invitations ClinicInvitation[]
+}
+
+model ClinicInvitation {
+  id         String    @id @default(uuid())
+  clinicId   String
+  email      String
+  name       String
+  roleId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, roleId, acceptedAt])
+  @@index([email, clinicId])
+  @@index([expiresAt])
 }
 
 model Permission {
@@ -465,10 +487,26 @@ model Payment {
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
   invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  reversals PaymentReversal[]
   @@unique([clinicId, idempotencyKey])
   @@unique([clinicId, externalRef])
   @@unique([clinicId, receiptNo])
   @@index([clinicId, method, createdAt])
+}
+
+model PaymentReversal {
+  id               String   @id @default(uuid())
+  paymentId        String
+  clinicId         String
+  amount           Decimal  @db.Decimal(12, 2)
+  reason           String
+  reversedByUserId String
+  createdAt        DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+  @@index([clinicId])
 }
 
 model Expense {
