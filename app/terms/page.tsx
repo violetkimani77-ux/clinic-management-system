@@ -31,7 +31,7 @@ export default function TermsPage() {
         <div className={styles.notice}>
           <strong>Important:</strong> Heri CMS is software for clinic administration and operations.
           It is not a substitute for professional medical judgement, clinical governance, legal
-          advice or a clinic's own obligations to patients and regulators.
+          advice or a clinic&apos;s own obligations to patients and regulators.
         </div>
 
         <nav className={styles.contents} aria-label="Contents">
@@ -130,13 +130,13 @@ export default function TermsPage() {
           <p>Heri CMS, including its software, interface, documentation, branding and underlying technology, is owned by or licensed to IHL Tech. Subject to these Terms, authorised clinics receive a limited, non-exclusive, non-transferable right to use the service for legitimate clinic operations.</p>
         </Section>
         <Section id="disclaimers" title="18. Disclaimers">
-          <p>To the extent permitted by law, Heri CMS is provided on an “as available” basis. It does not replace clinical judgement, professional supervision, statutory recordkeeping requirements or continuity arrangements required by the clinic's circumstances.</p>
+          <p>To the extent permitted by law, Heri CMS is provided on an “as available” basis. It does not replace clinical judgement, professional supervision, statutory recordkeeping requirements or continuity arrangements required by the clinic&apos;s circumstances.</p>
         </Section>
         <Section id="liability" title="19. Limitation of liability">
           <p>To the fullest extent permitted by applicable law, neither party will be liable for indirect, incidental, special or consequential losses arising from these Terms, except where such exclusion is not permitted by law. Nothing excludes liability that cannot lawfully be excluded or limited.</p>
         </Section>
         <Section id="indemnity" title="20. Indemnity">
-          <p>Where permitted by law, the clinic is responsible for claims arising from its unlawful use of the service, violation of these Terms, or failure to obtain required authority for information it submits, except to the extent caused by Heri CMS's own breach or misconduct.</p>
+          <p>Where permitted by law, the clinic is responsible for claims arising from its unlawful use of the service, violation of these Terms, or failure to obtain required authority for information it submits, except to the extent caused by Heri CMS&apos;s own breach or misconduct.</p>
         </Section>
         <Section id="changes" title="21. Changes to these Terms">
           <p>We may update these Terms as the service, business or applicable legal requirements change. Updated Terms will be published with a new effective date.</p>
@@ -147,7 +147,7 @@ export default function TermsPage() {
         <Section id="contact" title="23. Contact">
           <p>Questions about these Terms or the Heri CMS service can be directed to <a href="mailto:invest@investit.click">invest@investit.click</a>.</p>
           <p>You can also review our <Link href="/privacy">Privacy & Data Protection Policy</Link>.</p>
-          <p className={styles.disclaimer}>These Terms are intended as a practical draft for Heri CMS. They are not legal advice and should be reviewed and approved by qualified Kenyan counsel before being treated as the company's final legal position or incorporated into a paid customer agreement.</p>
+          <p className={styles.disclaimer}>These Terms are intended as a practical draft for Heri CMS. They are not legal advice and should be reviewed and approved by qualified Kenyan counsel before being treated as the company&apos;s final legal position or incorporated into a paid customer agreement.</p>
         </Section>
       </article>
     </main>
