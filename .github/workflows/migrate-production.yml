@@ -23,6 +23,8 @@ jobs:
 
     # Keep production database credentials scoped to this deployment environment.
     environment: production
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: Checkout repository
@@ -42,5 +44,3 @@ jobs:
 
       - name: Apply pending production migrations
         run: npx --no-install prisma@6.19.3 migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
