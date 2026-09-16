@@ -7,6 +7,7 @@ import { verifyPassword } from "@/lib/auth/password";
 import { decryptPlatformSecret } from "./crypto";
 import { verifyTotp } from "./mfa";
 import { createPlatformSession } from "./session";
+import type { PlatformAuthContext } from "./session";
 
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -62,6 +63,20 @@ async function clearFailures(email: string, ipAddress?: string) {
   await db.authRateLimit.deleteMany({ where: { OR: keys } });
 }
 
+async function consumeTotpCounter(adminId: string, counter: number): Promise<boolean> {
+  const consumed = await db.platformAdmin.updateMany({
+    where: {
+      id: adminId,
+      OR: [
+        { lastUsedTotpCounter: null },
+        { lastUsedTotpCounter: { lt: counter } },
+      ],
+    },
+    data: { lastUsedTotpCounter: counter },
+  });
+  return consumed.count === 1;
+}
+
 export async function authenticatePlatformAdmin(
   email: string,
   password: string,
@@ -98,9 +113,16 @@ export async function authenticatePlatformAdmin(
     return null;
   }
 
-  if (!verifyTotp(secret, mfaCode)) {
+  const totp = verifyTotp(secret, mfaCode);
+  if (!totp.ok) {
     await registerFailure(normalizedEmail, auditContext?.ipAddress);
     await recordPlatformAudit("PLATFORM_LOGIN_FAILED", admin.id, { reason: "invalid_mfa" }, auditContext);
+    return null;
+  }
+
+  if (!(await consumeTotpCounter(admin.id, totp.counter))) {
+    await registerFailure(normalizedEmail, auditContext?.ipAddress);
+    await recordPlatformAudit("PLATFORM_LOGIN_FAILED", admin.id, { reason: "mfa_replay" }, auditContext);
     return null;
   }
 
@@ -108,6 +130,47 @@ export async function authenticatePlatformAdmin(
   const session = await createPlatformSession(admin.id);
   await recordPlatformAudit("PLATFORM_LOGIN_SUCCEEDED", admin.id, { roleCode: admin.roleCode }, auditContext);
   return { ...session, platformAdminId: admin.id, roleCode: admin.roleCode };
+}
+
+export async function reauthenticatePlatformAdmin(
+  auth: PlatformAuthContext,
+  password: string,
+  mfaCode: string,
+  auditContext?: { ipAddress?: string; userAgent?: string },
+): Promise<boolean> {
+  const admin = await db.platformAdmin.findUnique({ where: { id: auth.platformAdminId } });
+
+  if (!admin || admin.status !== "ACTIVE" || !admin.mfaEnabled) {
+    await recordPlatformAudit("PLATFORM_STEP_UP_FAILED", auth.platformAdminId, { reason: "invalid_account" }, auditContext);
+    return false;
+  }
+
+  if (!(await verifyPassword(password, admin.passwordHash))) {
+    await recordPlatformAudit("PLATFORM_STEP_UP_FAILED", admin.id, { reason: "invalid_credentials" }, auditContext);
+    return false;
+  }
+
+  let secret: string;
+  try {
+    secret = decryptPlatformSecret(admin.mfaSecretEncrypted);
+  } catch {
+    await recordPlatformAudit("PLATFORM_STEP_UP_FAILED", admin.id, { reason: "mfa_configuration_error" }, auditContext);
+    return false;
+  }
+
+  const totp = verifyTotp(secret, mfaCode);
+  if (!totp.ok) {
+    await recordPlatformAudit("PLATFORM_STEP_UP_FAILED", admin.id, { reason: "invalid_mfa" }, auditContext);
+    return false;
+  }
+
+  if (!(await consumeTotpCounter(admin.id, totp.counter))) {
+    await recordPlatformAudit("PLATFORM_STEP_UP_FAILED", admin.id, { reason: "mfa_replay" }, auditContext);
+    return false;
+  }
+
+  await recordPlatformAudit("PLATFORM_STEP_UP_SUCCEEDED", admin.id, { roleCode: admin.roleCode }, auditContext);
+  return true;
 }
 
 export async function recordPlatformAudit(

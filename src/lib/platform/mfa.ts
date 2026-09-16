@@ -8,6 +8,8 @@ const WINDOW = 1;
 
 const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
+export type TotpVerifyResult = { ok: true; counter: number } | { ok: false };
+
 function decodeBase32(input: string): Buffer {
   const normalized = input.replace(/[=\s-]/g, "").toUpperCase();
   let bits = 0;
@@ -40,17 +42,26 @@ function hotp(secret: Buffer, counter: number): string {
   return String(code % 10 ** DIGITS).padStart(DIGITS, "0");
 }
 
-export function verifyTotp(secret: string, providedCode: string, now = Date.now()): boolean {
+export function totpCounter(now = Date.now()): number {
+  return Math.floor(now / 1000 / PERIOD_SECONDS);
+}
+
+export function generateTotp(secret: string, now = Date.now()): string {
+  return hotp(decodeBase32(secret), totpCounter(now));
+}
+
+export function verifyTotp(secret: string, providedCode: string, now = Date.now()): TotpVerifyResult {
   const code = providedCode.replace(/\s/g, "");
-  if (!/^\d{6}$/.test(code)) return false;
+  if (!/^\d{6}$/.test(code)) return { ok: false };
 
   const key = decodeBase32(secret);
-  const counter = Math.floor(now / 1000 / PERIOD_SECONDS);
+  const counter = totpCounter(now);
   const supplied = Buffer.from(code);
 
   for (let offset = -WINDOW; offset <= WINDOW; offset += 1) {
-    const expected = Buffer.from(hotp(key, counter + offset));
-    if (timingSafeEqual(expected, supplied)) return true;
+    const candidate = counter + offset;
+    const expected = Buffer.from(hotp(key, candidate));
+    if (timingSafeEqual(expected, supplied)) return { ok: true, counter: candidate };
   }
-  return false;
+  return { ok: false };
 }
