@@ -2,7 +2,17 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
+## 2026-09-16 — Terms of Service page
+
+### Completed on branch
+- Branch: `feat/terms-of-service`.
+- Added `app/terms/page.tsx` so the landing footer link to `/terms` resolves.
+- Copy matches the `/privacy` document treatment (CSS modules, no Tailwind).
+- Trial wording is the current four-day evaluation period, not the older fourteen-day draft from PR #13.
+- `/privacy` and `/terms` added to `app/sitemap.ts`.
+
 ## 2026-09-07 — Heri public landing page recovered
+
 
 ### Completed on branch
 - Branch: `chore/rename-hali-to-heri`.
