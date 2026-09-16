@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { recordPlatformAudit } from "./auth";
 import { PLATFORM_ACTIONS, requireHighRiskStepUp, requirePlatformAction } from "./authorization";
+import type { PlatformStepUp } from "./authorization";
 import type { PlatformAuthContext } from "./session";
 
 export type PlatformTenantControl = {
@@ -37,10 +38,10 @@ export async function getPlatformTenantControl(clinicId: string, auth: PlatformA
 export async function suspendPlatformTenant(
   clinicId: string,
   reason: string,
-  confirmation: string,
+  stepUp: PlatformStepUp,
   auth: PlatformAuthContext,
 ) {
-  await requireHighRiskStepUp(auth, PLATFORM_ACTIONS.SUSPEND_TENANT, confirmation);
+  await requireHighRiskStepUp(auth, PLATFORM_ACTIONS.SUSPEND_TENANT, stepUp);
   const cleanReason = reason.trim();
   if (cleanReason.length < 5 || cleanReason.length > 500) {
     throw new Error("PLATFORM_SUSPENSION_REASON_INVALID");
@@ -61,10 +62,10 @@ export async function suspendPlatformTenant(
 
 export async function reactivatePlatformTenant(
   clinicId: string,
-  confirmation: string,
+  stepUp: PlatformStepUp,
   auth: PlatformAuthContext,
 ) {
-  await requireHighRiskStepUp(auth, PLATFORM_ACTIONS.SUSPEND_TENANT, confirmation);
+  await requireHighRiskStepUp(auth, PLATFORM_ACTIONS.SUSPEND_TENANT, stepUp);
   await ensureControl(clinicId);
   await db.$executeRawUnsafe(
     `UPDATE "PlatformTenantControl"
