@@ -198,41 +198,52 @@
 - [ ] Financial records shown in Platform Control use the same authoritative, immutable payment dataset as Accounts
 
 ### 8.4 Platform Control security architecture
-- [ ] Platform administration authentication with MFA enforced
-- [ ] Separate platform-admin authorization model from clinic RBAC
-- [ ] Least-privilege platform roles defined
-- [ ] Step-up authentication for dangerous operations
-- [ ] Secure session expiry, rotation and revocation for platform-admin sessions
-- [ ] Platform-admin sessions use secure cookie/session controls
+- [x] Platform administration authentication with MFA enforced — `src/lib/platform/auth.ts` rejects any admin without `mfaEnabled`; not optional
+- [x] Separate platform-admin authorization model from clinic RBAC — `src/lib/platform/authorization.ts`, distinct `PlatformAdminRole`/`PLATFORM_ACTIONS`, no relation to clinic `Membership`/RBAC
+- [x] Least-privilege platform roles defined — `PLATFORM_ADMIN`/`PLATFORM_OPERATOR`/`PLATFORM_AUDITOR` with explicit per-role action lists (`ROLE_ACTIONS`), not implicit wildcards below admin
+- [x] Step-up authentication for dangerous operations — `requireHighRiskStepUp` requires a fresh, correct password **and** a fresh, un-replayed MFA code via `reauthenticatePlatformAdmin`, not a confirmation string alone
+- [x] Secure session expiry, rotation and revocation for platform-admin sessions — 15-min idle timeout, 2-hour TTL, automatic rotation every 10 minutes, `clearPlatformSession()` (`src/lib/platform/session.ts`)
+- [x] Platform-admin sessions use secure cookie/session controls — SHA-256-hashed token at rest, cookie path scoped to `/platform`, isolated from the clinic staff session cookie
 - [ ] Cross-tenant data leakage prevention tested
 - [ ] Tenant impersonation is disabled by default; if ever enabled, it requires explicit authorization, strong visual indication, time limit and complete audit trail
-- [ ] Destructive/irreversible operations are protected against accidental or replayed execution
+- [x] Destructive/irreversible operations are protected against accidental or replayed execution — TOTP replay specifically: atomic DB-level compare-and-swap (`consumeTotpCounter`) confirmed via direct execution to reject a genuinely valid, already-used code; broader operation-level replay/idempotency beyond MFA codes not yet reviewed
 - [ ] Emergency/break-glass controls are restricted, justified, time-bounded and audited
 
 ### 8.5 Platform Control auditability and operations
-- [ ] Every provisioning, suspension, migration, residency, maintenance and security-sensitive administrative action produces an audit event
+- [ ] Every provisioning, suspension, migration, residency, maintenance and security-sensitive administrative action produces an audit event — confirmed true for login/step-up/MFA paths (`recordPlatformAudit` called on every branch including pre-auth failures); not yet individually verified for every tenant-control/provisioning action
 - [ ] Audit records include actor, role, tenant/scope, action, timestamp, outcome and relevant target/reference
 - [ ] Audit records are tamper-evident and access-controlled
 - [ ] Platform admins can review audit history without editing or deleting audit evidence
 - [ ] Security alerts have ownership, severity, status and resolution/evidence workflow
 - [ ] Operational failures expose actionable diagnostics without leaking secrets or patient-sensitive data
 - [ ] Platform health checks and alerts have documented response procedures
-- [ ] Platform Control actions have authorization and negative-path tests, not only happy-path tests
+- [x] Platform Control actions have authorization and negative-path tests, not only happy-path tests — `tests/platform/auth.test.ts` and `tests/unit/platform-authorization.test.ts` include explicit negative-path assertions (e.g. `mfa_replay` rejection reason on a losing compare-and-swap), not just happy-path coverage
 
 ### 8.6 Platform Control Panel release tests
-- [ ] Platform-admin login/MFA E2E
-- [ ] Platform-role authorization matrix E2E
+- [ ] Platform-admin login/MFA E2E — **blocked: no login UI exists yet** (see note below)
+- [ ] Platform-role authorization matrix E2E — unit-level coverage exists (`tests/unit/platform-authorization.test.ts`); no E2E yet
 - [ ] Cross-tenant access-denial tests
 - [ ] Provisioning/lifecycle action tests
 - [ ] Residency/datastore control tests
 - [ ] Maintenance/suspension authorization tests
 - [ ] Audit-event completeness tests
-- [ ] High-risk action confirmation/step-up tests
+- [ ] High-risk action confirmation/step-up tests — unit-level coverage exists; no E2E yet
 - [ ] Break-glass controls tested if implemented
 - [ ] Sensitive-data minimization and no-secret-leak tests
 - [ ] Accessibility and responsive UX verification
 
-> The Platform Control surface is not currently an existing UI and must not be represented as available until implemented and verified.
+> **Update 2026-09-16:** the Platform Control surface now has a real UI —
+> Overview, Tenants list, Tenant detail, and Audit pages (`app/platform/`,
+> `src/components/platform/`), built on the workspace design system with
+> a deliberate amber accent distinguishing it from clinic staff sessions.
+> Typecheck, full unit suite, lint, and production build all pass with
+> these routes compiled. **The login page itself has not been built —
+> all four pages currently redirect unauthenticated visitors to
+> `/platform/login`, which does not exist and will 404.** The Platform
+> Control surface is therefore not yet usable end-to-end and must not be
+> represented as available until the login page is built and this whole
+> flow is verified by hand, not just by CI passing on the pages that
+> assume a session already exists.
 
 ## 9. Clinic application / dashboard UX
 - [x] Missing-user placeholder normalized to `User`
