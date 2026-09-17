@@ -29,7 +29,7 @@ export async function listActiveMedicines(context: AuthContext) {
 }
 
 export async function getVisitPrescriptions(context: AuthContext, visitId: string) {
-  return db.prescription.findMany({
+  const prescriptions = await db.prescription.findMany({
     where: { clinicId: context.clinicId, visitId },
     orderBy: { createdAt: "desc" },
     select: {
@@ -51,6 +51,14 @@ export async function getVisitPrescriptions(context: AuthContext, visitId: strin
       },
     },
   });
+
+  await recordAuditEvent(context, {
+    action: "PRESCRIPTIONS_VIEWED",
+    entityType: "Prescription",
+    metadata: { visitId, resultCount: prescriptions.length },
+  });
+
+  return prescriptions;
 }
 
 function cleanOptionalText(value: string | null | undefined) {
