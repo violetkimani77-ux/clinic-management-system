@@ -72,6 +72,12 @@ export async function listVisits(
     },
   });
 
+  await recordAuditEvent(context, {
+    action: "VISITS_VIEWED",
+    entityType: "Visit",
+    metadata: { resultCount: visits.length },
+  });
+
   return visits.map((visit) => ({
     id: visit.id,
     patientId: visit.patientId,
