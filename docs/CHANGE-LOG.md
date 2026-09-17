@@ -2,14 +2,18 @@
 
 This file is the durable project memory for important completed, queued, and verified changes. Update it whenever a material production-readiness, security, branding, deployment, database, or product change is completed or intentionally queued.
 
-## 2026-09-16 — Terms of Service page
+## 2026-09-16 — Platform TOTP replay protection and real step-up (final-audit tasks 1–4)
 
 ### Completed on branch
-- Branch: `feat/terms-of-service`.
-- Added `app/terms/page.tsx` so the landing footer link to `/terms` resolves.
-- Copy matches the `/privacy` document treatment (CSS modules, no Tailwind).
-- Trial wording is the current four-day evaluation period, not the older fourteen-day draft from PR #13.
-- `/privacy` and `/terms` added to `app/sitemap.ts`.
+- Branch: `feat/platform-auth-hardening`.
+- `verifyTotp` now returns `{ ok, counter }` instead of a boolean. `generateTotp` is exported for tests and provisioning.
+- New nullable `PlatformAdmin.lastUsedTotpCounter` plus migration `20260916170000_add_platform_totp_replay_protection`. Existing applied migrations were not edited.
+- Login and step-up consume the TOTP counter with an atomic `updateMany` (`lastUsedTotpCounter IS NULL OR lastUsedTotpCounter < counter`). A captured authenticator code cannot be replayed.
+- `requireHighRiskStepUp` now requires typed `CONFIRM` **and** `reauthenticatePlatformAdmin` (password + fresh TOTP). A confirmation string alone is rejected.
+- `suspendPlatformTenant` / `reactivatePlatformTenant` take a `PlatformStepUp` object.
+- Unit tests added for all six platform library files (`crypto`, `mfa`, `auth`, `authorization`, `session`, `tenant-control`), including the previously missing `tests/unit/platform-authorization.test.ts` matrix from PR #13.
+- Architecture docs updated so gate 4 matches the code. `src/lib/platform/trials.ts` was not touched.
+- Seed provisions a platform admin only when `PLATFORM_ADMIN_EMAIL`, `PLATFORM_ADMIN_PASSWORD`, `PLATFORM_ADMIN_MFA_SECRET`, and `PLATFORM_AUTH_ENCRYPTION_KEY` are all set.
 
 ## 2026-09-07 — Heri public landing page recovered
 

@@ -704,6 +704,7 @@ model PlatformAdmin {
   passwordHash String
   mfaSecretEncrypted String
   mfaEnabled Boolean @default(true)
+  lastUsedTotpCounter Int?
   status PlatformAdminStatus @default(ACTIVE)
   roleCode PlatformAdminRole @default(PLATFORM_ADMIN)
   createdAt DateTime @default(now())

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { PlatformAdminRole } from "@prisma/client";
-import { recordPlatformAudit } from "./auth";
+import { recordPlatformAudit, reauthenticatePlatformAdmin } from "./auth";
 import type { PlatformAuthContext } from "./session";
 
 export const PLATFORM_ACTIONS = {
@@ -17,6 +17,12 @@ export const PLATFORM_ACTIONS = {
 } as const;
 
 export type PlatformAction = (typeof PLATFORM_ACTIONS)[keyof typeof PLATFORM_ACTIONS];
+
+export type PlatformStepUp = {
+  confirmation: string;
+  password: string;
+  mfaCode: string;
+};
 
 const ROLE_ACTIONS: Record<PlatformAdminRole, readonly PlatformAction[]> = {
   PLATFORM_ADMIN: Object.values(PLATFORM_ACTIONS),
@@ -69,14 +75,31 @@ export async function requirePlatformAction(
 export async function requireHighRiskStepUp(
   auth: PlatformAuthContext,
   action: PlatformAction,
-  confirmation: string,
+  stepUp: PlatformStepUp,
 ): Promise<void> {
   await requirePlatformAction(auth, action);
-  if (!isHighRiskPlatformAction(action) || confirmation !== "CONFIRM") {
+  if (!isHighRiskPlatformAction(action)) {
+    await recordPlatformAudit("PLATFORM_HIGH_RISK_DENIED", auth.platformAdminId, {
+      action,
+      roleCode: auth.roleCode,
+      reason: "not_high_risk",
+    });
+    throw new Error("PLATFORM_STEP_UP_REQUIRED");
+  }
+  if (stepUp.confirmation !== "CONFIRM") {
     await recordPlatformAudit("PLATFORM_HIGH_RISK_DENIED", auth.platformAdminId, {
       action,
       roleCode: auth.roleCode,
       reason: "explicit_confirmation_required",
+    });
+    throw new Error("PLATFORM_STEP_UP_REQUIRED");
+  }
+  const reauthenticated = await reauthenticatePlatformAdmin(auth, stepUp.password, stepUp.mfaCode);
+  if (!reauthenticated) {
+    await recordPlatformAudit("PLATFORM_HIGH_RISK_DENIED", auth.platformAdminId, {
+      action,
+      roleCode: auth.roleCode,
+      reason: "reauthentication_failed",
     });
     throw new Error("PLATFORM_STEP_UP_REQUIRED");
   }
