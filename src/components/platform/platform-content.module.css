@@ -1,0 +1,199 @@
+.pageHeader {
+  margin-bottom: 28px;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #2d6d8e;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.eyebrow {
+  color: #8fd2b1;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pageTitle {
+  margin: 6px 0 4px;
+  color: #111827;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  color: #5f6f82;
+  font-size: 14px;
+}
+
+.alertBanner {
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  border: 1px solid #eecb8f;
+  border-radius: 10px;
+  background: #fdf6e7;
+  color: #8a6416;
+  font-size: 13px;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metricCard {
+  padding: 18px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.metricLabel {
+  color: #5f6f82;
+  font-size: 13px;
+}
+
+.metricValue {
+  margin-top: 6px;
+  color: #173f56;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.panel {
+  margin-bottom: 24px;
+  padding: 22px 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.panelTitle {
+  margin: 0 0 16px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panelGrid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .panelGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f2f4;
+  font-size: 14px;
+}
+
+.summaryRow:last-child {
+  border-bottom: 0;
+}
+
+.summaryLabel {
+  color: #5f6f82;
+}
+
+.summaryValue {
+  color: #111827;
+  font-weight: 700;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.infoCard {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fafbfb;
+}
+
+.infoLabel {
+  color: #5f6f82;
+  font-size: 12px;
+}
+
+.infoValue {
+  margin-top: 4px;
+  color: #111827;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.table th {
+  padding: 0 12px 10px 0;
+  color: #5f6f82;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table td {
+  padding: 12px 12px 12px 0;
+  border-top: 1px solid #f1f2f4;
+  vertical-align: top;
+}
+
+.tableClinicName {
+  color: #111827;
+  font-weight: 700;
+}
+
+.tableClinicCode {
+  color: #9aa5b1;
+  font-size: 12px;
+}
+
+.tableLink {
+  color: #2d6d8e;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tableLink:hover {
+  text-decoration: underline;
+}
+
+.tableMono {
+  color: #5f6f82;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
