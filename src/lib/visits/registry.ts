@@ -118,6 +118,13 @@ export async function getVisit(
 
   if (!visit) return null;
 
+  await recordAuditEvent(context, {
+    action: "VISIT_VIEWED",
+    entityType: "Visit",
+    entityId: visit.id,
+    metadata: { patientId: visit.patientId },
+  });
+
   return {
     id: visit.id,
     patientId: visit.patientId,
