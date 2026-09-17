@@ -220,7 +220,7 @@
 - [x] Platform Control actions have authorization and negative-path tests, not only happy-path tests — `tests/platform/auth.test.ts` and `tests/unit/platform-authorization.test.ts` include explicit negative-path assertions (e.g. `mfa_replay` rejection reason on a losing compare-and-swap), not just happy-path coverage
 
 ### 8.6 Platform Control Panel release tests
-- [ ] Platform-admin login/MFA E2E — **blocked: no login UI exists yet** (see note below)
+- [ ] Platform-admin login/MFA E2E — login page and action now exist (`app/platform/login/`) and are covered by typecheck/lint/build/CI; the actual login flow has not yet been exercised by hand with a real platform-admin account, and no automated E2E test exists yet (see note below)
 - [ ] Platform-role authorization matrix E2E — unit-level coverage exists (`tests/unit/platform-authorization.test.ts`); no E2E yet
 - [ ] Cross-tenant access-denial tests
 - [ ] Provisioning/lifecycle action tests
@@ -232,18 +232,20 @@
 - [ ] Sensitive-data minimization and no-secret-leak tests
 - [ ] Accessibility and responsive UX verification
 
-> **Update 2026-09-16:** the Platform Control surface now has a real UI —
-> Overview, Tenants list, Tenant detail, and Audit pages (`app/platform/`,
-> `src/components/platform/`), built on the workspace design system with
-> a deliberate amber accent distinguishing it from clinic staff sessions.
-> Typecheck, full unit suite, lint, and production build all pass with
-> these routes compiled. **The login page itself has not been built —
-> all four pages currently redirect unauthenticated visitors to
-> `/platform/login`, which does not exist and will 404.** The Platform
-> Control surface is therefore not yet usable end-to-end and must not be
-> represented as available until the login page is built and this whole
-> flow is verified by hand, not just by CI passing on the pages that
-> assume a session already exists.
+> **Update 2026-09-17:** the Platform Control surface now has a complete
+> UI — Overview, Tenants list, Tenant detail, Audit, and Login pages
+> (`app/platform/`, `src/components/platform/`), built on the workspace
+> design system with a deliberate amber accent distinguishing it from
+> clinic staff sessions. Typecheck, full unit suite, lint, and
+> production build all pass with all five routes compiled, including
+> `/platform/login`. **This confirms the code compiles and builds
+> correctly — it does not confirm the login flow actually works.** No
+> one has yet signed in through this UI with a real platform-admin
+> account and confirmed a session is created, the redirect to
+> `/platform` succeeds, and the four authenticated pages render real
+> data end-to-end. That manual pass, and the E2E tests listed above,
+> remain the next real gate before this surface can be called
+> release-ready.
 
 ## 9. Clinic application / dashboard UX
 - [x] Missing-user placeholder normalized to `User`
