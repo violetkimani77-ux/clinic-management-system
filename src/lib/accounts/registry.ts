@@ -40,6 +40,13 @@ export async function listInvoices(context: AuthContext): Promise<AccountInvoice
       patient: { select: { patientNo: true, firstName: true, lastName: true } },
       items: { select: { id: true, description: true, quantity: true, unitPrice: true, total: true } } },
   });
+
+  await recordAuditEvent(context, {
+    action: "INVOICES_VIEWED",
+    entityType: "Invoice",
+    metadata: { resultCount: invoices.length },
+  });
+
   return invoices.map((invoice) => ({
     id: invoice.id, invoiceNo: invoice.invoiceNo, patientId: invoice.patientId,
     patientNo: invoice.patient.patientNo, patientName: `${invoice.patient.firstName} ${invoice.patient.lastName}`,
@@ -55,6 +62,12 @@ export async function listBillableVisits(context: AuthContext): Promise<Billable
     orderBy: { openedAt: "desc" }, take: 30,
     select: { id: true, patientId: true, openedAt: true, status: true, patient: { select: { patientNo: true, firstName: true, lastName: true } } },
   });
+  await recordAuditEvent(context, {
+    action: "BILLABLE_VISITS_VIEWED",
+    entityType: "Visit",
+    metadata: { resultCount: visits.length },
+  });
+
   return visits.map((visit) => ({ id: visit.id, patientId: visit.patientId, patientNo: visit.patient.patientNo, patientName: `${visit.patient.firstName} ${visit.patient.lastName}`, openedAt: visit.openedAt, status: visit.status }));
 }
 

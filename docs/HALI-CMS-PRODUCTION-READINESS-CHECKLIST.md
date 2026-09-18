@@ -137,16 +137,16 @@
 - [x] Kenya-first residency policy/validation library
 - [x] Kenya-only pooled validation
 - [x] Cross-border transfer controls/residency fields
-- [ ] Actual production DB geography verified
+- [ ] Actual production DB geography verified — **the single highest-priority open item as of 2026-09-17.** Digital Health Act 2023 Section 47 appears to restrict cross-border transfer of personal health data to health-tourism circumstances; practicing Kenyan counsel (Clyde & Co, March 2026) describe this as genuinely unresolved — it may bind every health data controller, or only the Digital Health Agency's own transfers — and explicitly recommend organizations on foreign-hosted infrastructure reassess exposure. The general DPA localization rule (Data Protection General Regulations 2021) is narrower and scoped to an enumerated list (civil registration, elections, public finance, protected computer systems) that does not obviously include private clinic health records, so that specific rule likely does not bind HeriCMS — but Section 47 might, and nobody has yet confirmed which country/provider actually hosts the production database to evaluate against it.
 - [ ] Backup/DR geography verified
-- [ ] Provider/subprocessor geography verified
+- [ ] Provider/subprocessor geography verified — see note above; same blocking fact.
 - [ ] Operational residency validation with evidence
 - [ ] Transfer assessment workflow
-- [ ] Consent/legal-basis verification where applicable
+- [ ] Consent/legal-basis verification where applicable — DPA sections 48–50 require a lawful basis for any transfer outside Kenya, and sensitive personal data (health data, explicitly classified as such under the DPA) specifically requires the patient's *explicit* consent as an added condition. No such consent-capture flow currently exists in the product; deliberately not built yet pending the geography question above, to avoid building a flow that isn't needed.
 - [ ] Residency/transfer evidence retention
 - [ ] Analytics/monitoring/support tooling checked for identifiable health-data export
 - [ ] Provider contractual safeguards/DPA requirements verified
-- [ ] Breach/deletion/retention/legal-request procedures verified
+- [ ] Breach/deletion/retention/legal-request procedures verified — **retention direction corrected 2026-09-17**: the Digital Health Act requires a 20-year *minimum retention* of health data, not deletion-on-request. A retention policy stating this floor is the actual near-term need; a deletion pipeline is not the right first build and could contradict the legal requirement if built as a default.
 
 ## 7. Tenant datastore provisioning and lifecycle
 - [x] Datastore/residency/transfer/health models
@@ -266,7 +266,7 @@
 - [ ] Accounts/payment-data workflow E2E
 - [ ] Reporting workflow E2E
 - [ ] Permission-boundary verification for every workflow
-- [ ] Sensitive operation audit verification
+- [ ] Sensitive operation audit verification — **status as of 2026-09-17**: write operations (create/update) across Patient, Visit, Prescription, Payment, Pharmacy and Accounts were already audited. A direct sweep of every `get`/`list`/`search` function in `src/lib/` (not just the ones suspected — all of them, function body read individually) found six *read* paths exposing patient-identifying or clinical data with no audit event: `getVisit`, `getVisitPrescriptions`, `listPharmacyPrescriptions`, `listInvoices`, `listBillableVisits`, `listVisits`. Fixes for all six are written and pending PR (`feat/patient-record-read-audit-logging`, not yet merged). Two functions were checked and confirmed correctly aggregate-only already (`getAccountsSummary`, `getDashboardMetrics` — counts/sums only, no individual record ever returned). No app/ page or API route was found to bypass this registry layer and query these tables directly — confirmed by a repo-wide search for `db.patient.`/`db.visit.`/`db.prescription.`/`db.invoice.` outside `src/lib/`. **Not yet done**: automated tests asserting each of the six fixes actually fires its audit event.
 - [ ] Verify each module stays within the HeriCMS patient-registry/operations data boundary
 
 ## 11. Production database and deployment configuration
@@ -438,12 +438,12 @@
 
 ## 17. Legal, privacy and compliance
 - [x] Kenya-first residency/privacy policy research and architectural controls documented
-- [ ] Formal legal/privacy review and sign-off
-- [ ] Controller/processor responsibilities defined
+- [ ] Formal legal/privacy review and sign-off — **specific question to bring to counsel first**, per 2026-09-17 research: given the production database's confirmed hosting country/provider, does Digital Health Act Section 47 restrict the current architecture, and if so what's the fastest compliant path? This single question reshapes several other items below and should be answered before broader legal review, not alongside it.
+- [ ] Controller/processor responsibilities defined — HeriCMS most likely qualifies as the data controller for its own operational/administrative data and as processor for clinic patient data under DPA section 5's general test, per the Digital Health Act's explicit accommodation of this model (Act text: "the clinic is the data controller for patient-related information and the platform provider may act as a data processor") — needs counsel confirmation, not assumed.
 - [ ] Subprocessor inventory and contractual safeguards
-- [ ] Retention/deletion schedule
-- [ ] Data-subject/request handling procedures
-- [ ] Incident/breach procedures
+- [ ] Retention/deletion schedule — **Digital Health Act requires 20-year minimum retention of health data.** Build the policy around this floor; do not default to a deletion-first design.
+- [ ] Data-subject/request handling procedures — note the DPA distinguishes *correction* (7-day response window, general regulations) from *deletion*; a correction/rectification flow is buildable now and does not wait on the retention-policy question, unlike deletion.
+- [ ] Incident/breach procedures — **specific deadlines, not general practice**: Digital Health Agency CEO notification within 48 hours of becoming aware of a breach, corrective-measures detail within a further 72 hours; separately, ODPC notification within 72 hours under the general DPA rule. No procedure meeting these specific windows currently exists.
 - [ ] Cross-border transfer assessment and controls
 - [ ] Evidence retention policy
 - [ ] Patient-registry export/disclosure policy
@@ -452,6 +452,9 @@
 - [ ] Daraja/payment-provider contractual and operational requirements verified
 - [ ] Insurance co-pay responsibilities documented if enabled
 - [ ] Interoperability/data-sharing responsibilities for KHIS/OpenMRS/FHIR integrations documented
+- [ ] **ODPC registration as a data controller/processor** — confirmed not yet done as of 2026-09-17; this is an administrative/legal action, not an engineering task, and can start immediately/in parallel with everything else on this list.
+- [ ] **Digital Health Agency notification** (required within 7 days of ODPC registration, per the Digital Health Act) — blocked by the item above.
+- [ ] **Digital Health Certification for Safer Healthcare** — the actual named DHA certification program (graded scale from "compliant" to "future ready"); deliberately deferred until the items above are substantially resolved, not a near-term action.
 
 ## 18. Release gate
 Production release remains blocked until all applicable critical evidence is complete, including:

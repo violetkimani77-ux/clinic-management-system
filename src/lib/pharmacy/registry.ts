@@ -38,6 +38,13 @@ export async function listPharmacyPrescriptions(context: AuthContext): Promise<P
       } },
     },
   });
+
+  await recordAuditEvent(context, {
+    action: "PHARMACY_QUEUE_VIEWED",
+    entityType: "Prescription",
+    metadata: { resultCount: prescriptions.length },
+  });
+
   return prescriptions.map((prescription) => ({
     id: prescription.id, patientId: prescription.patientId, patientNo: prescription.patient.patientNo,
     patientName: `${prescription.patient.firstName} ${prescription.patient.lastName}`, visitId: prescription.visitId,
