@@ -38,7 +38,6 @@ export async function listPharmacyPrescriptions(context: AuthContext): Promise<P
       } },
     },
   });
-
   await recordAuditEvent(context, {
     action: "PHARMACY_QUEUE_VIEWED",
     entityType: "Prescription",

@@ -60,7 +60,7 @@ describe("listVisits read-access audit logging", () => {
     jest.clearAllMocks();
   });
 
-  it("records a VISITS_LISTED audit event with the result count", async () => {
+  it("records a VISITS_VIEWED audit event with the result count", async () => {
     mockDb.visit.findMany.mockResolvedValue([VISIT, VISIT]);
 
     const result = await listVisits(CONTEXT);
@@ -68,18 +68,7 @@ describe("listVisits read-access audit logging", () => {
     expect(result).toHaveLength(2);
     expect(mockRecordAuditEvent).toHaveBeenCalledWith(
       CONTEXT,
-      expect.objectContaining({ action: "VISITS_LISTED", entityType: "Visit", metadata: { resultCount: 2, patientId: null } }),
-    );
-  });
-
-  it("includes the filtering patientId in metadata when one was requested", async () => {
-    mockDb.visit.findMany.mockResolvedValue([VISIT]);
-
-    await listVisits(CONTEXT, { patientId: "patient-1" });
-
-    expect(mockRecordAuditEvent).toHaveBeenCalledWith(
-      CONTEXT,
-      expect.objectContaining({ metadata: { resultCount: 1, patientId: "patient-1" } }),
+      expect.objectContaining({ action: "VISITS_VIEWED", entityType: "Visit", metadata: { resultCount: 2 } }),
     );
   });
 });

@@ -40,7 +40,6 @@ export async function listInvoices(context: AuthContext): Promise<AccountInvoice
       patient: { select: { patientNo: true, firstName: true, lastName: true } },
       items: { select: { id: true, description: true, quantity: true, unitPrice: true, total: true } } },
   });
-
   await recordAuditEvent(context, {
     action: "INVOICES_VIEWED",
     entityType: "Invoice",
